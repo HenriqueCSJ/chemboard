@@ -4559,6 +4559,8 @@ const EN = {
   'Selecionar e mover': 'Select and move', 'Mover o quadro': 'Pan the board', 'Caneta química (Lewis)': 'Chem pen (Lewis)', 'Caneta': 'Pen',
   'Marca-texto': 'Highlighter', 'Formas': 'Shapes', 'Setas químicas': 'Chemical arrows', 'Texto químico': 'Chemical text', 'Borracha': 'Eraser',
   'Laser': 'Laser', 'Holofote': 'Spotlight', 'Anéis': 'Rings', 'Orbitais': 'Orbitals',
+  'Posição automática da carga formal': 'Automatic formal charge position',
+  'Posição automática da carga parcial': 'Automatic partial charge position',
   'Mais opções da ferramenta': 'More tool options', 'Mais ações do quadro': 'More board actions',
   'Elementos da tabela…': 'Table elements…', 'Editar destaques e separar elementos da tabela': 'Edit highlights and separate elements from the table',
   'Elemento da tabela': 'Table element', 'Propriedade da tabela': 'Table property',
@@ -5659,7 +5661,7 @@ function popUndoIfUnchanged(){
   if (st && st.length && st[st.length - 1] === snapshot()) st.pop();
 }
 function undo(){
-  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain') cancelGesture();
+  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge') cancelGesture();
   if (S.crop) S.crop = null;
   const id = page().id, st = S.undo[id];
   if (!st || !st.length){ toast('Nada para desfazer'); return; }
@@ -5668,7 +5670,7 @@ function undo(){
   afterChange();
 }
 function redo(){
-  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain') cancelGesture();
+  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge') cancelGesture();
   const id = page().id, st = S.redo[id];
   if (!st || !st.length){ toast('Nada para refazer'); return; }
   (S.undo[id] = S.undo[id] || []).push(snapshot());
@@ -7468,11 +7470,32 @@ function chargeObstacleIndex(size){
   }
   return {add, near};
 }
-function atomChargeLayout(list, g, skel, seaAtoms){
+const CHARGE_LABELS = ['bracketCharge', 'side', 'badge', 'partial'];
+function chargeOffset(a, kind){
+  const offset = a.chargeOffsets?.[kind];
+  return Array.isArray(offset) && offset.length === 2 && offset.every(Number.isFinite) ? offset : null;
+}
+function atomChargeLayout(list, g, skel, seaAtoms, preview = null){
   const positions = new Map(), L = S.settings.lewis;
   const fixed = [], badges = [], partials = [];
   let bounds = null;
   const reserve = (x, y, hw, hh) => { bounds = bboxUnion(bounds, centeredBox(x, y, 2 * hw, 2 * hh)); };
+  const offsetFor = (a, kind) => {
+    if (preview?.id === a.id && preview.kind === kind && Array.isArray(preview.offset) &&
+        preview.offset.length === 2 && preview.offset.every(Number.isFinite)) return preview.offset;
+    return chargeOffset(a, kind);
+  };
+  const placeFixed = (info, x, y) => {
+    const {p, kind, hw, hh, r, text, font, R, lw, neg} = info;
+    p[kind] = {x, y, hw, hh, text, font, R, lw, neg};
+    fixed.push([x, y, x, y, r]);
+    reserve(x, y, hw, hh);
+  };
+  const queue = (info, group, kind) => {
+    const offset = offsetFor(info.a, kind);
+    if (offset) placeFixed(info, info.a.x + offset[0] * info.fs, info.a.y + offset[1] * info.fs);
+    else group.push(info);
+  };
   for (const a of g.atoms.values()){
     if ((!a.q && !a.pc && !L.polarity) || skel.c.has(a.id) || skel.h.has(a.id) || a._alpha === 0) continue;
     const cov = hasCovalent(a, g), partial = partialCharge(a, g, cov);
@@ -7488,38 +7511,39 @@ function atomChargeLayout(list, g, skel, seaAtoms){
       if (L.ionBrackets && !seaAtoms.has(a.id)){
         const b = bracketSize(a, G);
         p.bracket = b;
-        const x = a.x + b.hw + 0.08 * fs + hw, y = a.y - b.hh + 0.12 * fs;
-        fixed.push([x, y, x, y, r]);
+        const offset = offsetFor(a, 'formal');
+        const x = offset ? a.x + offset[0] * fs : a.x + b.hw + 0.08 * fs + hw;
+        const y = offset ? a.y + offset[1] * fs : a.y - b.hh + 0.12 * fs;
+        placeFixed({a, p, kind: 'bracketCharge', hw, hh, r, text, font}, x, y);
         for (const side of [-1, 1]){
           const edge = a.x + side * b.hw, top = a.y - b.hh, bottom = a.y + b.hh;
           fixed.push([edge, top, edge, bottom, Math.max(1.4, 0.06 * fs) / 2],
             [edge, top, edge - side * 0.2 * fs, top, 0.04 * fs],
             [edge, bottom, edge - side * 0.2 * fs, bottom, 0.04 * fs]);
         }
-        reserve(x, y, hw, hh);
         reserve(a.x, a.y, b.hw + 0.05 * fs, b.hh + 0.05 * fs);
       } else {
-        badges.push({a, p, kind: 'side', r, fs, hw, hh, text,
-          rx: (G.w / 2 + 0.06 * fs + hw) * Math.SQRT2, ry: 0.42 * fs * Math.SQRT2, ang: -Math.PI / 4});
+        queue({a, p, kind: 'side', r, fs, hw, hh, text, font,
+          rx: (G.w / 2 + 0.06 * fs + hw) * Math.SQRT2, ry: 0.42 * fs * Math.SQRT2, ang: -Math.PI / 4}, badges, 'formal');
       }
     }
     if (a.q && brA < 0.996 && L.showCharges){
       const text = chargeText(a.q), font = '700 ' + fs * (Math.abs(a.q) > 1 ? 0.32 : 0.42) + 'px ' + FONT_STACKS.sans;
       const R = Math.max(0.24 * fs, textW(text, font) / 2 + 0.035 * fs);
       const lw = Math.max(1.2, 0.045 * fs), r = R + lw / 2, grow = R - 0.24 * fs;
-      badges.push({a, p, kind: 'badge', R, r, lw, fs, font, text, hw: r, hh: r,
-        rx: G.rxE + 0.22 * fs + grow, ry: G.ryE + 0.16 * fs + grow, ang: -Math.PI / 4});
+      queue({a, p, kind: 'badge', R, r, lw, fs, font, text, hw: r, hh: r,
+        rx: G.rxE + 0.22 * fs + grow, ry: G.ryE + 0.16 * fs + grow, ang: -Math.PI / 4}, badges, 'formal');
     }
     if (partial){
       const font = 'italic 600 ' + fs * 0.48 + 'px ' + FONT_STACKS.serif;
       const hw = textW(partial.text, font) / 2, hh = fs * 0.25, extra = partial.mult ? 0.14 * fs : 0;
       const rx = G.rxE + 0.18 * fs + extra, ry = G.ryE + 0.12 * fs;
       const info = {a, p, kind: 'partial', font, ...partial, hw, hh, r: Math.hypot(hw, hh), rx, ry, fs, ang: -3 * Math.PI / 4};
-      if (a.pca != null && Number.isFinite(+a.pca)){
-        const x = a.x + rx * Math.cos(a.pca), y = a.y + ry * Math.sin(a.pca);
-        p.partial = {...partial, font, x, y};
-        fixed.push([x, y, x, y, info.r]);
-        reserve(x, y, hw, hh);
+      const offset = offsetFor(a, 'partial');
+      if (offset){
+        placeFixed(info, a.x + offset[0] * fs, a.y + offset[1] * fs);
+      } else if (a.pca != null && Number.isFinite(+a.pca)){
+        placeFixed(info, a.x + rx * Math.cos(a.pca), a.y + ry * Math.sin(a.pca));
       } else partials.push(info);
     }
   }
@@ -7555,7 +7579,7 @@ function atomChargeLayout(list, g, skel, seaAtoms){
     const reach = Math.max(rx, ry) + 1.02 * fs + r;
     const local = near(a.x, a.y, reach);
     const {x, y} = findChargePosition(a.x, a.y, rx, ry, r, ang, local, fs);
-    p[kind] = {x, y, text, font, R, lw, neg};
+    p[kind] = {x, y, hw, hh, text, font, R, lw, neg};
     add(x, y, x, y, r);
     reserve(x, y, hw, hh);
   }
@@ -7618,7 +7642,8 @@ function drawAtom(c, a, g, marks, charges){
       c.stroke();
       c.globalAlpha = ga1;
       c.font = `600 ${fs * 0.58 * qs}px ${FONT_STACKS.sans}`; c.textAlign = 'left'; c.fillStyle = qk < 1 ? resolveColor('p2') : col;
-      c.fillText(chargeText(q), a.x + hw + 0.08 * fs, a.y - hh + 0.12 * fs);
+      const P = charges.bracketCharge;
+      if (P) c.fillText(P.text, P.x - P.hw, P.y);
     } else if (charges?.side){
       const P = charges.side;
       c.globalAlpha = ga1;
@@ -7759,7 +7784,8 @@ function drawScene(c, opts = {}){
     c.restore();
   }
   S._skel = skelState(g); S._rings = ringsOf(g);
-  const chargePlan = opts.chargePlan ?? atomChargeLayout(list, g, S._skel, S._seaAtoms);
+  const chargePlan = opts.chargePlan ?? atomChargeLayout(list, g, S._skel, S._seaAtoms, opts.chargePreview);
+  g.chargePositions = chargePlan.positions;
   const fsM = 3 * (S.settings.lewis.fontSize || 30);
   const near = R ? ((x, y) => x >= R.x1 - fsM && x <= R.x2 + fsM && y >= R.y1 - fsM && y <= R.y2 + fsM) : null;
   for (const b of g.bonds){
@@ -7773,7 +7799,7 @@ function drawScene(c, opts = {}){
   drawAromaticCircles(c, S._rings, g);
   for (const a of g.atoms.values()){
     const charges = chargePlan.positions.get(a.id);
-    if (near && !near(a.x, a.y) && ![charges?.badge, charges?.partial, charges?.side].some(p => p && near(p.x, p.y))) continue;
+    if (near && !near(a.x, a.y) && !CHARGE_LABELS.some(k => charges?.[k] && near(charges[k].x, charges[k].y))) continue;
     if (a._alpha != null){ c.save(); c.globalAlpha = a._alpha; drawAtom(c, a, g, marks, charges); c.restore(); }
     else drawAtom(c, a, g, marks, charges);
   }
@@ -7918,13 +7944,16 @@ function renderMain(){
   L.setTransform(1, 0, 0, 1, 0, 0); L.clearRect(0, 0, LAYER.cv.width, LAYER.cv.height);
   L.setTransform(DPR * v.s, 0, 0, DPR * v.s, DPR * v.ox, DPR * v.oy);
   const DL = animDisplay();
+  const drag = P?.mode === 'charge' ? P.charge : null;
+  const chargePreview = drag && drag.page === page() && getObj(drag.atom.id) === drag.atom && !isLocked(drag.atom) ? drag.preview : null;
   LAYER.list = DL ? DL.list : null;
+  LAYER.chargePage = page();
   if (DL){
     // passo a passo e animações: a cena é desenhada a partir de cópias (o documento não muda)
     const keep = S.index; S.index = DL.index;
-    try { LAYER.g = drawScene(L, {cull: visibleWorld(v, W, H), list: DL.list}); for (const f of DL.post) f(L); }
+    try { LAYER.g = drawScene(L, {cull: visibleWorld(v, W, H), list: DL.list, chargePreview}); for (const f of DL.post) f(L); }
     finally { S.index = keep; }
-  } else LAYER.g = drawScene(L, {cull: visibleWorld(v, W, H)});
+  } else LAYER.g = drawScene(L, {cull: visibleWorld(v, W, H), chargePreview});
   LAYER.v = {s: v.s, ox: v.ox, oy: v.oy}; LAYER.ok = true; LAYER.dpr = DPR;
   composeFrame();
   const ms = performance.now() - t0;
@@ -8262,6 +8291,25 @@ const magnetOn = () => S.settings.magnet && !S.altDown;
 const tolW = px => px / view().s;
 
 /* ---------- testes de acerto ---------- */
+function hitChargeLabel(x, y, slop = tolW(2)){
+  if (LAYER.chargePage !== page() || !LAYER.g?.chargePositions?.size) return null;
+  let best = null, nearest = Infinity;
+  for (const [id, labels] of LAYER.g.chargePositions){
+    const atom = getObj(id);
+    if (atom?.t !== 'atom') continue;
+    for (const key of CHARGE_LABELS){
+      const label = labels[key], kind = key === 'partial' ? 'partial' : 'formal';
+      if (!label || (kind === 'formal' && !atom.q)) continue;
+      const dx = x - label.x, dy = y - label.y, d = Math.hypot(dx, dy);
+      const inside = label.R ? d <= label.hw : Math.abs(dx) <= label.hw && Math.abs(dy) <= label.hh;
+      const near = label.R ? d <= label.hw + slop : Math.abs(dx) <= label.hw + slop && Math.abs(dy) <= label.hh + slop;
+      if (near && (!best || (inside && !best.inside) || (inside === best.inside && d <= nearest))){
+        best = {atom, kind, label, inside}; nearest = d;
+      }
+    }
+  }
+  return best;
+}
 function hitAtomParts(x, y, includeLocked = false){
   // percorre do topo para baixo: grupos de elétrons, núcleo do átomo, zona de elétrons
   const list = objs();
@@ -8477,6 +8525,13 @@ function applyRotation(plan, degrees){
       case 'atom':
         [o.x, o.y] = point(base.x, base.y);
         if (base.e) o.e = base.e.map(g => ({...g, a: (g.a + a + TAU) % TAU}));
+        if (base.chargeOffsets){
+          o.chargeOffsets = {...base.chargeOffsets};
+          for (const kind of ['formal', 'partial']){
+            const offset = chargeOffset(base, kind);
+            if (offset) o.chargeOffsets[kind] = vector(...offset);
+          }
+        }
         break;
       case 'ink':
         o.pts = new Array(base.pts.length);
@@ -8700,6 +8755,7 @@ function onDown(e){
     P.mode = 'erase'; P.erasePage = page(); S.mouse = q;
     queueErase(e, P); return;
   }
+  if (e.button === 0 && (tool === 'select' || tool === 'lewis') && !S.crop && downCharge(q, e)) return;
   if (tool === 'select') downSelect(q, e);
   else if (tool === 'lewis') downLewis(q, e);
   else if (tool === 'chain') downCarbonChain(q);
@@ -8737,6 +8793,7 @@ function onMove(e){
     P.x = q.x; P.y = q.y; queueErase(e, P); return;
   }
   if (P.mode === 'chain'){ previewCarbonChain(P, q, e.shiftKey); return; }
+  if (P.mode === 'charge'){ previewChargeDrag(P, q); return; }
   const lastPt = P.pts[P.pts.length - 1];
   if (Math.hypot(q.x - lastPt[0], q.y - lastPt[1]) > tolW(1.2)){
     P.pts.push([q.x, q.y]); if (P.pr) P.pr.push(q.p ?? 0.5);
@@ -8811,6 +8868,7 @@ function onUp(e){
       case 'aslide': animSlideEnd(p); break;
       case 'crop': S.dirty = true; break;
       case 'chain': finishCarbonChain(p, q, e.shiftKey); break;
+      case 'charge': finishChargeDrag(p, q); break;
       case 'ring': if (!p.moved) ringClick(q); break;
       case 'spot': if (!p.moved) S.spotRect = null; break;
       default: if (S.tool === 'lewis') upLewis(p, q, e); else if (S.tool === 'mo') moUp(p, q, e);
@@ -8971,6 +9029,13 @@ function updateZoomLabel(){ const z = $('#zoomPct'); if (z) z.textContent = Math
 
 function onDblClick(e){
   const [x, y] = toWorld(e.clientX, e.clientY);
+  if (!S.crop && ['select', 'lewis'].includes(S.tool)){
+    const hit = hitChargeLabel(x, y);
+    if (hit?.inside){
+      setChargeOffset(hit.atom, hit.kind, null);
+      return;
+    }
+  }
   if ((S.tool === 'mo' || S.tool === 'select') && moDblClick(x, y)) return;
   const hit = hitTest(x, y);
   // mão, laser e holofote (apresentação): duplo clique em qualquer ponto de um painel aproxima o painel; com a seta, só no espaço vazio dele
@@ -9275,6 +9340,56 @@ function carbonChainDialog(){
   modal('Cadeia carbônica', h('label', {}, 'Número de carbonos', input),
     [h('button', {class: 'btn ghost', onclick: closeModal}, 'Cancelar'), h('button', {class: 'btn', onclick: submit}, 'Inserir')]);
   input.focus({preventScroll: true}); input.select();
+}
+
+/* ---------- arraste de cargas ---------- */
+function setChargeOffset(atom, kind, offset){
+  if (getObj(atom.id) !== atom || isLocked(atom)) return false;
+  const current = chargeOffset(atom, kind);
+  if (offset && current?.[0] === offset[0] && current?.[1] === offset[1]) return false;
+  if (!offset && !current) return false;
+  pushUndo();
+  const next = {...atom.chargeOffsets};
+  if (offset) next[kind] = offset; else delete next[kind];
+  if (Object.keys(next).length) atom.chargeOffsets = next; else delete atom.chargeOffsets;
+  afterChange();
+  return true;
+}
+function downCharge(q, e){
+  const hit = hitChargeLabel(q.x, q.y, tolW(e.pointerType === 'touch' ? 8 : 2));
+  if (!hit) return false;
+  if (!hit.inside){
+    const under = hitAtomParts(q.x, q.y, true);
+    if (under && under.type !== 'zone') return false;
+  }
+  if (isLocked(hit.atom)){
+    flashHint('Destrave o objeto antes de editar.');
+    return true;
+  }
+  stopViewAnim();
+  P.mode = 'charge';
+  P.charge = {atom: hit.atom, kind: hit.kind, page: page(), label: hit.label,
+    dx: hit.label.x - q.x, dy: hit.label.y - q.y, preview: null};
+  canvas.style.cursor = 'grabbing';
+  return true;
+}
+function previewChargeDrag(p, q){
+  if (!p.moved) return;
+  const drag = p.charge, {atom, dx, dy} = drag;
+  if (page() !== drag.page || getObj(atom.id) !== atom || isLocked(atom)) return;
+  const fs = atomFS(atom);
+  const offset = [(q.x + dx - atom.x) / fs, (q.y + dy - atom.y) / fs];
+  if (!offset.every(Number.isFinite)) return;
+  drag.preview = {id: atom.id, kind: drag.kind, offset};
+  S.dirty = true;
+}
+function finishChargeDrag(p, q){
+  // Pointerup pode chegar sem o último pointermove.
+  if (Math.hypot(q.sx - p.sx, q.sy - p.sy) > (p.type === 'touch' ? 8 : 4)) p.moved = true;
+  previewChargeDrag(p, q);
+  const {atom, kind, page: owner, label, preview} = p.charge;
+  if (page() !== owner || !preview || Math.hypot(q.x + p.charge.dx - label.x, q.y + p.charge.dy - label.y) <= tolW(1)) return;
+  setChargeOffset(atom, kind, preview.offset);
 }
 
 /* ---------- caneta química (Lewis) ---------- */
@@ -9671,7 +9786,9 @@ function hoverUpdate(q){
   const prev = S.hover;
   S.hover = null;
   let cursor = '';
+  const charge = !S.crop && ['select', 'lewis'].includes(S.tool) && hitChargeLabel(q.x, q.y, 0);
   if (S.spaceDown || S.tool === 'hand') cursor = 'grab';
+  else if (charge) cursor = isLocked(charge.atom) ? 'not-allowed' : 'grab';
   else if (S.tool === 'lewis'){
     const hit = lewisHit(q.x, q.y);
     if (hit){
@@ -10145,7 +10262,7 @@ function initUI(){
 }
 
 function setTool(t){
-  if (t !== S.tool && (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain')) cancelGesture();
+  if (t !== S.tool && (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge')) cancelGesture();
   if (S.editing) commitTextEdit();
   if (S.crop && t !== 'select') endCrop(true);
   S.tool = t;
@@ -10651,7 +10768,9 @@ function openPageMenu(anchor){
 function showContextMenu(x, y, hit, wx, wy){
   const items = [];
   if (S.crop){ menu([{label: 'Aplicar recorte', icon: 'check', key: 'Enter', fn: () => endCrop(true)}, {label: 'Cancelar recorte', key: 'Esc', fn: () => endCrop(false)}], x, y); return; }
-  const locked = lockedAt(wx, wy);
+  const charge = !S.crop && hitChargeLabel(wx, wy, 0);
+  if (charge) hit = isLocked(charge.atom) ? null : {type: 'atom', atom: charge.atom};
+  const locked = charge && isLocked(charge.atom) ? charge.atom : lockedAt(wx, wy);
   const unlockItem = locked && {label: 'Destravar', icon: 'unlock', fn: () => {
     const owner = lockOwner(locked);
     if (!owner) return;
@@ -10674,6 +10793,9 @@ function showContextMenu(x, y, hit, wx, wy){
       {label: 'Zerar carga', fn: () => { pushUndo(); a.q = 0; afterChange(); }},
       {label: 'Carga parcial δ+', on: a.pc === '+', fn: () => { pushUndo(); if (a.pc === '+') delete a.pc; else a.pc = '+'; afterChange(); }},
       {label: 'Carga parcial δ−', on: a.pc === '-', fn: () => { pushUndo(); if (a.pc === '-') delete a.pc; else a.pc = '-'; afterChange(); }},
+      ...[['formal', 'Posição automática da carga formal'], ['partial', 'Posição automática da carga parcial']]
+        .filter(([kind]) => chargeOffset(a, kind))
+        .map(([kind, label]) => ({label, fn: () => setChargeOffset(a, kind, null)})),
       '-',
       {label: 'Completar H', fn: () => hydrogenAction(false, [a.id])},
       {label: 'Completar pares deste átomo', icon: 'zap', fn: () => { pushUndo(); autoElectrons(a, buildGraph()); afterChange(); }},
@@ -10809,7 +10931,7 @@ function updatePageBar(){
 function gotoPage(i){
   if (i < 0 || i >= S.doc.pages.length) return;
   if (i !== S.doc.cur){
-    if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain') cancelGesture();
+    if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge') cancelGesture();
     stopViewAnim(); MO.sel = null; S.moHover = null; S.moPreview = null;
   }
   if (S.editing) commitTextEdit();
@@ -11526,7 +11648,7 @@ function openBoardFile(text, mode){
     h('button', {class: 'btn', onclick: () => { closeModal(); load(true); }}, 'Adicionar ao quadro atual')]);
 }
 function loadBoardDoc(doc, assets, append){
-  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain') cancelGesture();
+  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge') cancelGesture();
   normalizeBoardDoc(doc, true);
   return prepareDocAssets(doc, assets).then(() => {
     if (S.editing) commitTextEdit();

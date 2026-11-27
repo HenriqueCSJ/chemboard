@@ -32,6 +32,8 @@ ChemBoard is a browser whiteboard for chemistry instructors. Draw Lewis structur
 
 *Building water directly on the board. [Play the recording with controls](https://henriquecsj.github.io/chemboard/docs/media/lewis-pen.mp4).*
 
+With **Select** or the **Lewis pen**, drag a formal or partial charge label to reposition it. The label follows its atom when you move or rotate the structure. Double-click the label to restore automatic placement.
+
 ## Draw carbon chains and add hydrogens
 
 - Press **Z** and drag on the board. The zigzag preview shows the carbon count before you release. Hold **Shift** to snap the direction in 15° steps. Drag from a carbon with an available valence to extend the structure, or choose **Insert by count…** for a chain of 2–80 carbons. New chains use skeletal notation by default.

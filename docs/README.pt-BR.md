@@ -26,6 +26,8 @@ Use a caneta de Lewis para construir uma estrutura diante da turma, abra um mode
 
 *[Reproduzir a gravação da caneta de Lewis com controles](https://henriquecsj.github.io/chemboard/docs/media/lewis-pen.mp4).*
 
+Com **Selecionar e mover** ou a **Caneta química**, arraste o rótulo de uma carga formal ou parcial para reposicioná-lo. O rótulo acompanha o átomo ao mover ou girar a estrutura. Dê um duplo clique no rótulo para restaurar o posicionamento automático.
+
 ## Desenhe cadeias carbônicas e adicione hidrogênios
 
 - Pressione **Z** e arraste no quadro. A prévia mostra o zigue-zague e a contagem de carbonos antes de soltar. Segure **Shift** para orientar a cadeia em passos de 15°. Arraste a partir de um carbono com valência livre para estender a estrutura ou use **Inserir por número…** para montar uma cadeia de 2 a 80 carbonos. As novas cadeias começam em fórmula de esqueleto.
