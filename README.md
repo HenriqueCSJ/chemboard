@@ -1,57 +1,61 @@
 # ChemBoard
 
-ChemBoard is an interactive browser whiteboard for teaching chemistry. Draw Lewis structures during class, illustrate reactions and molecular orbitals, and guide students through multi-page lessons one step at a time. The interface is available in English and Brazilian Portuguese.
+**An interactive whiteboard for teaching chemistry.**
 
-[Open ChemBoard](https://henriquecsj.github.io/chemboard/) · [Report an issue](https://github.com/HenriqueCSJ/chemboard/issues)
+Draw a Lewis structure in front of the class, then use the same board to show where electrons go or how a reaction rearranges atoms. Build a lecture around saved views and advance through them at your own pace.
 
-## Get started
+**[Open ChemBoard →](https://henriquecsj.github.io/chemboard/)** · [Try a sample lecture](#try-a-lecture) · [Report a bug](https://github.com/HenriqueCSJ/chemboard/issues/new)
 
-1. Open ChemBoard in a current desktop browser and choose a language.
-2. Start with a blank board, or open **Menu → Ready-made lectures** to add an interactive lesson.
-3. On a lesson page, use **Step by step** or **→** to begin. Use **←** to go back and **Esc** to exit. The presentation toolbar includes pause and playback speed.
-4. Use **Menu → Save board (.json)** to keep a portable copy. Open it on another device through **Menu → Open board**.
+The interface is available in English and Brazilian Portuguese. It runs in the browser without an account or installation.
 
-| Shortcut | Action |
-| --- | --- |
-| **L** | Lewis structure pen |
-| **V** | Select and edit |
-| **Space + drag** | Pan the board |
-| **D** | Open the selected molecule in 3D |
-| **F** | Toggle full screen |
-| **?** | Open help and shortcuts |
+![ChemBoard displaying four reaction panels alongside the drawing tools and the Step by step button.](docs/images/reaction-lesson.png)
 
-## What you can teach with it
+*The reaction page in the Animations: examples lecture. Each panel can be presented on its own.*
 
-- **Structure and bonding** · Draw molecules, lone pairs, formal charges, ionic interactions, rings, and curved electron arrows. Open a 3D molecular view or an atomic orbital panel.
-- **Orbitals and reactions** · Build molecular orbital diagrams, show orbital overlap, and animate mechanisms and selected reaction examples.
-- **Interactive lectures** · Combine text, equations, charts with adjustable parameters, particle models, tables, images, and video on a multi-page board. Save views and reveal objects in sequence.
-- **Classroom presentation** · Switch themes, use a laser pointer or spotlight, enlarge a section of the board, and export a page as PNG.
+## Try a lecture
 
-## Example lectures
+1. Open ChemBoard and choose **English** or **Português (Brasil)**.
+2. Open **Menu → Ready-made lectures** (**Aulas prontas** in Portuguese) and insert **Animations: examples** or **Intermolecular interactions**.
+3. Use **→** and **←** to move between saved views. On pages with scripted reveals, click **Step by step** to start, then use the same arrows to advance or replay the explanation. The playback toolbar lets you pause and change the speed.
+4. Press **F** for full screen. When you're ready to edit again, press **Esc** to exit step-by-step mode.
 
-Both lectures are in Portuguese. Use the in-app lecture picker, or download a JSON file and open it as a board.
+Both lectures below are in Portuguese. They are built into the app. The downloadable copies also open through **Menu → Open board**.
 
-| Board | Content |
-| --- | --- |
-| [Animation examples](examples/animation-examples.json) | Eight pages on step-by-step playback, reaction animations, molecular orbital diagrams, crystal field splitting, charts, orbital overlap, and mechanisms. |
-| [Intermolecular interactions](examples/intermolecular-interactions.json) | Nine pages on states of matter, five types of intermolecular interaction, and comparisons using models, charts, and tables. |
+| Lecture | What to look for | Board file |
+| --- | --- | --- |
+| **Animations: examples** · 8 pages | Follow atoms from reactants to products. Assemble molecular orbital diagrams and explore orbital overlap, crystal-field splitting, and electron-pushing mechanisms. | [Animation examples JSON](examples/animation-examples.json?raw=1) |
+| **Intermolecular interactions** · 9 pages | Compare solid, liquid, and gas particle models, then work through ion–dipole interactions, London dispersion, hydrogen bonding, and the other examples. | [Intermolecular interactions JSON](examples/intermolecular-interactions.json?raw=1) |
+
+<details>
+<summary>Preview the intermolecular interactions lecture</summary>
+
+![ChemBoard comparing solid, liquid and gas with animated particle models and a table of properties.](docs/images/intermolecular-lesson.png)
+
+</details>
+
+## Build your own board
+
+- **Draw structures.** Press **L** for the Lewis pen. Choose an element and click to place an atom. Drag between atoms to bond them, or click beside an atom to add lone pairs. Use **D** to open a selected molecule in 3D.
+- **Explain a change.** Add curved electron arrows, build a molecular orbital diagram, or plot a curve with a parameter you can vary during class.
+- **Prepare the presentation.** Add a page with the **+** beside the page counter. Right-click the board and choose **Save this view as a stop** to return to a particular region with the arrow keys. Use the laser pointer or spotlight to direct attention.
+- **Keep a copy.** Use **Menu → Save board (.json)** for an editable file or **Export image (PNG)** for a handout. Browser autosave keeps the current board on this device and site, so use JSON to move it to another computer.
 
 ## Run locally
 
-Open [`index.html`](index.html) from a local copy of this repository, or serve the repository root:
+Download or clone this repository and open [`index.html`](index.html) in a desktop browser. You can also serve the repository root with Python:
 
 ```sh
 python -m http.server 8000 --bind 127.0.0.1
 ```
 
-Then open [localhost:8000](http://127.0.0.1:8000/). The app is plain HTML, CSS, and JavaScript with bundled Three.js. GitHub Pages serves the root of `main` directly.
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000/). Drawing and the built-in lectures work offline from the local HTML. Online molecule lookup, remote media, and web fonts use the network. WebGL is required for 3D.
 
-Core drawing and the built-in lessons work offline from the local HTML. Online molecule lookup, remote media, and web fonts require a connection. The 3D view needs browser WebGL support. Autosave uses browser storage on the current device and site. Export important boards as JSON before changing browsers or clearing site data.
+## Contribute
 
-## Contributing
+If a panel, animation, or saved board behaves unexpectedly, include the browser and version, the lecture and page, and the exact action you took. Attach a small shareable board file or a screen recording when it helps reproduce the issue. [Open an issue](https://github.com/HenriqueCSJ/chemboard/issues/new)
 
-When reporting a bug, include your browser and version, the steps and expected result, and a small board file that reproduces it if you can share one. For a pull request, include which board or classroom workflow you checked.
+The app is maintained in `index.html` and served from the root of `main` with GitHub Pages. There is no build step. The two boards in [`examples/`](examples/) are useful for checking import and presentation changes.
 
 ## License
 
-ChemBoard uses the [Apache License 2.0](LICENSE). The bundled [Three.js](https://github.com/mrdoob/three.js) code is under the MIT License, with its license text in `index.html`.
+ChemBoard is licensed under [Apache 2.0](LICENSE). The bundled [Three.js](https://github.com/mrdoob/three.js) code is MIT-licensed. Its license text is included in `index.html`.

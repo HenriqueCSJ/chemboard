@@ -5418,8 +5418,8 @@ async function saveFile(filename, data){
 const THEMES = {
   branco:       {nome:'Quadro branco', fam:'light', bg:'#f6f7f5', grid:'rgba(40,52,72,0.13)', ui:'light'},
   quadriculado: {nome:'Papel quadriculado', fam:'light', bg:'#fbfdff', grid:'rgba(70,130,200,0.22)', ui:'light'},
-  verde:        {nome:'Lousa verde', fam:'dark', bg:'#24392f', grid:'rgba(255,255,255,0.075)', ui:'dark', chalk:true},
-  negro:        {nome:'Lousa preta', fam:'dark', bg:'#1d2025', grid:'rgba(255,255,255,0.07)', ui:'dark', chalk:true},
+  verde:        {nome:'Lousa verde', fam:'dark', bg:'#24392f', grid:'rgba(255,255,255,0.075)', ui:'dark'},
+  negro:        {nome:'Lousa preta', fam:'dark', bg:'#1d2025', grid:'rgba(255,255,255,0.07)', ui:'dark'},
 };
 const THEME_ORDER = ['branco', 'quadriculado', 'verde', 'negro'];
 for (const k in THEMES){ const t = THEMES[k], pt = t.nome; delete t.nome; Object.defineProperty(t, 'nome', {get: () => tt(pt), enumerable: true}); }
@@ -5433,7 +5433,7 @@ const PALETTE_NAMES = ['Principal', 'Azul', 'Vermelho', 'Verde', 'Laranja', 'Vio
 const HL_COLORS = ['#ffe94a', '#7dff5a', '#ff5fa2', '#4fd1ff', '#ffab40', '#c18cff'];
 
 const DEFAULT_SETTINGS = {
-  theme: 'branco', grid: 'dots', magnet: true, autoShape: false, lang: 'pt',
+  theme: 'branco', grid: 'none', settingsVersion: 2, magnet: true, autoShape: false, lang: 'pt',
   palettes: deep(DEFAULT_PALETTES),
   laser: '#ff2d3c', laserTrail: 400,
   lewis: {
@@ -5480,7 +5480,15 @@ function mergeDeep(base, over){
 function loadSettings(){
   try {
     const raw = localStorage.getItem('lousaQ.settings');
-    if (raw) S.settings = mergeDeep(deep(DEFAULT_SETTINGS), JSON.parse(raw));
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    S.settings = mergeDeep(deep(DEFAULT_SETTINGS), saved);
+    // Remove a antiga grade padrão sem alterar uma grade inicial escolhida nas preferências.
+    if (saved && saved.settingsVersion == null && saved.grid === 'dots' &&
+      (!saved.ui?.startGrid || saved.ui.startGrid === 'last')){
+      S.settings.grid = 'none';
+      saveSettings();
+    }
   } catch (e) {}
 }
 let _setTimer = null;
@@ -6629,7 +6637,6 @@ function accentColor(){
 }
 const GRID = 32;
 const IMG_CACHE = new Map();
-let CHALK_PATTERN = null;
 
 function initCanvas(){
   canvas = $('#board');
@@ -6647,27 +6654,6 @@ function resizeCanvas(){
 }
 const toWorld = (sx, sy) => { const v = view(); return [(sx - v.ox) / v.s, (sy - v.oy) / v.s]; };
 const toScreen = (wx, wy) => { const v = view(); return [wx * v.s + v.ox, wy * v.s + v.oy]; };
-
-function chalkPattern(){
-  if (CHALK_PATTERN) return CHALK_PATTERN;
-  const c = document.createElement('canvas'); c.width = c.height = 256;
-  const g = c.getContext('2d');
-  for (let i = 0; i < 2600; i++){
-    const a = Math.random() * 0.05;
-    g.fillStyle = `rgba(255,255,255,${a})`;
-    const r = Math.random() * 1.6;
-    g.fillRect(Math.random() * 256, Math.random() * 256, r, r);
-  }
-  for (let i = 0; i < 40; i++){
-    g.strokeStyle = `rgba(255,255,255,${Math.random() * 0.025})`;
-    g.lineWidth = 10 + Math.random() * 30;
-    g.beginPath();
-    const x = Math.random() * 256, y = Math.random() * 256;
-    g.moveTo(x, y); g.lineTo(x + Math.random() * 120 - 60, y + Math.random() * 30 - 15); g.stroke();
-  }
-  CHALK_PATTERN = ctx.createPattern(c, 'repeat');
-  return CHALK_PATTERN;
-}
 
 /* ---------- cores químicas ---------- */
 const _elColorCache = {};
@@ -7402,13 +7388,6 @@ function dotPattern(c, step, r, color, v){
 function drawBackground(c, W, H, v, withGrid = true){
   const th = theme();
   c.fillStyle = th.bg; c.fillRect(0, 0, W, H);
-  if (th.chalk){
-    c.save(); c.fillStyle = chalkPattern();
-    c.translate(v.ox % 256, v.oy % 256); c.fillRect(-256, -256, W + 512, H + 512); c.restore();
-    const vg = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.75);
-    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.22)');
-    c.fillStyle = vg; c.fillRect(0, 0, W, H);
-  }
   const mode = S.settings.grid;
   if (!withGrid || mode === 'none') return;
   let step = GRID * v.s, mult = 1;
@@ -9509,8 +9488,9 @@ function openGridMenu(anchor){
   menu([['none', 'Sem grade'], ['dots', 'Pontos'], ['squares', 'Quadriculado'], ['lines', 'Pautado']].map(([k, l]) => ({label: l, on: S.settings.grid === k, fn: () => { S.settings.grid = k; saveSettings(); S.dirty = true; syncTopButtons(); }})), x - 100, y);
 }
 function setTheme(k){
-  S.settings.theme = k; saveSettings(); _clearElColors(); applyThemeUI(); renderOptBar(); S.dirty = true;
-  if (k === 'quadriculado' && S.settings.grid === 'dots'){ S.settings.grid = 'squares'; }
+  S.settings.theme = k;
+  if (k === 'quadriculado' && ['none', 'dots'].includes(S.settings.grid)) S.settings.grid = 'squares';
+  saveSettings(); _clearElColors(); applyThemeUI(); renderOptBar(); S.dirty = true;
   syncTopButtons();
   flashHint(THEMES[k].nome);
 }
@@ -9742,6 +9722,7 @@ function updatePageBar(){
 }
 function gotoPage(i){
   if (i < 0 || i >= S.doc.pages.length) return;
+  if (i !== S.doc.cur) stopViewAnim();
   if (S.editing) commitTextEdit();
   if (S.crop) endCrop(true);
   S.doc.cur = i; S.sel.clear(); reindex(); updatePageBar(); updateZoomLabel(); S.dirty = true; scheduleSave();
@@ -10349,7 +10330,7 @@ function renderToCanvas(list, scale = 2, bg = true){
   const c = document.createElement('canvas'); c.width = Math.ceil(W); c.height = Math.ceil(H);
   const x = c.getContext('2d');
   const saveDPR = DPR; DPR = scale;
-  if (bg){ x.fillStyle = theme().bg; x.fillRect(0, 0, c.width, c.height); if (theme().chalk){ x.fillStyle = chalkPattern(); x.fillRect(0, 0, c.width, c.height); } }
+  if (bg){ x.fillStyle = theme().bg; x.fillRect(0, 0, c.width, c.height); }
   x.setTransform(scale, 0, 0, scale, (pad - bb.x1) * scale, (pad - bb.y1) * scale);
   drawScene(x, {list, export: true});
   DPR = saveDPR;
@@ -19299,10 +19280,12 @@ function viewForRect(x1, y1, x2, y2){
   const s = clamp(Math.min(W / Math.max(1, x2 - x1), H / Math.max(1, y2 - y1)), ZMIN, ZMAX);
   return {s, ox: A.l + STOP_PAD + (W - (x2 - x1) * s) / 2 - x1 * s, oy: A.t + STOP_PAD + (H - (y2 - y1) * s) / 2 - y1 * s};
 }
-function focusRect(r, animate = true){
-  const t = viewForRect(r[0], r[1], r[2], r[3]);
+function focusRect(r){
+  const t = viewForRect(...r);
   stopViewAnim();
-  if (animate) animateViewTo(t.s, t.ox, t.oy, 420); else setView(t.s, t.ox, t.oy);
+  setView(t.s, t.ox, t.oy);
+  // A camada da vista anterior não tem os objetos fora da tela. Pinte o painel completo no próximo quadro.
+  S.dirty = true;
 }
 function viewIsAt(r){
   const t = viewForRect(r[0], r[1], r[2], r[3]), v = view();
@@ -19326,10 +19309,7 @@ function stepStop(dir){
     if (!viewIsAt(st[0])){ STOPAT.set(pg.id, 0); focusRect(st[0]); stopHint(pg, 0); }
     return true;
   }
-  gotoPage(k);
-  const np = page();
-  if (np.stops && np.stops.length){ STOPAT.set(np.id, 0); focusRect(np.stops[0], false); }
-  stepArrive(dir);
+  gotoPageStep(k, dir);
   return true;
 }
 // duplo clique num objeto travado grande (painel, imagem de fundo): aproxima; de novo: volta
@@ -19380,7 +19360,7 @@ function insertLecture(id, again){
   if (have >= 0 && !again){
     modal('Esta aula já está no quadro', h('p', {class: 'mtext'}, `Ela começa na página ${have + 1}.`), [
       h('button', {class: 'btn ghost', onclick: () => { closeModal(); insertLecture(id, true); }}, 'Inserir outra cópia'),
-      h('button', {class: 'btn', onclick: () => { closeModal(); gotoPage(have); if (page().stops) { STOPAT.set(page().id, 0); focusRect(page().stops[0], false); } }}, 'Ir para a aula')]);
+      h('button', {class: 'btn', onclick: () => { closeModal(); gotoPage(have); if (page().stops) { STOPAT.set(page().id, 0); focusRect(page().stops[0]); } }}, 'Ir para a aula')]);
     return null;
   }
   if (S.editing) commitTextEdit();
@@ -19567,7 +19547,7 @@ function stepGo(j, opts = {}){
   const s = T.pos[j][0];
   if (pg.stops && pg.stops.length){
     const sPrev = prev != null ? T.pos[clamp(prev, 0, T.n - 1)][0] : -1;
-    if (s !== sPrev || !viewIsAt(pg.stops[s])){ STOPAT.set(pg.id, s); focusRect(pg.stops[s], !opts.instantView); }
+    if (s !== sPrev || !viewIsAt(pg.stops[s])){ STOPAT.set(pg.id, s); focusRect(pg.stops[s]); }
     if (s !== sPrev) stopHint(pg, s);
   }
   S.sel.clear(); if (typeof updateSelectionUI === 'function') updateSelectionUI();
@@ -19601,7 +19581,7 @@ function stepNav(dir){
 /* chegou a uma página andando para a frente: começa o passo a passo dela (os objetos do passo 0 entram animados) */
 function stepArrive(dir){
   const pg = page(), T = stepTimeline(pg);
-  if (dir > 0 && T.has) stepGo(0, {arrive: true, animate: true, instantView: true});
+  if (dir > 0 && T.has) stepGo(0, {arrive: true, animate: true});
   else { STEP.pg = null; updateStepBar(true); }
 }
 function gotoPageStep(i, dir){
@@ -19609,7 +19589,7 @@ function gotoPageStep(i, dir){
   gotoPage(i);
   if (S.doc.cur === b) return;
   const np = page();
-  if (np.stops && np.stops.length){ STOPAT.set(np.id, 0); focusRect(np.stops[0], false); }
+  if (np.stops && np.stops.length){ STOPAT.set(np.id, 0); focusRect(np.stops[0]); }
   stepArrive(dir);
 }
 function stepRestart(){
