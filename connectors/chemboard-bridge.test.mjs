@@ -16,6 +16,10 @@ test('MCP publishes tools only for a paired board and validates calls before dis
   t.after(() => bridge.close());
 
   const base = 'http://127.0.0.1:' + port;
+  const lecture = await fetch(base + '/examples/animation-examples.json');
+  assert.equal(lecture.status, 200);
+  assert.match(lecture.headers.get('content-type'), /^application\/json/);
+  assert.equal((await fetch(base + '/connectors/.env')).status, 404);
   const rpc = async (method, params, authorization = 'Bearer ' + token) => {
     return fetch(base + '/mcp', {
       method: 'POST',

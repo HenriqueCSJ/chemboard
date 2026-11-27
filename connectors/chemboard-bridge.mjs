@@ -15,6 +15,14 @@ const MAX_BODY = 16 * 1024 * 1024;
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{24,128}$/;
 const TOOL_TIMEOUT = 60_000;
 const ASSIST_TIMEOUT = 300_000;
+const HOME = ['../index.html', 'text/html; charset=utf-8'];
+const STATIC_FILES = new Map([
+  ['/', HOME],
+  ['/index.html', HOME],
+  ['/favicon.png', ['../favicon.png', 'image/png']],
+  ['/examples/animation-examples.json', ['../examples/animation-examples.json', 'application/json; charset=utf-8']],
+  ['/examples/intermolecular-interactions.json', ['../examples/intermolecular-interactions.json', 'application/json; charset=utf-8']]
+]);
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
 const sameSecret = (a, b) => typeof a === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b));
 const safeSend = (socket, value) => { if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify(value)); };
@@ -145,7 +153,7 @@ export async function startBridge({ env = process.env, stdio = false, providers,
     }
     if (!['GET', 'HEAD'].includes(req.method)) return reply(res, 405, 'Method not allowed.');
     // Deliberately no general filesystem/static route: environment and provider files are private.
-    const asset = pathname === '/' || pathname === '/index.html' ? ['../index.html', 'text/html; charset=utf-8'] : pathname === '/favicon.png' ? ['../favicon.png', 'image/png'] : null;
+    const asset = STATIC_FILES.get(pathname);
     if (!asset) return reply(res, 404, 'Not found.');
     try {
       const bytes = await readFile(new URL(asset[0], import.meta.url));
