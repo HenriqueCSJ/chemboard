@@ -4615,6 +4615,11 @@ const EN = {
   'Limpar esta página?': 'Clear this page?', 'Você pode desfazer com Ctrl+Z.': 'You can undo with Ctrl+Z.', 'Começar um quadro novo?': 'Start a new board?',
   'O quadro atual será substituído. Salve antes se quiser guardá-lo.': 'The current board will be replaced. Save it first if you want to keep it.',
   'Fechar': 'Close', 'Cancelar': 'Cancel', 'Salvar': 'Save', 'Girar 90°': 'Rotate 90°', 'Girar −90°': 'Rotate −90°', 'Girar 45°': 'Rotate 45°', 'Girar −45°': 'Rotate −45°',
+  'Girar seleção': 'Rotate selection', 'Girar…': 'Rotate…', 'Ângulo de rotação (°)': 'Rotation angle (°)',
+  'Arraste a alça circular para girar. Shift usa passos de 15°.': 'Drag the round handle to rotate. Shift snaps to 15°.',
+  'A seleção inclui uma ligação travada.': 'The selection includes a locked bond.',
+  'Proporção fixa': 'Constrain proportions', 'Círculos, quadrados e triângulos equiláteros. Também funciona com Shift durante o arraste.': 'Circles, squares and equilateral triangles. You can also hold Shift while dragging.',
+  'círculo, quadrado ou triângulo equilátero': 'circle, square or equilateral triangle',
 
   /* ---- ajuda ---- */
   'Caneta química (L)': 'Chem pen (L)', 'coloca o elemento escolhido': 'places the chosen element',
@@ -4657,6 +4662,12 @@ const EN = {
   'Este visualizador não permite baixar arquivos. Use “Copiar imagem” ou abra o arquivo HTML localmente.': 'This viewer does not allow downloads. Use “Copy image” or open the HTML file locally.',
   'Carregando imagem…': 'Loading image…', 'Imagem bloqueada pelo site de origem': 'Image blocked by its source site', 'e⁻ de valência': 'valence e⁻',
   'Forma reconhecida: solte para confirmar': 'Shape recognized: release to confirm',
+  'Suavizar': 'Smooth', 'Suaviza o traço livre, preservando as pontas e a pressão da caneta': 'Smooth freehand ink while preserving endpoints and pen pressure',
+  'Formas': 'Shapes', 'Segurar': 'Hold', 'Auto': 'Auto', 'Desligado': 'Off', 'Polígono': 'Polygon', 'Forma': 'Shape', 'Seta curva': 'Curved arrow',
+  'Manter todos os traços como tinta': 'Keep all strokes as ink',
+  'Desenhe e segure a ponta por meio segundo para converter': 'Draw and hold the endpoint for half a second to convert',
+  'Converter formas ao soltar a caneta': 'Convert shapes when releasing the pen',
+  'Reconhecimento de formas desligado': 'Shape recognition off',
 
   /* ---- química: ligações e mensagens ---- */
   'aumentar a ordem da ligação': 'increase bond order', 'interação já existente': 'interaction already exists', 'interação iônica': 'ionic interaction',
@@ -5468,7 +5479,7 @@ const PALETTE_NAMES = ['Principal', 'Azul', 'Vermelho', 'Verde', 'Laranja', 'Vio
 const HL_COLORS = ['#ffe94a', '#7dff5a', '#ff5fa2', '#4fd1ff', '#ffab40', '#c18cff'];
 
 const DEFAULT_SETTINGS = {
-  theme: 'branco', grid: 'none', settingsVersion: 2, magnet: true, autoShape: false, lang: 'pt',
+  theme: 'branco', grid: 'none', settingsVersion: 2, magnet: true, autoShape: false, shapeDetection: 'hold', lang: 'pt',
   palettes: deep(DEFAULT_PALETTES),
   laser: '#ff2d3c', laserTrail: 400,
   lewis: {
@@ -5477,7 +5488,7 @@ const DEFAULT_SETTINGS = {
     fontSize: 30, check: false, element: 'C', font: 'sans', slowAnim: true, skeletal: false
   },
   tools: {
-    pen: {c: 'p0', w: 3}, hl: {c: HL_COLORS[0], w: 22}, shape: {c: 'p1', w: 3, kind: 'rect', fill: 'none', dash: false},
+    pen: {c: 'p0', w: 3, smooth: false}, hl: {c: HL_COLORS[0], w: 22}, shape: {c: 'p1', w: 3, kind: 'rect', fill: 'none', dash: false},
     arrow: {c: 'p2', w: 3, kind: 'arrow', dash: false}, text: {c: 'p0', fs: 30, font: 'sans', chem: true, bold: false},
     lewis: {c: 'p0'}, eraser: {w: 18}, ring: {kind: 'bz', h: true}
   },
@@ -5591,9 +5602,9 @@ function resolveColor(c){
 
 /* ---------- desfazer / refazer ---------- */
 function snapshot(){ return JSON.stringify(objs()); }
-function pushUndo(){
+function pushUndo(before = snapshot()){
   const id = page().id;
-  (S.undo[id] = S.undo[id] || []).push(snapshot());
+  (S.undo[id] = S.undo[id] || []).push(before);
   if (S.undo[id].length > 150) S.undo[id].shift();
   S.redo[id] = [];
 }
@@ -5602,7 +5613,7 @@ function popUndoIfUnchanged(){
   if (st && st.length && st[st.length - 1] === snapshot()) st.pop();
 }
 function undo(){
-  if (P?.mode === 'erase') cancelGesture();
+  if (P?.mode === 'erase' || P?.mode === 'rotate') cancelGesture();
   if (S.crop) S.crop = null;
   const id = page().id, st = S.undo[id];
   if (!st || !st.length){ toast('Nada para desfazer'); return; }
@@ -5611,7 +5622,7 @@ function undo(){
   afterChange();
 }
 function redo(){
-  if (P?.mode === 'erase') cancelGesture();
+  if (P?.mode === 'erase' || P?.mode === 'rotate') cancelGesture();
   const id = page().id, st = S.redo[id];
   if (!st || !st.length){ toast('Nada para refazer'); return; }
   (S.undo[id] = S.undo[id] || []).push(snapshot());
@@ -5737,7 +5748,11 @@ async function idbDel(key){
 // mudanças só de vista (zoom/pan) esperam mais e usam o tempo ocioso do navegador
 const PENDING_DOC_KEY = 'lousaQ.pendingDoc';
 let _saveTimer = null, _saveIdle = null, _saveInFlight = 0, _saveKind = 'view', _recoveredDoc = null;
-function serializeDoc(){ return JSON.stringify(S.doc); }
+function serializeDoc(){
+  if (P?.mode !== 'rotate' || !P.turnApplied) return JSON.stringify(S.doc);
+  const live = objs(), original = JSON.parse(P.turnBefore);
+  return JSON.stringify(S.doc, (key, value) => value === live ? original : value);
+}
 async function persistDoc(){
   _saveIdle = null; _saveKind = 'view';
   const json = serializeDoc();
@@ -6800,15 +6815,33 @@ function ptabLayout(o){
   }
   return {cs, cells, width: 18 * cs, height: 9.45 * cs};
 }
+function turnPoint(x, y, cx, cy, cos, sin){
+  const dx = x - cx, dy = y - cy;
+  return [cx + dx * cos - dy * sin, cy + dx * sin + dy * cos];
+}
+function boxCenter(b){ return [(b.x1 + b.x2) / 2, (b.y1 + b.y2) / 2]; }
+function centeredBox(x, y, w, h){ return {x1: x - w / 2, y1: y - h / 2, x2: x + w / 2, y2: y + h / 2}; }
+function turnedBox(b, degrees){
+  if (!degrees) return b;
+  const [x, y] = boxCenter(b), a = degrees * DEG2;
+  const cos = Math.abs(Math.cos(a)), sin = Math.abs(Math.sin(a)), w = b.x2 - b.x1, h = b.y2 - b.y1;
+  return centeredBox(x, y, w * cos + h * sin, w * sin + h * cos);
+}
+function rotateContext(c, b, degrees){
+  const [x, y] = boxCenter(b);
+  c.translate(x, y); c.rotate(degrees * DEG2); c.translate(-x, -y);
+}
+function mediaBaseBox(F){ return centeredBox(F.cx, F.cy, F.dw, F.dh); }
 function objBBox(o){
   switch (o.t){
     case 'atom': { const g = atomGeom(o); return {x1: o.x - g.rxE - 4, y1: o.y - g.ryE - 4, x2: o.x + g.rxE + 4, y2: o.y + g.ryE + 4}; }
     case 'bond': { const a = getObj(o.a), b = getObj(o.b); if (!a || !b) return null;
       return {x1: Math.min(a.x, b.x), y1: Math.min(a.y, b.y), x2: Math.max(a.x, b.x), y2: Math.max(a.y, b.y)}; }
     case 'ink': return inkBBox(o);
-    case 'shape': return shapeBBox(o);
-    case 'text': return textBBox(o);
-    case 'img': case 'video': case 'link': case 'chart': case 'pbox': case 'lcao': return {x1: o.x, y1: o.y, x2: o.x + o.w, y2: o.y + o.h};
+    case 'shape': return turnedBox(shapeBBox(o), o.turn);
+    case 'text': return turnedBox(textBBox(o), o.turn);
+    case 'img': case 'video': { const F = mediaFrame(o); return turnedBox(mediaBaseBox(F), F.rot); }
+    case 'link': case 'chart': case 'pbox': case 'lcao': return {x1: o.x, y1: o.y, x2: o.x + o.w, y2: o.y + o.h};
     case 'table': { const TL = tableLayout(o); return {x1: o.x, y1: o.y, x2: o.x + TL.W, y2: o.y + TL.H}; }
     case 'ptab': { const L = ptabLayout(o); return {x1: o.x, y1: o.y, x2: o.x + L.width, y2: o.y + L.height}; }
     case 'card': return {x1: o.x, y1: o.y, x2: o.x + o.w, y2: o.y + o.w * 1.18};
@@ -6910,6 +6943,7 @@ function drawShape(c, o){
   if (theme().chalk){ c.shadowColor = col; c.shadowBlur = 1.2 * DPR; }
   setDash(c, o.dash, w);
   if (isArrowKind(o.s)){ drawArrowShape(c, o); c.restore(); return; }
+  if (o.turn) rotateContext(c, shapeBBox(o), o.turn);
   const fill = o.fill && o.fill !== 'none';
   const doFill = () => { if (!fill) return; c.save(); c.setLineDash([]); c.shadowBlur = 0; c.globalAlpha *= o.fill === 'solid' ? 1 : (o.fa ?? 0.18); c.fill(); c.restore(); };
   const stroke = () => { if (!o.ns) c.stroke(); };
@@ -6965,8 +6999,9 @@ function drawShape(c, o){
 }
 
 function drawText(c, o){
-  if (o.math || usesInlineMath(o.s)){ drawMathText(c, o); return; }
   c.save();
+  if (o.turn) rotateContext(c, textBBox(o), o.turn);
+  if (o.math || usesInlineMath(o.s)){ drawMathText(c, o); c.restore(); return; }
   c.font = textFont(o);
   c.fillStyle = resolveColor(o.c);
   c.textBaseline = 'top';
@@ -7524,7 +7559,8 @@ function frame(t){
   const tn = now();
   const dt = PERF.lastFrame ? tn - PERF.lastFrame : 16; PERF.lastFrame = tn;
   stepViewAnim(tn);
-  if (P && P.mode === 'erase') flushErase(P);
+  if (P?.mode === 'erase') flushErase(P);
+  else if (P?.mode === 'rotate') flushRotation(P);
   animTick(tn);
   const sceneAnim = S.anims.length > 0 || S._glowing || animSceneActive();
   const ovAnim = (S.laser && S.laser.length) || S.tool === 'spot' || mediaOverlayActive() || liveAnimating();
@@ -7776,97 +7812,132 @@ function corners(rs, closed){
   return res;
 }
 
-/* devolve um objeto de forma (sem cor) ou null */
-function recognizeShape(raw){
-  if (raw.length < 4) return null;
-  const pts = raw.map(p => [p[0], p[1]]);
-  const L = pathLength(pts);
-  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
-  const bb = {x1: Math.min(...xs), y1: Math.min(...ys), x2: Math.max(...xs), y2: Math.max(...ys)};
+/* Ajuste leve, opcional: conserva amostras, pressão, pontas e fechamento. */
+function smoothInkPoints(pts){
+  if (pts.length < 3) return pts;
+  let out = pts.map(p => p.slice());
+  const maxShift = tolW(2.5);
+  for (let pass = 0; pass < 2; pass++){
+    const src = out;
+    out = src.map((p, i) => {
+      if (!i || i === src.length - 1) return p.slice();
+      const a = src[i - 1], b = src[i + 1];
+      const ux = p[0] - a[0], uy = p[1] - a[1], vx = b[0] - p[0], vy = b[1] - p[1];
+      const den = Math.hypot(ux, uy) * Math.hypot(vx, vy);
+      // Preserva quinas deliberadas; remove sobretudo a oscilação pequena.
+      const weight = den && (ux * vx + uy * vy) / den < 0.25 ? 0.08 : 0.25;
+      let dx = (a[0] + b[0] - 2 * p[0]) * weight, dy = (a[1] + b[1] - 2 * p[1]) * weight;
+      const d = Math.hypot(dx, dy), k = d > maxShift ? maxShift / d : 1;
+      return [p[0] + dx * k, p[1] + dy * k];
+    });
+  }
+  return out;
+}
+function shapeRecognitionMode(){
+  // autoShape continua sendo a preferência legada, inclusive em arquivos importados.
+  return S.settings.autoShape ? 'auto' : S.settings.shapeDetection === 'off' ? 'off' : 'hold';
+}
+function shapeName(shape){
+  return tt(({line: 'Linha', arrow: 'Seta', curve: 'Seta curva', rect: 'Retângulo', ellipse: 'Elipse', poly: 'Polígono'})[shape.s] || 'Forma');
+}
+function inkPreview(p){
+  return {kind: 'ink', pts: p.pts, pr: p.pr, smooth: S.tool === 'pen' && S.settings.tools.pen.smooth};
+}
+
+/* devolve um objeto de forma (sem cor) ou null; não altera as amostras */
+function recognizeShape(raw, minSize = 12){
+  if (raw.length < 2) return null;
+  const pts = raw.filter((p, i) => !i || Math.hypot(p[0] - raw[i - 1][0], p[1] - raw[i - 1][1]) > 0.001).map(p => [p[0], p[1]]);
+  if (pts.length < 2) return null;
+  const L = pathLength(pts), bb = {x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity};
+  for (const [x, y] of pts){
+    bb.x1 = Math.min(bb.x1, x); bb.y1 = Math.min(bb.y1, y);
+    bb.x2 = Math.max(bb.x2, x); bb.y2 = Math.max(bb.y2, y);
+  }
   const W = bb.x2 - bb.x1, H = bb.y2 - bb.y1, size = Math.max(W, H);
-  if (size < 12) return null;
-  const chord = Math.hypot(pts[pts.length - 1][0] - pts[0][0], pts[pts.length - 1][1] - pts[0][1]);
-  const closed = chord < Math.max(0.22 * size, 0.08 * L);
-  if (closed){
-    const rs = resample(pts, 72);
-    const cs = corners(rs, true);
-    // polígonos
-    if (cs.length >= 3 && cs.length <= 6){
-      const verts = cs.map(i => rs[i]);
-      // arestas retas?
-      let straight = true;
-      for (let k = 0; k < cs.length; k++){
-        const i0 = cs[k], i1 = cs[(k + 1) % cs.length];
-        const seg = [];
-        for (let i = i0; i !== i1; i = (i + 1) % rs.length) seg.push(rs[i]);
-        seg.push(rs[i1]);
-        if (seg.length > 3 && straightness(seg) < 0.9) straight = false;
+  if (size < minSize || L < minSize * 4 / 3) return null;
+  const first = pts[0], last = pts[pts.length - 1], chord = Math.hypot(last[0] - first[0], last[1] - first[1]);
+  const rs = resample(pts, 96);
+  const lineFit = (path, a, b, tolerance = 0.045) => {
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (len < minSize || pathLength(path) > len * 1.4) return false;
+    const errors = path.map(p => distToSeg(p[0], p[1], a[0], a[1], b[0], b[1]));
+    return Math.max(...errors) < len * tolerance + minSize / 12 && Math.sqrt(errors.reduce((n, d) => n + d * d, 0) / errors.length) < len * tolerance * 0.55 + minSize / 24;
+  };
+  if (chord > size * 0.65 && lineFit(rs, first, last)) return {s: 'line', x1: first[0], y1: first[1], x2: last[0], y2: last[1]};
+  const closed = chord < Math.max(size * 0.18, minSize / 4) && L > size * 2.1 && L < size * 4.5;
+  if (closed && W > size * 0.17 && H > size * 0.17){
+    // Dividir a curva fechada em dois evita a instabilidade do RDP no ponto inicial.
+    const loop = rs.slice(0, -1);
+    let far = 1;
+    for (let i = 2; i < loop.length; i++) if (Math.hypot(loop[i][0] - first[0], loop[i][1] - first[1]) > Math.hypot(loop[far][0] - first[0], loop[far][1] - first[1])) far = i;
+    let verts = rdp(loop.slice(0, far + 1), size * 0.045).slice(0, -1).concat(rdp(loop.slice(far).concat([loop[0]]), size * 0.045).slice(0, -1));
+    // O início pode cair no meio de uma aresta: una os trechos colineares.
+    for (let changed = true; changed && verts.length > 3;){
+      changed = false;
+      for (let i = 0; i < verts.length; i++){
+        const a = verts[(i + verts.length - 1) % verts.length], b = verts[i], c = verts[(i + 1) % verts.length];
+        if (distToSeg(b[0], b[1], a[0], a[1], c[0], c[1]) < size * 0.045){ verts.splice(i, 1); changed = true; break; }
       }
-      if (straight){
-        if (cs.length === 3) return {s: 'poly', pts: verts};
-        if (cs.length === 4){
-          let axis = true;
-          for (let k = 0; k < 4; k++){
-            const a = verts[k], b = verts[(k + 1) % 4];
-            const ang = Math.abs(Math.atan2(b[1] - a[1], b[0] - a[0])) % (Math.PI / 2);
-            if (Math.min(ang, Math.PI / 2 - ang) > 0.28) axis = false;
-          }
-          if (axis) return {s: 'rect', x1: bb.x1, y1: bb.y1, x2: bb.x2, y2: bb.y2};
-          return {s: 'poly', pts: verts};
-        }
+    }
+    if (verts.length >= 3 && verts.length <= 6){
+      let sign = 0, convex = true;
+      const perimeter = pathLength(verts.concat([verts[0]]));
+      for (let i = 0; i < verts.length; i++){
+        const a = verts[i], b = verts[(i + 1) % verts.length], c = verts[(i + 2) % verts.length];
+        const ux = b[0] - a[0], uy = b[1] - a[1], vx = c[0] - b[0], vy = c[1] - b[1];
+        const cross = ux * vy - uy * vx, den = Math.hypot(ux, uy) * Math.hypot(vx, vy);
+        const turn = den ? Math.acos(clamp((ux * vx + uy * vy) / den, -1, 1)) : 0;
+        if (Math.hypot(ux, uy) < size * 0.14 || turn < 0.45 || turn > 2.65 || (sign && cross * sign < 0)) convex = false;
+        if (cross) sign = Math.sign(cross);
+      }
+      const errors = rs.map(p => Math.min(...verts.map((a, i) => { const b = verts[(i + 1) % verts.length]; return distToSeg(p[0], p[1], a[0], a[1], b[0], b[1]); })));
+      if (convex && L < perimeter * 1.18 && L > perimeter * 0.84 && Math.max(...errors) < size * 0.075 && errors.reduce((n, d) => n + d, 0) / errors.length < size * 0.025){
+        if (verts.length === 4 && verts.every((a, i) => {
+          const b = verts[(i + 1) % 4], angle = Math.abs(Math.atan2(b[1] - a[1], b[0] - a[0])) % (Math.PI / 2);
+          return Math.min(angle, Math.PI / 2 - angle) < 0.22;
+        })) return {s: 'rect', ...bb};
         return {s: 'poly', pts: verts};
       }
     }
-    // elipse
     const cx = (bb.x1 + bb.x2) / 2, cy = (bb.y1 + bb.y2) / 2, rx = W / 2, ry = H / 2;
-    if (rx > 3 && ry > 3){
-      let err = 0;
-      for (const p of rs){ err += Math.abs(Math.hypot((p[0] - cx) / rx, (p[1] - cy) / ry) - 1); }
-      err /= rs.length;
-      if (err < 0.16){
-        if (Math.abs(rx - ry) / Math.max(rx, ry) < 0.16){ const r = (rx + ry) / 2; return {s: 'ellipse', x1: cx - r, y1: cy - r, x2: cx + r, y2: cy + r}; }
-        return {s: 'ellipse', x1: bb.x1, y1: bb.y1, x2: bb.x2, y2: bb.y2};
-      }
+    let radial = 0, maxErr = 0, turn = 0, travel = 0, prev = null;
+    for (const p of rs){
+      const nx = (p[0] - cx) / rx, ny = (p[1] - cy) / ry, err = Math.abs(Math.hypot(nx, ny) - 1), angle = Math.atan2(ny, nx);
+      radial += err; maxErr = Math.max(maxErr, err);
+      if (prev != null){ const d = Math.atan2(Math.sin(angle - prev), Math.cos(angle - prev)); turn += d; travel += Math.abs(d); }
+      prev = angle;
+    }
+    // Uma volta, sem retornos nem múltiplas voltas (escrita e rabiscos).
+    if (radial / rs.length < 0.09 && maxErr < 0.24 && Math.abs(turn) > 5.45 && Math.abs(turn) < 6.8 && travel < 7.3){
+      if (Math.abs(rx - ry) / Math.max(rx, ry) < 0.12){ const r = (rx + ry) / 2; return {s: 'ellipse', x1: cx - r, y1: cy - r, x2: cx + r, y2: cy + r}; }
+      return {s: 'ellipse', ...bb};
     }
     return null;
   }
-  // linha
-  if (straightness(pts) > 0.95) return {s: 'line', x1: pts[0][0], y1: pts[0][1], x2: pts[pts.length - 1][0], y2: pts[pts.length - 1][1]};
-  // seta: ponta = ponto mais distante do início
+  // Seta desenhada num só gesto: haste seguida por uma ou duas farpas.
   let tip = 0, dmax = 0;
-  pts.forEach((p, i) => { const d = Math.hypot(p[0] - pts[0][0], p[1] - pts[0][1]); if (d > dmax){ dmax = d; tip = i; } });
-  const shaft = pts.slice(0, tip + 1), tail = pts.slice(tip);
+  pts.forEach((p, i) => { const d = Math.hypot(p[0] - first[0], p[1] - first[1]); if (d > dmax){ dmax = d; tip = i; } });
+  const shaft = resample(pts.slice(0, tip + 1), 64), tail = pts.slice(tip), T = pts[tip];
   const Ls = pathLength(shaft), Lt = pathLength(tail);
-  if (tip < pts.length - 2 && Lt > 0.06 * Ls && Lt < 0.55 * Ls && Ls > 30){
-    const T = shaft[shaft.length - 1];
-    // a farpa precisa voltar para trás
-    const back = shaft[Math.max(0, shaft.length - 6)];
-    const dir = Math.atan2(T[1] - back[1], T[0] - back[0]);
-    const farp = tail[Math.min(tail.length - 1, 4)];
-    const bdir = Math.atan2(farp[1] - T[1], farp[0] - T[0]);
-    if (angDiff(dir, bdir) > 1.9){
-      if (straightness(shaft) > 0.93) return {s: 'arrow', x1: pts[0][0], y1: pts[0][1], x2: T[0], y2: T[1]};
+  if (tip > 0 && tail.length >= 2 && Ls > minSize * 2.5 && Lt > Ls * 0.08 && Lt < Ls * 0.85){
+    const angle = Math.atan2(T[1] - first[1], T[0] - first[0]);
+    const ux = Math.cos(angle), uy = Math.sin(angle);
+    const local = tail.map(p => [(p[0] - T[0]) * ux + (p[1] - T[1]) * uy, -(p[0] - T[0]) * uy + (p[1] - T[1]) * ux]);
+    const back = Math.min(...local.map(p => p[0])), spread = Math.max(...local.map(p => Math.abs(p[1])));
+    const barb = rdp(tail, Ls * 0.025);
+    if (back < -Ls * 0.055 && spread > Ls * 0.035 && spread < Ls * 0.42 && local.every(p => p[0] < Ls * 0.04) && barb.length <= 5){
+      if (lineFit(shaft, first, T, 0.055)) return {s: 'arrow', x1: first[0], y1: first[1], x2: T[0], y2: T[1]};
       const mid = resample(shaft, 21)[10];
-      const ccx = 2 * mid[0] - (pts[0][0] + T[0]) / 2, ccy = 2 * mid[1] - (pts[0][1] + T[1]) / 2;
-      return {s: 'curve', x1: pts[0][0], y1: pts[0][1], x2: T[0], y2: T[1], cx: ccx, cy: ccy};
+      const cx = 2 * mid[0] - (first[0] + T[0]) / 2, cy = 2 * mid[1] - (first[1] + T[1]) / 2;
+      const fit = resample(shaft, 41), curve = [];
+      for (let i = 0; i <= 80; i++){ const t = i / 80, u = 1 - t; curve.push([u * u * first[0] + 2 * u * t * cx + t * t * T[0], u * u * first[1] + 2 * u * t * cy + t * t * T[1]]); }
+      const errors = fit.map(p => Math.min(...curve.slice(1).map((b, i) => distToSeg(p[0], p[1], curve[i][0], curve[i][1], b[0], b[1]))));
+      if (Ls < dmax * 1.65 && Math.max(...errors) < size * 0.055) return {s: 'curve', x1: first[0], y1: first[1], x2: T[0], y2: T[1], cx, cy};
     }
   }
-  // arco suave sem ponta -> mantém tinta
   return null;
 }
-function tailHasTwoBarbs(tail, T){
-  // duas farpas: a cauda se afasta da ponta, volta perto dela e se afasta de novo
-  let far = false, back = false, again = false;
-  const d0 = pathLength(tail) * 0.2;
-  for (const p of tail){
-    const d = Math.hypot(p[0] - T[0], p[1] - T[1]);
-    if (!far && d > d0 * 1.5) far = true;
-    else if (far && !back && d < d0 * 0.8) back = true;
-    else if (back && d > d0 * 1.5) again = true;
-  }
-  return again;
-}
-
 /* ============================================================
    08 · Ferramentas e interação com o ponteiro
    ============================================================ */
@@ -7930,6 +8001,7 @@ function hitObject(x, y){
   }
   return null;
 }
+function inBox(b, x, y, t){ return b && x >= b.x1 - t && x <= b.x2 + t && y >= b.y1 - t && y <= b.y2 + t; }
 function objHit(o, x, y, t){
   switch (o.t){
     case 'ink': {
@@ -7940,12 +8012,24 @@ function objHit(o, x, y, t){
       for (let i = 2; i < p.length; i += 2) if (distToSeg(x, y, p[i - 2], p[i - 1], p[i], p[i + 1]) < r) return true;
       return false;
     }
-    case 'shape': return shapeHit(o, x, y, t);
+    case 'shape': {
+      if (o.turn){ const [cx, cy] = boxCenter(shapeBBox(o)), a = -o.turn * DEG2; [x, y] = turnPoint(x, y, cx, cy, Math.cos(a), Math.sin(a)); }
+      return shapeHit(o, x, y, t);
+    }
+    case 'text': {
+      const b = textBBox(o);
+      if (o.turn){ const [cx, cy] = boxCenter(b), a = -o.turn * DEG2; [x, y] = turnPoint(x, y, cx, cy, Math.cos(a), Math.sin(a)); }
+      return inBox(b, x, y, t);
+    }
+    case 'img': case 'video': {
+      const F = mediaFrame(o), [lx, ly] = mediaToLocal(F, x, y);
+      return Math.abs(lx) <= F.dw / 2 + t && Math.abs(ly) <= F.dh / 2 + t;
+    }
     case 'orb': return orbHit(o, x, y, t);
     case 'sea': return seaHit(o, x, y);
     case 'brk': { const b = brkBox(o); if (!b) return false;
       return (Math.abs(x - b.x1) < t * 1.5 || Math.abs(x - b.x2) < t * 1.5) && y > b.y1 - t && y < b.y2 + t; }
-    default: { const b = objBBox(o); return b && x >= b.x1 - t && x <= b.x2 + t && y >= b.y1 - t && y <= b.y2 + t; }
+    default: return inBox(objBBox(o), x, y, t);
   }
 }
 function shapeHit(o, x, y, t){
@@ -8035,6 +8119,152 @@ function selectMolecule(atomId){
 function moleculeIds(atomId, kinds = ['cov', 'dat', 'ion']){
   const g = buildGraph();
   return Array.from(componentOf(atomId, g, kinds));
+}
+
+/* ---------- rotação da seleção ---------- */
+const TURN_TYPES = new Set(['atom', 'bond', 'brk', 'sea', 'ink', 'shape', 'text', 'img', 'video', 'orb']);
+const wrapTurn = d => ((d % 360) + 360) % 360;
+
+function rotationPlan(ids){
+  const selected = ids.map(getObj).filter(o => o && TURN_TYPES.has(o.t) && !isLocked(o));
+  const centers = new Set(movableIds(selected.flatMap(o => o.t === 'sea' ? o.ids : [o.id])));
+  const atoms = new Set([...centers].filter(id => getObj(id)?.t === 'atom'));
+  const anchorMoves = a => {
+    if (a.k !== 'b') return atoms.has(a.id);
+    const b = getObj(a.id);
+    return b && atoms.has(b.a) && atoms.has(b.b);
+  };
+  for (const o of objs()){
+    if (o.t === 'bond' && isLocked(o) && (atoms.has(o.a) || atoms.has(o.b))){
+      flashHint('A seleção inclui uma ligação travada.'); return null;
+    }
+    if (isLocked(o)) continue;
+    if (o.t === 'orb' && atoms.has(o.at)) centers.add(o.id);
+    if (o.t === 'shape' && !centers.has(o.id)){
+      const anchors = [o.a1, o.a2].filter(Boolean);
+      if (anchors.length && anchors.every(anchorMoves)) centers.add(o.id);
+    }
+  }
+  const b = selectionBBox(new Set([...selected.map(o => o.id), ...atoms]));
+  if (!b || !centers.size) return null;
+  const [x, y] = boxCenter(b);
+  const entries = [...centers].map(getObj).map(o => {
+    const base = {...o}, box = objBBox(o);
+    const anchor = o.t === 'orb' && o.at ? getObj(o.at) : null;
+    return {o, base, box, anchor: anchor ? [anchor.x, anchor.y, atoms.has(anchor.id)] : null,
+      follows: o.t === 'shape' ? [o.a1 && anchorMoves(o.a1), o.a2 && anchorMoves(o.a2)] : null};
+  });
+  return {x, y, entries, atoms};
+}
+function applyRotation(plan, degrees){
+  const a = degrees * DEG2, cos = Math.cos(a), sin = Math.sin(a);
+  const point = (x, y) => turnPoint(x, y, plan.x, plan.y, cos, sin);
+  const vector = (x, y) => turnPoint(x, y, 0, 0, cos, sin);
+  const angle = (o, k, v) => { if (v) o[k] = v; else delete o[k]; };
+  for (const {o, base, box, anchor, follows} of plan.entries){
+    if (!degrees){
+      for (const k of ['turn', 'rot', 'dx', 'dy', 'a1', 'a2', 'pr', 'cr']) if (!(k in base)) delete o[k];
+      Object.assign(o, base);
+      continue;
+    }
+    switch (o.t){
+      case 'atom':
+        [o.x, o.y] = point(base.x, base.y);
+        if (base.e) o.e = base.e.map(g => ({...g, a: (g.a + a + TAU) % TAU}));
+        break;
+      case 'ink':
+        o.pts = new Array(base.pts.length);
+        for (let i = 0; i < base.pts.length; i += 2) [o.pts[i], o.pts[i + 1]] = point(base.pts[i], base.pts[i + 1]);
+        break;
+      case 'text': {
+        const [cx, cy] = boxCenter(box), [x, y] = point(cx, cy);
+        o.x = base.x + x - cx; o.y = base.y + y - cy; angle(o, 'turn', wrapTurn((base.turn || 0) + degrees));
+        break;
+      }
+      case 'img': case 'video': {
+        const F = mediaFrame(base), [x, y] = point(F.cx, F.cy);
+        setMediaGeometry(o, F, x, y, wrapTurn(F.rot + degrees));
+        break;
+      }
+      case 'orb':
+        if (anchor){
+          const [ax, ay, moves] = anchor;
+          const [x, y] = point(ax + (base.dx || 0), ay + (base.dy || 0));
+          const [ox, oy] = moves ? point(ax, ay) : [ax, ay];
+          o.dx = x - ox; o.dy = y - oy;
+        } else if (!o.at){
+          const [x, y] = point(base.x + base.w / 2, base.y + base.w / 2);
+          o.x = x - base.w / 2; o.y = y - base.w / 2;
+        }
+        angle(o, 'rot', wrapTurn((base.rot || 0) + degrees));
+        break;
+      case 'shape':
+        if (o.s !== 'poly' && !isArrowKind(o.s)){
+          const [cx, cy] = boxCenter(box), [x, y] = point(cx, cy);
+          o.x1 = base.x1 + x - cx; o.y1 = base.y1 + y - cy;
+          o.x2 = base.x2 + x - cx; o.y2 = base.y2 + y - cy;
+          angle(o, 'turn', wrapTurn((base.turn || 0) + degrees));
+          break;
+        }
+        if (base.pts) o.pts = base.pts.map(([x, y]) => point(x, y));
+        if (o.s === 'poly') break;
+        [o.x1, o.y1] = point(base.x1, base.y1); [o.x2, o.y2] = point(base.x2, base.y2);
+        if (base.cx != null) [o.cx, o.cy] = point(base.cx, base.cy);
+        for (const [i, k] of ['a1', 'a2'].entries()){
+          if (!follows[i]){ delete o[k]; continue; }
+          o[k] = {...base[k]};
+          if (o[k].k === 'a') [o[k].dx, o[k].dy] = vector(base[k].dx || 0, base[k].dy || 0);
+        }
+        if (o.a1 || o.a2) arrowStoreRel(o);
+        else { delete o.cr; delete o.pr; }
+        if (base.mto) o.mto = Object.fromEntries(Object.entries(base.mto).map(([id, pos]) =>
+          [id, plan.atoms.has(id) && Array.isArray(pos) ? point(pos[0], pos[1]) : pos]));
+        break;
+    }
+  }
+  S.dirty = true;
+}
+function rotateSelection(ids, degrees){
+  if (!Number.isFinite(degrees) || !wrapTurn(degrees)) return;
+  const plan = rotationPlan(ids);
+  if (!plan) return;
+  pushUndo(); applyRotation(plan, degrees); afterChange();
+}
+function rotationDialog(ids){
+  const input = h('input', {type: 'number', step: '1', value: '0', class: 'tinput', 'aria-label': 'Ângulo de rotação (°)'});
+  const apply = () => {
+    if (!Number.isFinite(input.valueAsNumber)) return;
+    rotateSelection(ids, input.valueAsNumber); closeModal(); canvas.focus({preventScroll: true});
+  };
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape'){ e.preventDefault(); closeModal(); canvas.focus({preventScroll: true}); }
+    if (e.key === 'Enter'){ e.preventDefault(); apply(); }
+  });
+  modal('Girar seleção', h('label', {}, 'Ângulo de rotação (°)', input),
+    [h('button', {class: 'btn ghost', onclick: closeModal}, 'Cancelar'), h('button', {class: 'btn', onclick: apply}, 'Aplicar')]);
+  input.focus({preventScroll: true}); input.select();
+}
+function selectionRotationHandle(){
+  if (S.tool !== 'select' || S.crop) return null;
+  const b = selectionBBox([...S.sel].filter(id => TURN_TYPES.has(getObj(id)?.t)));
+  if (!b) return null;
+  const x = (b.x1 + b.x2) / 2, d = tolW(26);
+  const above = toScreen(x, b.y1 - d)[1] > 132;
+  const edge = above ? b.y1 : b.y2, y = edge + (above ? -d : d);
+  return {x, y, edge};
+}
+function dragRotation(p, q, shift){
+  const {x, y} = p.rotation;
+  if (Math.hypot(q.x - x, q.y - y) < tolW(8)) return;
+  const a = Math.atan2(q.y - y, q.x - x) - p.turnStart;
+  const deg = Math.atan2(Math.sin(a), Math.cos(a)) / DEG2, step = shift ? 15 : 1;
+  p.turnRequested = Math.round(deg / step) * step;
+}
+function flushRotation(p){
+  if (p.turnApplied === p.turnRequested) return;
+  if (p.turnBefore == null) p.turnBefore = snapshot();
+  p.turnApplied = p.turnRequested;
+  applyRotation(p.rotation, p.turnApplied);
 }
 
 /* ---------- alinhamento magnético ---------- */
@@ -8165,7 +8395,7 @@ function onDown(e){
   }
   if (tool === 'select') downSelect(q, e);
   else if (tool === 'lewis') downLewis(q, e);
-  else if (tool === 'pen' || tool === 'hl') { P.mode = 'ink'; armHold(); }
+  else if (tool === 'pen' || tool === 'hl') { P.mode = 'ink'; if (tool === 'hl' || shapeRecognitionMode() !== 'off') armHold(); }
   else if (tool === 'shape' || tool === 'arrow'){ P.mode = 'shape'; }
   else if (tool === 'text'){ e.preventDefault(); downText(q); }
   else if (tool === 'laser'){ P.mode = 'laser'; }
@@ -8201,6 +8431,7 @@ function onMove(e){
   const lastPt = P.pts[P.pts.length - 1];
   if (Math.hypot(q.x - lastPt[0], q.y - lastPt[1]) > tolW(1.2)){
     P.pts.push([q.x, q.y]); if (P.pr) P.pr.push(q.p ?? 0.5);
+    if (P.shape && Math.hypot(q.sx - P.shapeAt[0], q.sy - P.shapeAt[1]) > 7) P.shape = null;
     if (P.holdArmed){ clearTimeout(P.holdTimer); P.holdTimer = setTimeout(holdFire, 480); }
   }
   P.x = q.x; P.y = q.y;
@@ -8213,11 +8444,12 @@ function onMove(e){
       P.vel.push([now(), q.sx, q.sy]); if (P.vel.length > 6) P.vel.shift();
       return;
     }
-    case 'ink': S.preview = {kind: 'ink', pts: P.pts, pr: P.pr}; if (P.shape) P.shape = recognizeShape(P.pts) || P.shape; break;
+    case 'ink': S.preview = inkPreview(P); break;
     case 'shape': S.preview = S.tool === 'arrow' && S.settings.tools.arrow.free ? {kind: 'ink', pts: P.pts} : {kind: 'shape', obj: buildShapeFromDrag(P.x0, P.y0, q.x, q.y, e.shiftKey)}; break;
     case 'laser': animHoverCursor(q); break;      // o laser também lê os gráficos enquanto é arrastado (telas de toque)
     case 'spot': if (P.moved) S.spotRect = {x1: P.sx, y1: P.sy, x2: q.sx, y2: q.sy}; break;
     case 'marquee': S.preview = {kind: 'marquee', x1: P.x0, y1: P.y0, x2: q.x, y2: q.y}; break;
+    case 'rotate': dragRotation(P, q, e.shiftKey); break;
     case 'move': if (P.moved) dragMove(q, e); break;
     case 'handle': dragHandle(q, e); break;
     default:
@@ -8225,7 +8457,7 @@ function onMove(e){
       else if (S.tool === 'mo') moMove(q, e);
   }
   switch (P.mode){
-    case 'ink': case 'shape': case 'marquee': case 'laser': case 'spot':
+    case 'ink': case 'shape': case 'marquee': case 'laser': case 'spot': case 'rotate':
       S.ovDirty = true; break;
     default: S.dirty = true;
   }
@@ -8248,9 +8480,22 @@ function onUp(e){
         queueErase(e, p); flushErase(p, Infinity);
         if (p.eraseNeedsSave && p.erasePage === page()) afterChange();
         break;
-      case 'ink': finishInk(p, e); break;
+      case 'ink': {
+        const last = p.pts[p.pts.length - 1];
+        if (Math.hypot(q.x - last[0], q.y - last[1]) > tolW(0.1)){
+          p.pts.push([q.x, q.y]);
+          if (p.pr) p.pr.push(e.pressure > 0 ? q.p : p.pr[p.pr.length - 1]);
+        }
+        p.x = q.x; p.y = q.y;
+        if (p.shape && Math.hypot(q.sx - p.shapeAt[0], q.sy - p.shapeAt[1]) > 7) p.shape = null;
+        finishInk(p, e); break;
+      }
       case 'shape': finishShape(p, q, e); break;
       case 'marquee': finishMarquee(p, q, e); break;
+      case 'rotate':
+        dragRotation(p, q, e.shiftKey); flushRotation(p);
+        if (p.turnApplied){ pushUndo(p.turnBefore); afterChange(); }
+        break;
       case 'move': if (p.moved){ S.guides = []; afterChange(); } else if (p.clickSelect) clickSelectAfter(p); break;
       case 'handle': { S.guides = []; const ho = getObj(p.handle.id); if (ho && ho.t === 'shape' && isArrowKind(ho.s)){ if (p.handle.k === 'p1' || p.handle.k === 'p2') arrowTryAnchor(ho); else arrowStoreRel(ho); } afterChange(); break; }
       case 'laser': case 'mseek': break;
@@ -8280,7 +8525,8 @@ function cancelGesture(){
   if (gesture?.mode === 'erase'){
     if (gesture.eraseNeedsSave && gesture.erasePage === page()) afterChange();
     S.ovDirty = true;
-  } else if (gesture?.undoPushed) afterChange();
+  } else if (gesture?.mode === 'rotate') applyRotation(gesture.rotation, 0);
+  else if (gesture?.undoPushed) afterChange();
   else S.dirty = true;
 }
 
@@ -8288,9 +8534,12 @@ function armHold(){ P.holdArmed = true; P.holdTimer = setTimeout(holdFire, 480);
 function clearHold(){ if (P && P.holdTimer){ clearTimeout(P.holdTimer); P.holdTimer = null; } }
 function holdFire(){
   if (!P) return;
-  if (P.mode === 'ink' && P.pts.length > 6){
-    const sh = S.tool === 'hl' ? {s: 'line', x1: P.pts[0][0], y1: P.pts[0][1], x2: P.x, y2: P.y} : recognizeShape(P.pts);
-    if (sh){ P.shape = sh; S.preview = {kind: 'ink', pts: P.pts}; S.ovDirty = true; flashHint('Forma reconhecida: solte para confirmar'); }
+  if (P.mode === 'ink' && P.moved && P.pts.length >= 2 && (S.tool === 'hl' || shapeRecognitionMode() !== 'off')){
+    const sh = S.tool === 'hl' ? {s: 'line', x1: P.pts[0][0], y1: P.pts[0][1], x2: P.x, y2: P.y} : recognizeShape(P.pts, tolW(12));
+    if (sh){
+      P.shape = sh; P.shapeAt = [S.mouse.sx, S.mouse.sy]; S.preview = inkPreview(P); S.ovDirty = true;
+      flashHint(shapeName(sh) + ' · ' + tt('Forma reconhecida: solte para confirmar'));
+    }
   } else if (P.mode === 'lewis-atom' && !P.moved){
     P.mode = 'move'; P.moveIds = movableIds(S.sel.has(P.atom.id) ? Array.from(S.sel) : [P.atom.id]);
     P.startBoxes = P.moveIds.map(id => { const o = getObj(id); return o.t === 'atom' ? {atom: true, x: o.x, y: o.y} : objBBox(o); });
@@ -8439,6 +8688,16 @@ function onDblClick(e){
 
 /* ---------- seleção ---------- */
 function downSelect(q, e){
+  const rot = selectionRotationHandle();
+  if (rot && Math.hypot(q.x - rot.x, q.y - rot.y) <= tolW(13)){
+    const plan = rotationPlan([...S.sel]);
+    if (plan){
+      stopViewAnim(); P.mode = 'rotate'; P.rotation = plan;
+      P.turnStart = Math.atan2(q.y - plan.y, q.x - plan.x); P.turnApplied = P.turnRequested = 0;
+      canvas.style.cursor = 'grabbing';
+    }
+    return;
+  }
   // alças da seleção atual
   const hd = handleAt(q.sx, q.sy);
   if (hd){ P.mode = 'handle'; P.handle = hd; P.orig = deep(getObj(hd.id)); return; }
@@ -8499,6 +8758,12 @@ function finishMarquee(p, q){
 }
 
 /* alças de redimensionamento */
+function resizeFrame(o){
+  if (isMedia(o)){ const F = mediaFrame(o); return {b: mediaBaseBox(F), rot: F.rot}; }
+  if (o.t === 'shape' && o.turn) return {b: shapeBBox(o), rot: o.turn};
+  if (o.t === 'text' && o.turn) return {b: textBBox(o), rot: o.turn};
+  return {b: objBBox(o), rot: 0};
+}
 function selectionHandles(){
   if (S.sel.size !== 1) return [];
   const o = getObj(Array.from(S.sel)[0]);
@@ -8512,11 +8777,16 @@ function selectionHandles(){
     return hs;
   }
   if (['img', 'video', 'link', 'ptab', 'card', 'text', 'orb', 'mo', 'table', 'chart', 'pbox', 'lcao'].includes(o.t) || (o.t === 'shape' && o.s !== 'poly')){
-    const b = objBBox(o);
+    const {b, rot} = resizeFrame(o);
+    if (!b) return hs;
     const keep = o.t !== 'shape' && o.t !== 'chart' && o.t !== 'pbox' && o.t !== 'lcao';
     const corners = [['nw', b.x1, b.y1], ['ne', b.x2, b.y1], ['sw', b.x1, b.y2], ['se', b.x2, b.y2]];
     for (const [k, x, y] of corners) hs.push({id: o.id, k, x, y, keep});
     if (!keep){ hs.push({id: o.id, k: 'n', x: (b.x1 + b.x2) / 2, y: b.y1}, {id: o.id, k: 's', x: (b.x1 + b.x2) / 2, y: b.y2}, {id: o.id, k: 'w', x: b.x1, y: (b.y1 + b.y2) / 2}, {id: o.id, k: 'e', x: b.x2, y: (b.y1 + b.y2) / 2}); }
+    if (rot){
+      const [x, y] = boxCenter(b), cos = Math.cos(rot * DEG2), sin = Math.sin(rot * DEG2);
+      for (const hd of hs) [hd.x, hd.y] = turnPoint(hd.x, hd.y, x, y, cos, sin);
+    }
   }
   return hs;
 }
@@ -8542,7 +8812,14 @@ function dragHandle(q, e){
     return;
   }
   if (k === 'cp'){ o.cx = x; o.cy = y; delete o.cr; return; }
-  const b0 = objBBox(O.t === 'shape' ? {...O} : O);
+  const {b: b0, rot} = resizeFrame(O);
+  const [cx, cy] = boxCenter(b0), cos = Math.cos(rot * DEG2), sin = Math.sin(rot * DEG2);
+  if (rot) [x, y] = turnPoint(x, y, cx, cy, cos, -sin);
+  const realign = () => {
+    if (!rot) return;
+    const [lx, ly] = boxCenter(resizeFrame(o).b), [mx, my] = turnPoint(lx, ly, cx, cy, cos, sin);
+    moveObj(o, mx - lx, my - ly);
+  };
   let x1 = b0.x1, y1 = b0.y1, x2 = b0.x2, y2 = b0.y2;
   if (k.includes('w')) x1 = x; if (k.includes('e')) x2 = x; if (k.includes('n')) y1 = y; if (k.includes('s')) y2 = y;
   if (P.handle.keep){
@@ -8551,11 +8828,14 @@ function dragHandle(q, e){
     if (k === 'nw' || k === 'sw') x1 = b0.x2 - w; else x2 = b0.x1 + w;
     if (k === 'nw' || k === 'ne') y1 = b0.y2 - w * ar; else y2 = b0.y1 + w * ar;
     const f = w / (b0.x2 - b0.x1);
-    if (o.t === 'img' || o.t === 'video' || o.t === 'link'){ o.x = Math.min(x1, x2); o.y = Math.min(y1, y2); o.w = O.w * f; o.h = O.h * f; }
+    if (isMedia(o)){
+      const [mx, my] = turnPoint((x1 + x2) / 2, (y1 + y2) / 2, cx, cy, cos, sin);
+      setMediaGeometry(o, {dw: w, dh: w * ar}, mx, my, rot);
+    } else if (o.t === 'link'){ o.x = Math.min(x1, x2); o.y = Math.min(y1, y2); o.w = O.w * f; o.h = O.h * f; }
     else if (o.t === 'orb' && o.at){ o.len = clamp((O.len || 0.8) * f, 0.2, 4); }
     else if (o.t === 'mo'){ o.s = clamp((O.s || 1) * f, 0.2, 6); const b = moBBox(o); o.x += Math.min(x1, x2) - b.x1; o.y += Math.min(y1, y2) - b.y1; }
     else if (o.t === 'ptab' || o.t === 'card' || o.t === 'orb'){ o.w = O.w * f; o.x = Math.min(x1, x2); o.y = Math.min(y1, y2); }
-    else if (o.t === 'text'){ o.fs = clamp(O.fs * f, 8, 400); o.x = Math.min(x1, x2); o.y = Math.min(y1, y2); }
+    else if (o.t === 'text'){ o.fs = clamp(O.fs * f, 8, 400); o.x = Math.min(x1, x2); o.y = Math.min(y1, y2); realign(); }
     else if (o.t === 'table'){ o.fs = clamp(O.fs * f, 8, 200); o.x = Math.min(x1, x2); o.y = Math.min(y1, y2); }
     return;
   }
@@ -8568,6 +8848,7 @@ function dragHandle(q, e){
   // forma: caixa sem a margem do traço
   const pad = (O.w || 2) + 6;
   o.x1 = Math.min(x1, x2) + pad; o.x2 = Math.max(x1, x2) - pad; o.y1 = Math.min(y1, y2) + pad; o.y2 = Math.max(y1, y2) - pad;
+  realign();
 }
 
 /* ---------- caneta química (Lewis) ---------- */
@@ -8787,8 +9068,10 @@ function finishInk(p, e){
   const T = S.settings.tools[hl ? 'hl' : 'pen'];
   let shape = p.shape || null;
   if (!shape && hl && e.shiftKey) shape = {s: 'line', x1: p.pts[0][0], y1: p.pts[0][1], x2: p.x, y2: p.y};
-  if (!shape && S.settings.autoShape && !hl) shape = recognizeShape(p.pts);
-  commitInk(p.pts, p.pr, T.c, T.w, hl, shape);
+  if (!shape && shapeRecognitionMode() === 'auto' && !hl) shape = recognizeShape(p.pts, tolW(12));
+  const pts = !shape && !hl && T.smooth ? smoothInkPoints(p.pts) : p.pts;
+  commitInk(pts, p.pr, T.c, T.w, hl, shape);
+  if (shape && !hl) flashHint(shapeName(shape) + ' · ' + tt('Ctrl+Z desfaz.'));
 }
 function commitInk(pts, pr, color, w, hl, shape){
   pushUndo();
@@ -8817,6 +9100,10 @@ function commitInk(pts, pr, color, w, hl, shape){
 }
 
 /* ---------- formas e setas ---------- */
+function fixedShapeAspect(kind){
+  if (kind === 'tri') return Math.sqrt(3) / 2;
+  return ['rect', 'rrect', 'ellipse', 'diamond', 'cloud'].includes(kind) ? 1 : 0;
+}
 function buildShapeFromDrag(x0, y0, x1, y1, shift){
   const isArrow = S.tool === 'arrow';
   const T = S.settings.tools[isArrow ? 'arrow' : 'shape'];
@@ -8833,11 +9120,21 @@ function buildShapeFromDrag(x0, y0, x1, y1, shift){
       const nx = (y1 - y0) / (L || 1), ny = -(x1 - x0) / (L || 1);
       o.cx = mx + nx * L * 0.42; o.cy = my + ny * L * 0.42;
     }
-  } else if (shift){
-    const d = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
-    o.x2 = x0 + Math.sign(x1 - x0 || 1) * d; o.y2 = y0 + Math.sign(y1 - y0 || 1) * d;
+  } else if (shift || T.constrain){
+    const aspect = fixedShapeAspect(kind);
+    if (aspect){
+      const d = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0) / aspect);
+      o.x2 = x0 + Math.sign(x1 - x0 || 1) * d;
+      o.y2 = y0 + Math.sign(y1 - y0 || 1) * d * aspect;
+    }
   }
   return o;
+}
+function refreshDragConstraint(shift){
+  if (P?.mode === 'rotate'){ dragRotation(P, {x: P.x, y: P.y}, shift); return; }
+  if (P?.mode !== 'shape' || (S.tool === 'arrow' && S.settings.tools.arrow.free)) return;
+  S.preview = {kind: 'shape', obj: buildShapeFromDrag(P.x0, P.y0, P.x, P.y, shift)};
+  S.ovDirty = true;
 }
 function finishShape(p, q, e){
   const free = S.tool === 'arrow' && S.settings.tools.arrow.free;
@@ -8965,8 +9262,9 @@ function hoverUpdate(q){
       else if (hit.type === 'bond'){ S.hover = {type: 'bond', bond: hit.bond}; cursor = 'pointer'; }
     } else cursor = 'crosshair';
   } else if (S.tool === 'select'){
-    const hd = handleAt(q.sx, q.sy);
-    if (hd) cursor = hd.k === 'cp' || hd.k === 'p1' || hd.k === 'p2' ? 'move' : ({nw: 'nwse-resize', se: 'nwse-resize', ne: 'nesw-resize', sw: 'nesw-resize', n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize'}[hd.k]);
+    const hd = handleAt(q.sx, q.sy), rot = selectionRotationHandle();
+    if (rot && Math.hypot(q.x - rot.x, q.y - rot.y) <= tolW(13)) cursor = 'grab';
+    else if (hd) cursor = hd.k === 'cp' || hd.k === 'p1' || hd.k === 'p2' ? 'move' : ({nw: 'nwse-resize', se: 'nwse-resize', ne: 'nesw-resize', sw: 'nesw-resize', n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize'}[hd.k]);
     else { const hit = hitTest(q.x, q.y); cursor = hit && hit.type !== 'zone' ? 'move' : 'default'; }
   } else if (S.tool === 'ring'){ ringHover(q); cursor = 'crosshair'; }
   else if (S.tool === 'mo'){ cursor = moHover(q) || 'default'; }
@@ -9021,6 +9319,23 @@ function drawOverlaysWorld(c, g){
       else c.rect(hd.x - 5 / s, hd.y - 5 / s, 10 / s, 10 / s);
       c.fill(); c.stroke(); c.restore();
     }
+    const rot = selectionRotationHandle();
+    if (rot){
+      c.save();
+      c.strokeStyle = acc; c.lineWidth = 1.6 / s;
+      c.beginPath(); c.moveTo(rot.x, rot.edge); c.lineTo(rot.x, rot.y); c.stroke();
+      c.fillStyle = theme().bg; c.beginPath(); c.arc(rot.x, rot.y, 12 / s, 0, TAU); c.fill(); c.stroke();
+      c.beginPath(); c.arc(rot.x, rot.y, 6 / s, -0.85, TAU - 1.5); c.stroke();
+      c.fillStyle = acc; arrowHead(c, rot.x + 4 / s, rot.y - 4 / s, Math.PI / 4, 5 / s);
+      c.restore();
+    }
+    if (P?.mode === 'rotate'){
+      const {x, y} = P.rotation;
+      c.save(); c.fillStyle = acc; c.strokeStyle = acc; c.lineWidth = 1.5 / s;
+      c.beginPath(); c.moveTo(x - 7 / s, y); c.lineTo(x + 7 / s, y); c.moveTo(x, y - 7 / s); c.lineTo(x, y + 7 / s); c.stroke();
+      c.font = '600 ' + (14 / s) + 'px ' + FONT_STACKS.sans;
+      c.fillText(P.turnApplied + '°', S.mouse.x + 16 / s, S.mouse.y - 12 / s); c.restore();
+    }
   }
   // foco (hover) na caneta química
   const hv = S.hover;
@@ -9065,11 +9380,14 @@ function drawOverlaysWorld(c, g){
     if (pv.kind === 'ink'){
       const isHL = S.tool === 'hl';
       const T = S.tool === 'lewis' ? {c: S.settings.tools.lewis.c, w: 3} : S.settings.tools[isHL ? 'hl' : 'pen'];
-      const flat = []; pv.pts.forEach(v => flat.push(v[0], v[1]));
       if (P && P.shape){
         if (P.shape.s === 'line' && isHL) drawInk(c, {pts: [P.shape.x1, P.shape.y1, P.shape.x2, P.shape.y2], c: T.c, w: T.w, hl: true});
         else drawShape(c, {...P.shape, c: T.c, w: Math.max(2, T.w)});
-      } else drawInk(c, {pts: flat, pr: pv.pr && pv.pr.length === pv.pts.length ? pv.pr : null, c: T.c, w: T.w, hl: isHL});
+      } else {
+        const pts = pv.smooth ? smoothInkPoints(pv.pts) : pv.pts, flat = [];
+        pts.forEach(v => flat.push(v[0], v[1]));
+        drawInk(c, {pts: flat, pr: pv.pr && pv.pr.length === pts.length ? pv.pr : null, c: T.c, w: T.w, hl: isHL});
+      }
     } else if (pv.kind === 'shape') drawShape(c, pv.obj);
     else if (pv.kind === 'marquee'){
       c.fillStyle = withAlpha(acc, 0.08); c.strokeStyle = acc; c.lineWidth = 1 / s; c.setLineDash([4 / s, 3 / s]);
@@ -9272,14 +9590,14 @@ const TOOLS = [
 const TOOL_KEYS = Object.fromEntries(TOOLS.map(t => [t[2].toLowerCase(), t[0]]));
 
 const HINTS = {
-  select: [['Clique', 'seleciona'], ['Arraste', 'move'], ['Arraste uma ligação', 'move a molécula'], ['Duplo clique', 'molécula inteira'], ['Shift', 'adiciona à seleção']],
+  select: [['Clique', 'seleciona'], ['Arraste', 'move'], ['Arraste uma ligação', 'move a molécula'], ['Duplo clique', 'molécula inteira'], ['Shift', 'adiciona à seleção'], ['↻', 'Arraste a alça circular para girar. Shift usa passos de 15°.']],
   hand: [['Arraste', 'move o quadro'], ['Roda', 'zoom']],
   lewis: [['Clique no vazio', 'átomo'], ['Arraste do átomo', 'ligação'], ['Toque ao lado', 'elétron'], ['Arraste um elétron', 'transfere ou compartilha'], ['Segure', 'move o átomo']],
   mo: [['Clique na coluna', 'novo nível (a prévia mostra onde)'], ['Arraste o nível', 'move; solto sobre outro nível, liga os dois'], ['Arraste o rótulo', 'muda de lugar'], ['Duplo clique', 'rótulo e energia'], ['↑ ↓', 'ajusta a altura'], ['Del', 'apaga']],
   ring: [['Clique', 'novo anel'], ['Clique numa ligação', 'anel fundido'], ['Clique num átomo', 'anel espiro'], ['Clique num H', 'substituinte'], ['Clique no centro', 'ressonância']],
   pen: [['Segure no fim do traço', 'vira forma perfeita'], ['Alt', 'desliga o ímã']],
   hl: [['Shift', 'linha reta'], ['Segure', 'linha reta']],
-  shape: [['Arraste', 'desenha'], ['Shift', 'proporção fixa']],
+  shape: [['Arraste', 'desenha'], ['Shift', 'círculo, quadrado ou triângulo equilátero']],
   arrow: [['Arraste', 'desenha a seta'], ['Alça do meio', 'curva qualquer seta'], ['Curva ou anzol num par', 'fica presa ao átomo'], ['Botão direito', 'pontas, texto, tipo']],
   text: [['Clique', 'novo texto'], ['H2O, SO4^2-, ->, <=>', 'formatação química'], ['Esc', 'conclui']],
   eraser: [['Passe por cima', 'apaga objetos e elétrons']],
@@ -9392,7 +9710,7 @@ function initUI(){
 }
 
 function setTool(t){
-  if (t !== S.tool && P?.mode === 'erase') cancelGesture();
+  if (t !== S.tool && (P?.mode === 'erase' || P?.mode === 'rotate')) cancelGesture();
   if (S.editing) commitTextEdit();
   if (S.crop && t !== 'select') endCrop(true);
   S.tool = t;
@@ -9497,7 +9815,9 @@ function renderOptBar(){
     case 'pen':
       add(swatchRow(T.pen.c, c => { if (!applyColorToSelection(c)) {} set('pen', 'c', c); }), sep(),
         sizeDots(T.pen.w, [2, 3, 5, 8, 12], v => set('pen', 'w', v)), sep(),
-        chip('Formas automáticas', 'Converte círculos, retângulos, linhas e setas desenhados à mão em formas perfeitas', toggleAutoShape, S.settings.autoShape, 'wand'));
+        chip('Suavizar', 'Suaviza o traço livre, preservando as pontas e a pressão da caneta', () => set('pen', 'smooth', !T.pen.smooth), !!T.pen.smooth, 'pen'), sep(),
+        h('span', {class: 'olabel'}, tt('Formas')),
+        seg([['off', tt('Desligado'), tt('Manter todos os traços como tinta')], ['hold', tt('Segurar'), tt('Desenhe e segure a ponta por meio segundo para converter')], ['auto', tt('Auto'), tt('Converter formas ao soltar a caneta')]], shapeRecognitionMode(), setShapeRecognitionMode));
       break;
     case 'hl': {
       const row = h('div', {class: 'swatches'});
@@ -9506,8 +9826,11 @@ function renderOptBar(){
       break;
     }
     case 'shape':
-      add(seg([['rect', '▭', 'Retângulo'], ['rrect', '▢', 'Retângulo arredondado'], ['ellipse', '◯', 'Elipse'], ['tri', '△', 'Triângulo'], ['diamond', '◇', 'Losango'], ['line', '╱', 'Linha'], ['brackets', '[ ]', 'Colchetes'], ['cloud', '◍', 'Nuvem eletrônica (botão direito: polarizar, rótulo)']], T.shape.kind, v => set('shape', 'kind', v), 'glyphs'), sep(),
-        swatchRow(T.shape.c, c => { applyColorToSelection(c); set('shape', 'c', c); }), sep(),
+      add(seg([['rect', '▭', 'Retângulo'], ['rrect', '▢', 'Retângulo arredondado'], ['ellipse', '◯', 'Elipse'], ['tri', '△', 'Triângulo'], ['diamond', '◇', 'Losango'], ['line', '╱', 'Linha'], ['brackets', '[ ]', 'Colchetes'], ['cloud', '◍', 'Nuvem eletrônica (botão direito: polarizar, rótulo)']], T.shape.kind, v => set('shape', 'kind', v), 'glyphs'), sep());
+      if (fixedShapeAspect(T.shape.kind)) add(chip('Proporção fixa',
+        'Círculos, quadrados e triângulos equiláteros. Também funciona com Shift durante o arraste.',
+        () => set('shape', 'constrain', !T.shape.constrain), !!T.shape.constrain), sep());
+      add(swatchRow(T.shape.c, c => { applyColorToSelection(c); set('shape', 'c', c); }), sep(),
         sizeDots(T.shape.w, [2, 3, 5, 8], v => set('shape', 'w', v)), sep(),
         seg([['none', 'Vazado'], ['soft', 'Translúcido'], ['solid', 'Sólido']], T.shape.fill, v => set('shape', 'fill', v)),
         chip('Tracejado', '', () => set('shape', 'dash', !T.shape.dash), T.shape.dash));
@@ -9541,6 +9864,12 @@ function renderOptBar(){
         const first = getObj(Array.from(S.sel)[0]);
         // só imagens, vídeos e links: sem cores nem "Otimizar" (não se aplicam), sobra espaço para as ações de imagem
         const onlyMedia = Array.from(S.sel).every(id => { const o = getObj(id); return o && (isMedia(o) || o.t === 'link'); });
+        const ids = [...S.sel];
+        if (!S.crop && ids.some(id => TURN_TYPES.has(getObj(id)?.t))){
+          add(chip('−90°', 'Girar −90°', () => rotateSelection(ids, -90)),
+            chip('+90°', 'Girar 90°', () => rotateSelection(ids, 90)),
+            chip('Girar…', 'Arraste a alça circular para girar. Shift usa passos de 15°.', () => rotationDialog(ids), false, 'rotate'), sep());
+        }
         if (!onlyMedia) add(swatchRow(first && first.c, c => applyColorToSelection(c)), sep());
         add(chip('Destacar', 'Brilho pulsante para chamar atenção', toggleGlow, first && !!first.glow, 'glow'));
         if (!onlyMedia) add(chip('Otimizar', 'Arruma a geometria das moléculas selecionadas (Q)', optimizeDrawing, false, 'wand'));
@@ -9566,7 +9895,6 @@ function renderOptBar(){
             add(chip('Sem fundo', 'Fundo transparente: a cor do fundo da imagem some e aparece o quadro', () => toggleMediaFlag(imgs, 'nobg'), imgs.every(o => o.nobg), 'nobg'),
               chip('Inverter', 'Inverte claro e escuro mantendo as cores (bom para figuras brancas no quadro escuro)', () => toggleMediaFlag(imgs, 'inv'), imgs.every(o => o.inv), 'invert'));
           }
-          add(chip('', 'Girar 90°', () => rotateMedia(med, 90), false, 'rotate'));
         }
         const txts = Array.from(S.sel).map(getObj).filter(o => o && o.t === 'text');
         if (txts.length && txts.some(o => formatChemText(o.s) !== o.s)) add(chip('Química', 'Formata como texto químico: H2SO4 → H₂SO₄, -> → →, Fe3+ → Fe³⁺', () => chemifyTexts(txts), false, 'flask'));
@@ -9676,7 +10004,12 @@ function applyThemeUI(){
   const meta = $('meta[name="theme-color"]'); if (meta) meta.content = theme().bg;
 }
 function toggleMagnet(){ S.settings.magnet = !S.settings.magnet; saveSettings(); syncTopButtons(); flashHint(S.settings.magnet ? 'Alinhamento magnético ligado' : 'Alinhamento magnético desligado'); }
-function toggleAutoShape(){ S.settings.autoShape = !S.settings.autoShape; saveSettings(); syncTopButtons(); renderOptBar(); flashHint(S.settings.autoShape ? 'Formas automáticas: ligadas' : 'Formas automáticas: desligadas (segure no fim do traço para converter)'); }
+function setShapeRecognitionMode(mode){
+  S.settings.autoShape = mode === 'auto'; S.settings.shapeDetection = mode;
+  saveSettings(); syncTopButtons(); renderOptBar();
+  flashHint(mode === 'auto' ? 'Formas automáticas: ligadas' : mode === 'hold' ? 'Desenhe e segure a ponta por meio segundo para converter' : 'Reconhecimento de formas desligado');
+}
+function toggleAutoShape(){ setShapeRecognitionMode(shapeRecognitionMode() === 'auto' ? 'hold' : 'auto'); }
 function syncTopButtons(){
   $('#b-magnet') && $('#b-magnet').classList.toggle('on', S.settings.magnet);
   $('#b-wand') && $('#b-wand').classList.toggle('on', S.settings.autoShape);
@@ -9908,7 +10241,7 @@ function updatePageBar(){
 function gotoPage(i){
   if (i < 0 || i >= S.doc.pages.length) return;
   if (i !== S.doc.cur){
-    if (P?.mode === 'erase') cancelGesture();
+    if (P?.mode === 'erase' || P?.mode === 'rotate') cancelGesture();
     stopViewAnim(); MO.sel = null; S.moHover = null; S.moPreview = null;
   }
   if (S.editing) commitTextEdit();
@@ -10178,7 +10511,7 @@ function startTextEdit(o){
     const w = (viewport?.width ?? innerWidth) - 16, height = (viewport?.height ?? innerHeight) - 16;
     panel.style.maxWidth = Math.max(1, w) + 'px';
     panel.style.maxHeight = Math.max(1, height) + 'px';
-    const sample = {...draft, s: formatBoardSource(ta.value, draft), x: 0, y: 0};
+    const sample = {...draft, s: formatBoardSource(ta.value, draft), x: 0, y: 0, turn: 0};
     preview.hidden = !sample.s.trim();
     if (!preview.hidden && previewCtx){
       const W = preview.clientWidth, H = preview.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
@@ -10253,7 +10586,7 @@ function commitTextEdit(cancel = false){
 function initKeyboard(){
   addEventListener('keydown', e => {
     if (e.key === 'Alt'){ S.altDown = true; e.preventDefault(); }
-    if (e.key === 'Shift'){ S.shiftDown = true; S.dirty = true; }
+    if (e.key === 'Shift'){ S.shiftDown = true; refreshDragConstraint(true); S.ovDirty = true; }
     const tgt = e.target;
     if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.isContentEditable)) return;
     if (tgt && tgt.closest && tgt.closest('#calcPanel')) return;
@@ -10343,7 +10676,7 @@ function initKeyboard(){
   addEventListener('keyup', e => {
     if (e.key === ' '){ S.spaceDown = false; canvas.style.cursor = ''; }
     if (e.key === 'Alt') S.altDown = false;
-    if (e.key === 'Shift'){ S.shiftDown = false; S.dirty = true; }
+    if (e.key === 'Shift'){ S.shiftDown = false; refreshDragConstraint(false); S.ovDirty = true; }
   });
   addEventListener('blur', () => { S.spaceDown = false; S.altDown = false; });
 }
@@ -10568,7 +10901,7 @@ async function addImageFromURL(url, at){
 async function saveBoard(){
   if (S.editing) commitTextEdit();
   if (S.cellEdit) tableCommitEdit();
-  const doc = deep(S.doc);
+  const doc = JSON.parse(serializeDoc());
   const assets = await exportAssets(doc.pages.flatMap(p => p.objects));
   const data = JSON.stringify({app: 'lousa-quimica', v: 2, doc, assets});
   const d = new Date();
@@ -10622,7 +10955,7 @@ function openBoardFile(text, mode){
     h('button', {class: 'btn', onclick: () => { closeModal(); load(true); }}, 'Adicionar ao quadro atual')]);
 }
 function loadBoardDoc(doc, assets, append){
-  if (P?.mode === 'erase') cancelGesture();
+  if (P?.mode === 'erase' || P?.mode === 'rotate') cancelGesture();
   normalizeBoardDoc(doc, true);
   return prepareDocAssets(doc, assets).then(() => {
     if (S.editing) commitTextEdit();
@@ -14604,7 +14937,9 @@ function orbContextItems(o){
       {label: 'Ver mais de cima', fn: set('el', Math.min(80, (o.el ?? ORB_VIEW0.el) + 15))}, {label: 'Ver mais de lado', fn: set('el', Math.max(-30, (o.el ?? ORB_VIEW0.el) - 15))},
       {label: 'Vista padrão', fn: () => { pushUndo(); o.az = ORB_VIEW0.az; o.el = ORB_VIEW0.el; afterChange(); }}, '-']
       : ['xz', 'xy', 'yz'].map(p => ({label: tt('Plano') + ' ' + p, on: (o.plane || 'xz') === p, fn: set('plane', p)}))),
-    {label: 'Girar 45°', fn: set('rot', ((o.rot || 0) + 45) % 360)}, {label: 'Girar −45°', fn: set('rot', ((o.rot || 0) + 315) % 360)},
+    {label: 'Girar 90°', fn: set('rot', wrapTurn((o.rot || 0) + 90))}, {label: 'Girar −90°', fn: set('rot', wrapTurn((o.rot || 0) - 90))},
+    {label: 'Girar 45°', fn: set('rot', wrapTurn((o.rot || 0) + 45))}, {label: 'Girar −45°', fn: set('rot', wrapTurn((o.rot || 0) - 45))},
+    {label: 'Girar…', fn: () => rotationDialog([o.id])},
     {label: o.fill === false ? 'Preencher' : 'Só contorno', fn: set('fill', o.fill === false)},
     {label: 'Eixos', on: !!o.axes, fn: set('axes', !o.axes)}, {label: 'Rótulo', on: !!o.label, fn: set('label', !o.label)},
     {label: 'Trocar as cores das fases', fn: () => { pushUndo(); [o.c1, o.c2] = [o.c2 || 'p2', o.c1 || 'p1']; afterChange(); }},
@@ -17658,7 +17993,9 @@ function positionMedia(v){
     const F = mediaFrame(o);
     const w = F.dw * v.s, hh = F.dh * v.s;
     const x = F.cx * v.s + v.ox - w / 2, y = F.cy * v.s + v.oy - hh / 2;
-    const onScreen = x + w > -50 && y + hh > -50 && x < innerWidth + 50 && y < innerHeight + 50 && mediaReady(m);
+    const b = turnedBox(mediaBaseBox(F), F.rot);
+    const onScreen = b.x2 * v.s + v.ox > -50 && b.y2 * v.s + v.oy > -50 &&
+      b.x1 * v.s + v.ox < innerWidth + 50 && b.y1 * v.s + v.oy < innerHeight + 50 && mediaReady(m);
     const iw = w / F.cr.w, ih = hh / F.cr.h;
     const key = onScreen ? [x, y, w, hh, F.rot, F.fx, iw, ih, F.cr.x, F.cr.y, o.op ?? 1].map(n => typeof n === 'number' ? n.toFixed(1) : n).join(',') : 'off';
     if (key === m.key) continue;
@@ -17688,7 +18025,7 @@ function mediaOverlayActive(){
 
 /* ---------- controles do vídeo (desenhados por cima, em pixels da tela) ---------- */
 function mediaScreenBox(o){
-  const [x1, y1] = toScreen(o.x, o.y), [x2, y2] = toScreen(o.x + o.w, o.y + o.h);
+  const b = objBBox(o), [x1, y1] = toScreen(b.x1, b.y1), [x2, y2] = toScreen(b.x2, b.y2);
   return {x: x1, y: y1, w: x2 - x1, h: y2 - y1};
 }
 const ctlTools = () => ['select', 'hand', 'laser', 'spot'].includes(S.tool);
@@ -17896,15 +18233,20 @@ function drawCropUI(c){
 
 /* ---------- ações sobre imagens e vídeos ---------- */
 function mediaSel(){ return Array.from(S.sel).map(getObj).filter(o => o && isMedia(o)); }
+function setMediaGeometry(o, F, x, y, angle){
+  const side = angle === 90 || angle === 270;
+  o.w = side ? F.dh : F.dw; o.h = side ? F.dw : F.dh;
+  o.x = x - o.w / 2; o.y = y - o.h / 2;
+  if (angle) o.rot = angle;
+  else delete o.rot;
+}
 function rotateMedia(list, deg){
-  if (!list.length) return;
+  const media = list.filter(o => !isLocked(o));
+  if (!media.length || !Number.isFinite(deg) || !wrapTurn(deg)) return;
   pushUndo();
-  for (const o of list){
-    const cx = o.x + o.w / 2, cy = o.y + o.h / 2;
-    o.rot = ((((o.rot || 0) + deg) % 360) + 360) % 360;
-    if (Math.abs(deg) % 180 === 90){ const w = o.w; o.w = o.h; o.h = w; }
-    o.x = cx - o.w / 2; o.y = cy - o.h / 2;
-    if (!o.rot) delete o.rot;
+  for (const o of media){
+    const F = mediaFrame(o);
+    setMediaGeometry(o, F, F.cx, F.cy, wrapTurn(F.rot + deg));
   }
   afterChange();
 }
@@ -17947,6 +18289,7 @@ function mediaContextItems(o){
   }
   items.push({label: 'Girar 90° à direita', icon: 'rotate', fn: () => rotateMedia(list, 90)},
     {label: 'Girar 90° à esquerda', fn: () => rotateMedia(list, -90)},
+    {label: 'Girar…', fn: () => rotationDialog([o.id])},
     {label: 'Espelhar', fn: () => toggleMediaFlag(list, 'fx')},
     ...[[1, 'Opacidade 100%'], [0.75, 'Opacidade 75%'], [0.5, 'Opacidade 50%'], [0.25, 'Opacidade 25%']].map(([v, l]) => ({label: l, on: (o.op ?? 1) === v, fn: () => setMediaOpacity(list, v)})),
     {label: 'Tamanho e forma originais', fn: () => resetMedia(o)},
