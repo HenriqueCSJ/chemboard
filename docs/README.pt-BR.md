@@ -38,6 +38,12 @@ Use a caneta de Lewis para construir uma estrutura diante da turma, abra um mode
 - **Traço livre.** Na **Caneta**, ative **Suavizar** para reduzir oscilações. Em **Formas**, escolha **Segurar** e faça uma breve pausa no fim do traço ou escolha **Auto** para converter formas reconhecidas ao soltar. Use **Desligado** para escrever livremente.
 - **Formas prontas.** Pressione **S**, escolha uma forma e mantenha **Shift** pressionado enquanto arrasta para obter um círculo, quadrado ou triângulo equilátero. Use **Proporção fixa** em uma tela sensível ao toque.
 
+## Compare elementos na lousa
+
+Abra a tabela com **Tab**, escolha **EN**, **Raio** ou **EI** e marque os elementos que quer comparar. **Só o recorte no quadro** leva as células com os valores da propriedade escolhida. A inserção da tabela inteira também leva os valores. Um travessão indica dado indisponível.
+
+Na lousa, clique com o botão direito sobre um elemento para destacá-lo ou separá-lo do recorte como uma peça que você pode mover sozinha. Na tabela inteira, essa opção cria uma cópia. Em tela sensível ao toque, selecione a tabela e abra **Elementos da tabela…** para fazer essas edições ou trocar a propriedade exibida.
+
 ## Da estrutura ao modelo
 
 - **Geometria molecular.** Pressione **K** para abrir **Modelos e gerador de Lewis** e inserir **CH₄**. Com a molécula selecionada, pressione **D** para abrir o modelo 3D. Gire a molécula e compare as representações ou meça ângulos.

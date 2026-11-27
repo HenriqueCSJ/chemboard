@@ -44,6 +44,12 @@ ChemBoard is a browser whiteboard for chemistry instructors. Draw Lewis structur
 - **Freehand.** Open the **Pen** and enable **Smooth** to reduce wobble. Under **Shapes**, choose **Hold** and pause briefly at the end of a stroke, or choose **Auto** to convert recognized shapes on release. Choose **Off** for unrestricted ink.
 - **Preset shapes.** Press **S**, choose a shape and hold **Shift** while dragging for a circle, square or equilateral triangle. The **Constrain proportions** toggle offers the same control on a touchscreen.
 
+## Compare elements on the board
+
+Open the periodic table with **Tab**, choose **EN**, **Radius**, or **IE**, and mark the elements you want. **Only the selection on board** places those cells with the chosen values. The full-table insertion also carries the values. A dash marks unavailable data.
+
+Right-click any cell on the board to highlight it or separate it from a crop as a movable tile. From a full table, the same option copies the cell. On a touchscreen, select the table and open **Table elements…** to make these edits or switch the displayed property.
+
 ## Connect a structure to its geometry
 
 Press **K** to open **Templates and Lewis generator**, choose **CH₄**, and insert it into the board. With the molecule selected, press **D** to open the 3D VSEPR model. Rotate the model, compare ball-and-stick with space filling, or use the measurement controls to examine bond angles.

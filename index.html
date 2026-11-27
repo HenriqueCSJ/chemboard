@@ -543,6 +543,9 @@ html.uiz .asst{ zoom: var(--uiz, 1); }
 #stepBar .sbsp{ min-width: 42px; height: 30px; font-size: 12px; border-radius: 8px; font-variant-numeric: tabular-nums; color: var(--ui-fg); }
 #stepBar .sbsep{ width: 1px; height: 22px; background: var(--ui-line); margin: 0 4px; }
 body.steps-on #hint{ display: none; }
+.ptab-editor{ display:grid; gap:10px; }
+.ptab-editor label{ display:grid; gap:4px; }
+.ptab-editor select{ width:100%; min-width:0; }
 </style>
 </head>
 <body>
@@ -4542,6 +4545,11 @@ const EN = {
   'Selecionar e mover': 'Select and move', 'Mover o quadro': 'Pan the board', 'Caneta química (Lewis)': 'Chem pen (Lewis)', 'Caneta': 'Pen',
   'Marca-texto': 'Highlighter', 'Formas': 'Shapes', 'Setas químicas': 'Chemical arrows', 'Texto químico': 'Chemical text', 'Borracha': 'Eraser',
   'Laser': 'Laser', 'Holofote': 'Spotlight', 'Anéis': 'Rings', 'Orbitais': 'Orbitals',
+  'Elementos da tabela…': 'Table elements…', 'Editar destaques e separar elementos da tabela': 'Edit highlights and separate elements from the table',
+  'Elemento da tabela': 'Table element', 'Propriedade da tabela': 'Table property',
+  'Separar do recorte': 'Separate from crop', 'Copiar para a lousa': 'Copy to the board',
+  'Destacar {symbol}': 'Highlight {symbol}', 'Remover destaque de {symbol}': 'Remove highlight from {symbol}',
+  'Separar {symbol} do recorte': 'Separate {symbol} from crop', 'Copiar {symbol} para a lousa': 'Copy {symbol} to the board',
   'Cadeia carbônica': 'Carbon chain', 'Cadeia carbônica (Z)': 'Carbon chain (Z)', 'Inserir por número…': 'Insert by count…',
   'Número de carbonos': 'Number of carbons', 'Desenhar uma cadeia com um número exato de carbonos': 'Draw a chain with an exact number of carbons',
   'Arraste para desenhar a cadeia': 'Drag to draw the chain', 'Escolha um carbono neutro com valência livre.': 'Choose a neutral carbon with an available valence.',
@@ -7060,17 +7068,30 @@ function heatColor(e, mode){
   const x = t * (stops.length - 1), i = Math.floor(x);
   return i >= stops.length - 1 ? stops[stops.length - 1] : mix(stops[i], stops[i + 1], x - i);
 }
+function ptabPropertyText(e, mode){
+  // Mesma precisão e separador decimal usados no painel da tabela periódica.
+  if (mode === 'en') return 'EN ' + fmtNum(e.en, 2);
+  if (mode === 'raio') return (e.rcov == null ? '—' : fmtNum(e.rcov, 0)) + ' pm';
+  if (mode === 'ie') return (LANG === 'en' ? 'IE ' : 'EI ') + fmtNum(e.ie, 1) + ' eV';
+  return '';
+}
+function ptabPropertyInk(base, alpha){
+  const fill = alpha < 1 ? mix(theme().bg, base, alpha) : base;
+  return luminance(fill) > 0.179 ? '#000000' : '#ffffff';
+}
 function drawPTab(c, o){
   const L = ptabLayout(o), cs = L.cs;
-  const sel = new Set(o.sel || []);
+  const sel = new Set(o.sel || []), marks = new Set(o.marks || []);
   const hc = resolveColor(o.hc || 'p2');
   const dark = fam() === 'dark', ga0 = c.globalAlpha;
+  const property = o.cm === 'en' || o.cm === 'raio' || o.cm === 'ie';
+  const crop = o.mode === 'crop';
   c.save();
   c.textAlign = 'center'; c.textBaseline = 'middle';
   for (const cell of L.cells){
     const e = cell.e;
     const x = o.x + cell.x, y = o.y + cell.y;
-    const on = sel.size === 0 || sel.has(e.Z);
+    const marked = marks.has(e.Z), on = marked || crop || sel.size === 0 || sel.has(e.Z);
     const base = ptabColorFor(e, o.cm || 'cat');
     c.globalAlpha = ga0 * (on ? 1 : 0.22);
     c.fillStyle = dark ? withAlpha(base, on ? 0.85 : 0.5) : base;
@@ -7078,37 +7099,55 @@ function drawPTab(c, o){
     const rr = (x0, y0, s, rad) => { c.beginPath(); c.roundRect ? c.roundRect(x0, y0, s, s, rad) : c.rect(x0, y0, s, s); };
     rr(x + cs * 0.04, y + cs * 0.04, cs * 0.92, r);
     c.fill();
-    if (sel.has(e.Z)){
-      // contorno fino e por dentro da célula, para as células vizinhas não se fundirem num bloco
-      const lw = Math.max(1.5, cs * (o.mode === 'crop' ? 0.055 : 0.065));
-      c.lineWidth = lw; c.strokeStyle = hc;
+    if (sel.has(e.Z) && !marked){
+      // No recorte, pertencer à seleção não equivale a estar enfatizado.
+      const lw = Math.max(crop ? 0.65 : 1.5, cs * (crop ? 0.018 : 0.065));
+      c.lineWidth = lw; c.strokeStyle = crop ? 'rgba(0,0,0,0.25)' : hc;
       rr(x + cs * 0.04 + lw / 2, y + cs * 0.04 + lw / 2, cs * 0.92 - lw, Math.max(0, r - lw / 2));
       c.stroke();
     }
-    c.fillStyle = '#1b1d22';
-    c.font = `700 ${cs * 0.4}px ${FONT_STACKS.sans}`;
-    c.fillText(e.sym, x + cs / 2, y + cs * 0.56);
-    c.font = `500 ${cs * 0.2}px ${FONT_STACKS.sans}`;
+    if (marked){
+      // Contorno escolhido entre halos claro e escuro, sempre opaco.
+      const lw = Math.max(1.4, cs * 0.055), halo = Math.max(0.6, cs * 0.015);
+      c.globalAlpha = ga0;
+      rr(x + cs * 0.04 + lw / 2, y + cs * 0.04 + lw / 2, cs * 0.92 - lw, Math.max(0, r - lw / 2));
+      c.lineWidth = lw + halo * 4; c.strokeStyle = '#16181d'; c.stroke();
+      c.lineWidth = lw + halo * 2; c.strokeStyle = '#ffffff'; c.stroke();
+      c.lineWidth = lw; c.strokeStyle = hc; c.stroke();
+      c.lineWidth = Math.max(0.65, cs * 0.012); c.strokeStyle = '#16181d';
+      rr(x + cs * 0.04 + lw + halo, y + cs * 0.04 + lw + halo, cs * 0.92 - 2 * (lw + halo), Math.max(0, r - lw - halo));
+      c.stroke();
+    }
+    c.fillStyle = property ? ptabPropertyInk(base, dark ? 0.85 : 1) : '#1b1d22';
+    c.font = `700 ${cs * (property ? 0.34 : 0.4)}px ${FONT_STACKS.sans}`;
+    c.fillText(e.sym, x + cs / 2, y + cs * (property ? 0.47 : 0.56));
+    c.font = `500 ${cs * (property ? 0.17 : 0.2)}px ${FONT_STACKS.sans}`;
     c.fillText(e.Z, x + cs / 2, y + cs * 0.22);
-    if (cs > 54){ c.font = `500 ${cs * 0.13}px ${FONT_STACKS.sans}`; c.fillText(e.nome, x + cs / 2, y + cs * 0.83); }
+    if (property){
+      c.font = `600 ${cs * (o.cm === 'ie' ? 0.145 : 0.17)}px ${FONT_STACKS.sans}`;
+      c.fillText(ptabPropertyText(e, o.cm), x + cs / 2, y + cs * 0.70, cs * 0.78);
+      if (cs > 72){ c.font = `500 ${cs * 0.095}px ${FONT_STACKS.sans}`; c.fillText(tt(e.nome), x + cs / 2, y + cs * 0.84, cs * 0.76); }
+    } else if (cs > 54){ c.font = `500 ${cs * (marked ? 0.11 : 0.13)}px ${FONT_STACKS.sans}`; c.fillText(e.nome, x + cs / 2, y + cs * (marked ? 0.82 : 0.83), cs * 0.8); }
   }
   c.restore();
 }
 function drawCard(c, o){
   const e = ELEMENTS[o.Z - 1]; if (!e) return;
-  const w = o.w, hgt = w * 1.18, base = CATEGORIES[e.cat].cor;
+  const propertyText = ptabPropertyText(e, o.cm);
+  const w = o.w, hgt = w * 1.18, base = propertyText ? ptabColorFor(e, o.cm) : CATEGORIES[e.cat].cor;
   c.save();
   c.fillStyle = fam() === 'dark' ? withAlpha(base, 0.9) : base;
   c.beginPath(); c.roundRect ? c.roundRect(o.x, o.y, w, hgt, w * 0.07) : c.rect(o.x, o.y, w, hgt); c.fill();
   c.lineWidth = w * 0.02; c.strokeStyle = 'rgba(0,0,0,0.25)'; c.stroke();
-  c.fillStyle = '#16181d';
+  c.fillStyle = propertyText ? ptabPropertyInk(base, fam() === 'dark' ? 0.9 : 1) : '#16181d';
   c.textBaseline = 'top';
   c.font = `600 ${w * 0.13}px ${FONT_STACKS.sans}`; c.textAlign = 'left'; c.fillText(e.Z, o.x + w * 0.08, o.y + w * 0.07);
-  c.textAlign = 'right'; c.font = `500 ${w * 0.1}px ${FONT_STACKS.sans}`;
-  if (e.en != null) c.fillText(fmtNum(e.en, 2), o.x + w * 0.92, o.y + w * 0.08);
+  c.textAlign = 'right'; c.font = `500 ${w * (propertyText ? 0.09 : 0.1)}px ${FONT_STACKS.sans}`;
+  if (propertyText) c.fillText(propertyText, o.x + w * 0.92, o.y + w * 0.08, w * 0.65);
+  else if (e.en != null) c.fillText(fmtNum(e.en, 2), o.x + w * 0.92, o.y + w * 0.08);
   c.textAlign = 'center';
   c.font = `700 ${w * 0.4}px ${FONT_STACKS.sans}`; c.fillText(e.sym, o.x + w / 2, o.y + w * 0.25);
-  c.font = `500 ${w * 0.115}px ${FONT_STACKS.sans}`; c.fillText(e.nome, o.x + w / 2, o.y + w * 0.72);
+  c.font = `500 ${w * 0.115}px ${FONT_STACKS.sans}`; c.fillText(propertyText ? tt(e.nome) : e.nome, o.x + w / 2, o.y + w * 0.72);
   c.font = `500 ${w * 0.1}px ${FONT_STACKS.sans}`; c.fillText(decSep(massFmt(e)), o.x + w / 2, o.y + w * 0.87);
   c.font = `500 ${w * 0.075}px ${FONT_STACKS.sans}`; c.fillText(e.config, o.x + w / 2, o.y + w * 1.02);
   c.restore();
@@ -8709,7 +8748,7 @@ function onDblClick(e){
     const id = hit.type === 'atom' ? hit.atom.id : hit.bond.a;
     selectMolecule(id);
   } else if (hit.type === 'obj' && hit.obj.t === 'ptab'){
-    pushUndo(); hit.obj.mode = hit.obj.mode === 'crop' ? 'full' : 'crop'; afterChange();
+    togglePTabMode(hit.obj);
   }
 }
 
@@ -10022,6 +10061,9 @@ function renderOptBar(){
         // só imagens, vídeos e links: sem cores nem "Otimizar" (não se aplicam), sobra espaço para as ações de imagem
         const onlyMedia = Array.from(S.sel).every(id => { const o = getObj(id); return o && (isMedia(o) || o.t === 'link'); });
         const ids = [...S.sel];
+        if (ids.length === 1 && first?.t === 'ptab'){
+          add(chip('Elementos da tabela…', 'Editar destaques e separar elementos da tabela', () => ptabElementsDialog(first), false, 'table'), sep());
+        }
         if (ids.some(id => ['atom', 'bond'].includes(getObj(id)?.t))) add(...hydrogenChips(), sep());
         if (!S.crop && ids.some(id => TURN_TYPES.has(getObj(id)?.t))){
           add(chip('−90°', 'Girar −90°', () => rotateSelection(ids, -90)),
@@ -10377,10 +10419,22 @@ function showContextMenu(x, y, hit, wx, wy){
       items.push('-');
     }
     if (o.t === 'ptab'){
-      items.push({label: 'Tabela periódica', header: true},
-        {label: o.mode === 'crop' ? 'Mostrar tabela inteira' : 'Mostrar só o recorte', fn: () => { pushUndo(); o.mode = o.mode === 'crop' ? 'full' : 'crop'; afterChange(); }},
-        ...[['cat', 'Cores por família'], ['bloco', 'Cores por bloco'], ['en', 'Eletronegatividade'], ['raio', 'Raio covalente'], ['ie', 'Energia de ionização']].map(([k, l]) => ({label: l, on: (o.cm || 'cat') === k, fn: () => { pushUndo(); o.cm = k; afterChange(); }})),
-        '-');
+      const cell = ptabCellAt(o, wx, wy);
+      if (cell){
+        const e = cell.e, marked = ptabMarked(o, e.Z);
+        items.push({label: e.sym + ' · ' + tt(e.nome), header: true},
+          {label: ptabElementLabel(marked ? 'Remover destaque de {symbol}' : 'Destacar {symbol}', e),
+            icon: 'glow', fn: () => setPTabMark(o, e.Z, !marked)});
+        if (ptabCanExtract(o)){
+          items.push({label: ptabElementLabel(o.mode === 'crop' ? 'Separar {symbol} do recorte' : 'Copiar {symbol} para a lousa', e),
+            icon: 'copy', fn: () => selectPTabTile(extractPTabElement(o, e.Z))});
+        }
+        items.push('-');
+      }
+      items.push({label: 'Tabela periódica', header: true});
+      if (o.sel?.length && !o.tile) items.push({label: o.mode === 'crop' ? 'Mostrar tabela inteira' : 'Mostrar só o recorte', fn: () => togglePTabMode(o)});
+      items.push(...Object.entries(PTAB_PROPERTIES).map(([k, label]) =>
+        ({label, on: (o.cm || 'cat') === k, fn: () => setPTabProperty(o, k)})), '-');
     }
     if (o.t === 'orb') items.push(...orbContextItems(o));
     if (o.t === 'sea') items.push(...seaContextItems(o));
@@ -11223,6 +11277,8 @@ async function copyImage(selOnly){
    ============================================================ */
 const PT = {open: false, mode: 'draw', cm: 'cat', sel: new Set(), pinned: false, hc: 'p2', built: false, paint: null};
 const CM_LABEL = {cat: 'Família', bloco: 'Bloco', en: 'Eletronegatividade', raio: 'Raio covalente', ie: 'Energia de ionização'};
+const PTAB_COLOR_MODES = {family: 'cat', block: 'bloco', electronegativity: 'en', radius: 'raio', ionization: 'ie'};
+const PTAB_PROPERTIES = {cat: 'Cores por família', bloco: 'Cores por bloco', en: CM_LABEL.en, raio: CM_LABEL.raio, ie: CM_LABEL.ie};
 const TREND = {en: 'aumenta da esquerda para a direita e de baixo para cima', raio: 'aumenta da direita para a esquerda e de cima para baixo', ie: 'aumenta da esquerda para a direita e de baixo para cima'};
 
 function buildPTable(){
@@ -11306,7 +11362,7 @@ function refreshPTable(){
     const b = h('button', {class: PT.mode === k ? 'on' : '', title: t}, l); b.onclick = () => { PT.mode = k; refreshPTable(); }; return b;
   }));
   const cmSeg = $('#ptCm'); cmSeg.innerHTML = '';
-  cmSeg.append(...Object.entries({cat: 'Família', bloco: 'Bloco', en: 'EN', raio: 'Raio', ie: 'EI'}).map(([k, l]) => {
+  cmSeg.append(...Object.entries({cat: 'Família', bloco: 'Bloco', en: 'EN', raio: 'Raio', ie: LANG === 'en' ? 'IE' : 'EI'}).map(([k, l]) => {
     const b = h('button', {class: PT.cm === k ? 'on' : '', title: CM_LABEL[k]}, l); b.onclick = () => { PT.cm = k; refreshPTable(); }; return b;
   }));
   const dark = fam() === 'dark';
@@ -11380,6 +11436,95 @@ function togglePTable(force){
   if (PT.open){ refreshPTable(); showDetail(EL[S.settings.lewis.element] || ELEMENTS[0]); }
   $('#rb-table') && $('#rb-table').classList.toggle('on', PT.open);
 }
+function ptabCellAt(o, x, y){
+  const {cells, cs} = ptabLayout(o);
+  return cells.find(cell => {
+    const dx = x - o.x - cell.x, dy = y - o.y - cell.y;
+    return dx >= cs * 0.04 && dx <= cs * 0.96 && dy >= cs * 0.04 && dy <= cs * 0.96;
+  });
+}
+const ptabMarked = (o, z) => (o.marks || []).includes(z);
+const ptabCanExtract = o => !o.tile && (o.mode !== 'crop' || new Set((o.sel || []).filter(z => ELEMENTS[z - 1])).size > 1);
+const ptabEditable = o => getObj(o.id) === o && !isLocked(o);
+const ptabElementLabel = (label, e) => tt(label).replace('{symbol}', e.sym);
+
+function togglePTabMode(o){
+  if (!ptabEditable(o) || !o.sel?.length || o.tile) return;
+  pushUndo();
+  o.mode = o.mode === 'crop' ? 'full' : 'crop';
+  afterChange();
+}
+function setPTabProperty(o, cm){
+  if (!ptabEditable(o) || !Object.hasOwn(PTAB_PROPERTIES, cm) || (o.cm || 'cat') === cm) return false;
+  pushUndo();
+  o.cm = cm;
+  afterChange();
+  return true;
+}
+function setPTabMark(o, z, marked){
+  if (!ptabEditable(o) || !ptabLayout(o).cells.some(cell => cell.e.Z === z) || marked === ptabMarked(o, z)) return false;
+  pushUndo();
+  const marks = o.marks || [];
+  o.marks = marked ? [...marks, z] : marks.filter(n => n !== z);
+  afterChange();
+  return true;
+}
+function extractPTabElement(o, z){
+  if (!ptabEditable(o) || !ptabCanExtract(o)) return null;
+  const {cells, cs, width} = ptabLayout(o);
+  const cell = cells.find(cell => cell.e.Z === z);
+  if (!cell) return null;
+  const v = view(), side = clamp(cs, 70 / v.s, 120 / v.s);
+  const [cx, cy] = freeSpot(o.x + width + side * 0.85, o.y + cell.y + cs / 2, side * 1.2, side * 1.2);
+  const tile = {t: 'ptab', tile: true, mode: 'crop', sel: [z], cm: o.cm, hc: o.hc, x: cx - side / 2, y: cy - side / 2, w: 18.4 * side};
+  if (ptabMarked(o, z)) tile.marks = [z];
+  pushUndo();
+  if (o.mode === 'crop'){
+    o.sel = o.sel.filter(n => n !== z);
+    if (tile.marks) o.marks = o.marks.filter(n => n !== z);
+  }
+  addObj(tile, {silent: true});
+  afterChange();
+  return tile;
+}
+function selectPTabTile(tile){
+  if (!tile) return;
+  setTool('select');
+  S.sel = new Set([tile.id]);
+  updateSelectionUI();
+  const cs = tile.w / 18.4;
+  revealWorld(tile.x + cs / 2, tile.y + cs / 2);
+}
+function ptabElementsDialog(o){
+  if (!ptabEditable(o)) return;
+  const cells = ptabLayout(o).cells;
+  if (!cells.length) return;
+  const element = h('select', {class: 'tinput'}, cells.map(({e}) => h('option', {value: e.Z}, e.sym + ' · ' + tt(e.nome))));
+  const property = h('select', {class: 'tinput'}, Object.entries(PTAB_PROPERTIES).map(([key, name]) => h('option', {value: key}, name)));
+  property.value = o.cm || 'cat';
+  property.addEventListener('change', () => setPTabProperty(o, property.value));
+  const mark = h('button', {class: 'btn ghost', onclick: () => {
+    const z = +element.value;
+    setPTabMark(o, z, !ptabMarked(o, z));
+    updateMark();
+  }});
+  const updateMark = () => {
+    const e = ELEMENTS[+element.value - 1];
+    mark.textContent = ptabElementLabel(ptabMarked(o, e.Z) ? 'Remover destaque de {symbol}' : 'Destacar {symbol}', e);
+  };
+  element.addEventListener('change', updateMark); updateMark();
+  const actions = [mark];
+  if (ptabCanExtract(o)){
+    actions.push(h('button', {class: 'btn', onclick: () => {
+      const tile = extractPTabElement(o, +element.value);
+      if (tile){ closeModal(); selectPTabTile(tile); canvas.focus({preventScroll: true}); }
+    }}, o.mode === 'crop' ? 'Separar do recorte' : 'Copiar para a lousa'));
+  }
+  modal('Tabela periódica', h('div', {class: 'ptab-editor'},
+    h('label', {}, 'Elemento da tabela', element),
+    h('label', {}, 'Propriedade da tabela', property)), actions);
+  element.focus({preventScroll: true});
+}
 function insertPTab(mode){
   const v = view();
   const w = Math.min(980, innerWidth * 0.7) / v.s;
@@ -11402,7 +11547,8 @@ function insertCard(Z){
   const v = view();
   const [cx, cy] = centerWorld();
   const w = 170 / v.s;
-  pushUndo(); const o = addObj({t: 'card', Z, x: cx - w / 2, y: cy - w * 0.59, w}); afterChange();
+  const cm = Object.hasOwn(HEAT_RANGE, PT.cm) ? PT.cm : undefined;
+  pushUndo(); const o = addObj({t: 'card', Z, x: cx - w / 2, y: cy - w * 0.59, w, cm}); afterChange();
   togglePTable(false);
   setTool('select'); S.sel = new Set([o.id]); updateSelectionUI();
 }
@@ -17383,7 +17529,13 @@ function apiDescribeFields(o, full){
     }
     case 'mo': return {id: o.id, type: 'mo_diagram', x: r(o.x), y: r(o.y), title: o.title || null, columns: o.cols.map(c => c.title), levels: o.levels.length, energy_scale: o.scale ? moUnit(o.scale.u)[1] : null};
     case 'orb': return {id: o.id, type: 'orbital', label: `${o.n}${ORB_L[o.l]}` + (o.form && HYB[o.form] ? ` ${o.form}` : (o.l ? ` m=${o.m}` : '')), style: o.at ? 'on_atom' : (orbIsPersp(o) ? 'perspective' : 'cut'), attached_to: o.at || null, x: r(o.x || 0), y: r(o.y || 0), size: o.w ? r(o.w) : null};
-    case 'ptab': return {id: o.id, type: 'periodic_table', mode: o.mode, highlighted: (o.sel || []).map(z => (ELEMENTS[z - 1] || {}).sym)};
+    case 'ptab': {
+      const symbols = numbers => (numbers || []).map(z => ELEMENTS[z - 1]?.sym).filter(Boolean);
+      const elements = symbols(o.sel);
+      const color_by = Object.keys(PTAB_COLOR_MODES).find(key => PTAB_COLOR_MODES[key] === o.cm) || 'family';
+      return {id: o.id, type: 'periodic_table', mode: o.mode, tile: !!o.tile, color_by, elements,
+        highlighted: elements, emphasized: symbols(o.marks)};
+    }
     case 'img': case 'video': {
       const a = assetOf(o), d = {id: o.id, type: o.t === 'img' ? (a && a.anim ? 'animated_gif' : 'image') : 'video', x: r(o.x), y: r(o.y), w: r(o.w), h: r(o.h)};
       if (a && a.name) d.file = a.name;
@@ -17984,16 +18136,41 @@ function defineLousaTools(){
     }, {required: ['diagram_id']});
 
   // --- tabela periódica
-  defTool('add_periodic_table', 'Put a periodic table on the board: a crop of chosen elements or the full table with them highlighted.',
-    {elements: {type: 'array', items: {type: ['string', 'number']}, description: 'Symbols or atomic numbers to show/highlight'}, mode: str('crop (default) or full', {enum: ['crop', 'full']}), color_by: str('family (default), block, electronegativity, radius, ionization', {enum: ['family', 'block', 'electronegativity', 'radius', 'ionization']}), x: num('Left x'), y: num('Top y'), width: num('Width (default 400 for crops, 900 for the full table)')}, a => {
-      const zs = (a.elements || []).map(e => typeof e === 'number' ? e : (EL[e] || {}).Z).filter(z => z >= 1 && z <= 118);
+  const ptabColors = str('family (default), block, electronegativity, radius, ionization', {enum: Object.keys(PTAB_COLOR_MODES)});
+  const ptabElement = {type: ['string', 'number'], description: 'Element symbol or atomic number'};
+  const atomicNumber = value => typeof value === 'number' ? value : EL[value]?.Z;
+  defTool('add_periodic_table', 'Put a periodic table on the board. A crop shows only the chosen elements. Electronegativity, radius and ionization modes also label the cells.',
+    {elements: {type: 'array', items: ptabElement, description: 'Elements to include in a crop or highlight in the full table'},
+      mode: str('crop (default) or full', {enum: ['crop', 'full']}), color_by: ptabColors,
+      x: num('Left x'), y: num('Top y'), width: num('Width (default 400 for crops, 900 for the full table)', {exclusiveMinimum: 0})}, a => {
+      const zs = [...new Set((a.elements || []).map(atomicNumber).filter(z => Number.isInteger(z) && z >= 1 && z <= ELEMENTS.length))];
       if (!zs.length && (a.mode || 'crop') === 'crop') throw new Error('give at least one element for a crop');
       const mode = a.mode || 'crop', w = +a.width || (mode === 'full' ? 900 : 400);
       const [x, y] = a.x != null && a.y != null ? [+a.x, +a.y] : (([cx, cy]) => [cx - w / 2, cy - w / 4])(apiPlace(w, w / 2));
       const o = insertPTabAt(x, y, zs, mode, w);
-      o.cm = {family: 'cat', block: 'bloco', electronegativity: 'en', radius: 'raio', ionization: 'ie'}[a.color_by || 'family'];
+      o.cm = PTAB_COLOR_MODES[a.color_by || 'family'];
       apiReveal(x + w / 2, y); return apiDescribe(o);
     });
+  defTool('update_periodic_table', 'Change the property shown on a placed table, emphasize one cell, or lift it into a movable tile. Extract moves a cell out of a multi-element crop and copies a cell from a full table.',
+    {id: str('Periodic table or tile ID'), action: str('Edit to perform', {enum: ['property', 'highlight', 'unhighlight', 'extract']}),
+      element: ptabElement, color_by: ptabColors}, a => {
+      const o = apiRequireEditable(apiObj(a.id, 'ptab'));
+      if (a.action === 'property'){
+        const cm = PTAB_COLOR_MODES[a.color_by];
+        if (!cm) throw new Error('provide color_by');
+        return {changed: setPTabProperty(o, cm), table: apiDescribe(o)};
+      }
+      const z = atomicNumber(a.element);
+      if (!ptabLayout(o).cells.some(cell => cell.e.Z === z)) throw new Error('provide an element visible in this table');
+      if (a.action === 'extract'){
+        const tile = extractPTabElement(o, z);
+        if (!tile) throw new Error('the element is already in a single tile or single-element crop');
+        selectPTabTile(tile);
+        return {changed: true, table: apiDescribe(o), tile: apiDescribe(tile)};
+      }
+      if (a.action !== 'highlight' && a.action !== 'unhighlight') throw new Error('unknown periodic table action');
+      return {changed: setPTabMark(o, z, a.action === 'highlight'), table: apiDescribe(o)};
+    }, {required: ['id', 'action'], own: true});
 
   // --- apresentação e configurações
   defTool('point_at', 'Briefly point at a spot on the board with a laser pulse (to direct the class\'s attention).', {x: num('x'), y: num('y')}, a => {
