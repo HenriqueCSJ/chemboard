@@ -11967,9 +11967,9 @@ function loadExample(){
   [[2, 0, 0, 'xz'], [3, 1, 0, 'xz'], [3, 2, 1, 'xz'], [3, 2, 2, 'xy']].forEach(([n, l, m, pl], i) => orb(n, l, m, -600 + i * 250, -25, 230, {persp: false, plane: pl}));
   T(-600, 245, 'Nas estruturas: híbridos sp³ e o sistema π do benzeno', 22, {c: 'p1', bold: true, chem: false});
   const met = put('CH4', -430, 400);
-  for (const c of met.filter(a => a.el === 'C')) addHybridOrbitals(c);
+  applyAtomOrbitalPlan(planAtomOrbitals('hyb', met.filter(a => a.el === 'C')), false);
   const bz = put('C6H6', 60, 400);
-  for (const c of bz.filter(a => a.el === 'C')) addAtomOrbital(c, {l: 1, rot: 0, len: 0.6, alpha: 0.5});
+  applyAtomOrbitalPlan(planAtomOrbitals('perp', bz), false);
   T(330, 330, 'Botão direito num átomo: orbitais híbridos, p ⟂, s', 18, {chem: false});
   T(330, 362, 'W abre a ferramenta: n, ℓ, mℓ, 2D, 3D e radial', 18, {chem: false});
 
@@ -14376,7 +14376,7 @@ function orbContextItems(o){
 /* ---------- orbitais presos a átomos das estruturas ---------- */
 function addAtomOrbital(atom, spec){
   return addObj({t: 'orb', at: atom.id, n: spec.n || 2, l: spec.l ?? 1, m: spec.m || 0, form: spec.form || 'real', plane: spec.plane || 'xz', prob: spec.prob || 0.9,
-    rot: spec.rot || 0, len: spec.len || 0.8, c1: spec.c1 || S.settings.orb.c1 || 'p1', c2: spec.c2 || S.settings.orb.c2 || 'p2', fill: true, axes: false, label: false, alpha: spec.alpha ?? 0.5, grp: spec.grp}, {silent: true});
+    rot: spec.rot || 0, len: spec.len || 0.8, c1: spec.c1 || S.settings.orb.c1 || 'p1', c2: spec.c2 || S.settings.orb.c2 || 'p2', fill: true, axes: false, label: false, alpha: spec.alpha ?? 0.5, atomOrbRole: spec.atomOrbRole}, {silent: true});
 }
 /* direções σ no papel: ligações e grupos de elétrons; pares não desenhados ocupam os maiores vãos */
 function sigmaDirections(a, g){
@@ -14396,30 +14396,84 @@ function sigmaDirections(a, g){
   return dirs;
 }
 function hybridLabel(D){ return ['', 's', 'sp', 'sp²', 'sp³', 'sp³d', 'sp³d²'][D] || ''; }
-function addHybridOrbitals(a){
-  const g = buildGraph();
-  if (a.el === 'H'){ addAtomOrbital(a, {n: 1, l: 0, len: 0.5, alpha: 0.5}); return 's'; }
+// No formato anterior, grp era exclusivo dos híbridos e seus orbitais p restantes.
+function attachedOrbitalRoles(orbitals){
+  const firstP = new Map();
+  for (const o of orbitals){
+    if (!o.grp || o.l !== 1 || o.form !== 'real') continue;
+    if (!firstP.has(o.grp) || (o.rot === 0 && firstP.get(o.grp).rot !== 0)) firstP.set(o.grp, o);
+  }
+  return orbitals.map(o => {
+    if (o.atomOrbRole) return {o, role: o.atomOrbRole};
+    if (o.grp) return {o, role: firstP.get(o.grp) === o ? 'perp' : 'hybrid'};
+    // A ferramenta de colocação manual usava len=0.9. Reconheça apenas os padrões antigos intactos.
+    const standard = o.form === 'real' && o.m === 0 && o.plane === 'xz' && o.prob === 0.9 && o.rot === 0 &&
+      !o.dx && !o.dy && !o.persp && o.az == null && o.el == null && o.fill === true && !o.axes && !o.label;
+    if (standard && o.n === 2 && o.l === 1 && o.len === 0.6 && o.alpha === 0.5) return {o, role: 'perp'};
+    if (standard && o.l === 0 && (o.n === 1 || o.n === 2) &&
+      ((o.len === 0.55 && o.alpha === 0.45) || (o.n === 1 && o.len === 0.5 && o.alpha === 0.5))) return {o, role: 's'};
+    return {o, role: null};
+  });
+}
+function atomOrbitalSpecs(kind, a, g){
+  const s = {atomOrbRole: 's', n: a.el === 'H' ? 1 : 2, l: 0, len: 0.55, alpha: 0.45};
+  const perp = {atomOrbRole: 'perp', l: 1, rot: 0, len: 0.6, alpha: 0.5};
+  if (kind === 's') return {specs: [s]};
+  if (kind === 'perp') return {specs: a.el === 'H' ? [] : [perp]};
+  if (a.el === 'H') return {specs: [{...s, len: 0.5, alpha: 0.5}], label: 's'};
   const dirs = sigmaDirections(a, g), D = dirs.length;
-  if (D < 2 || D > 6) return null;
-  const form = D === 2 ? 'sp' : D === 3 ? 'sp2' : 'sp3', grp = uid();
-  for (const t of dirs) addAtomOrbital(a, {form, l: 1, rot: t / DEG2 + 90, len: 0.62, alpha: 0.42, grp});
-  if (D <= 3) addAtomOrbital(a, {l: 1, rot: 0, len: 0.6, alpha: 0.22, grp, c1: 'p3', c2: 'p4'});                       // p ⟂ ao plano
-  if (D === 2) addAtomOrbital(a, {l: 1, rot: dirs[0] / DEG2 + 180, len: 0.6, alpha: 0.22, grp, c1: 'p3', c2: 'p4'});   // p no plano, ⟂ ao eixo sp
-  return hybridLabel(D);
+  if (D < 2 || D > 6) return {specs: []};
+  const form = D === 2 ? 'sp' : D === 3 ? 'sp2' : 'sp3';
+  const specs = dirs.map(t => ({atomOrbRole: 'hybrid', form, l: 1, rot: t / DEG2 + 90, len: 0.62, alpha: 0.42}));
+  if (D <= 3) specs.push({...perp, alpha: 0.22, c1: 'p3', c2: 'p4'});
+  if (D === 2) specs.push({...perp, atomOrbRole: 'hybrid', rot: dirs[0] / DEG2 + 180, alpha: 0.22, c1: 'p3', c2: 'p4'});
+  return {specs, label: hybridLabel(D)};
+}
+function planAtomOrbitals(kind, atoms){
+  const targets = new Map(atoms.filter(a => a?.t === 'atom' && !isLocked(a)).map(a => [a.id, {a, orbitals: []}]));
+  const plan = {add: [], remove: new Set(), hybridization: []};
+  const g = kind === 'hyb' ? buildGraph() : null;
+  for (const o of objs()) if (o.t === 'orb') targets.get(o.at)?.orbitals.push(o);
+  for (const {a, orbitals} of targets.values()){
+    if (kind === 'clear'){
+      for (const o of orbitals) if (!isLocked(o)) plan.remove.add(o);
+      continue;
+    }
+    const {specs, label} = atomOrbitalSpecs(kind, a, g);
+    if (label) plan.hybridization.push({atom: a.id, element: a.el, hybridization: label});
+    const existing = attachedOrbitalRoles(orbitals);
+    const keep = new Set();
+    for (const spec of specs){
+      const found = existing.find(({o, role}) => role === spec.atomOrbRole && !keep.has(o) &&
+        (role !== 's' || o.n === spec.n) && (role !== 'hybrid' || ((o.form || 'real') === (spec.form || 'real') &&
+          angDiff((o.rot || 0) * DEG2, (spec.rot || 0) * DEG2) < 1e-5)));
+      if (found) keep.add(found.o);
+      else plan.add.push({a, spec});
+    }
+    const roles = new Set(specs.map(s => s.atomOrbRole));
+    if (kind === 'hyb') roles.add('hybrid');
+    for (const {o, role} of existing){
+      if (roles.has(role) && !keep.has(o) && !isLocked(o) && !anHasTags(o)) plan.remove.add(o);
+    }
+  }
+  return plan;
+}
+function applyAtomOrbitalPlan(plan, record = true){
+  if (!plan.add.length && !plan.remove.size) return;
+  if (record) pushUndo();
+  if (plan.remove.size) page().objects = objs().filter(o => !plan.remove.has(o));
+  for (const {a, spec} of plan.add) addAtomOrbital(a, spec);
+  if (record){ afterChange(); renderOptBar(); }
 }
 function atomOrbAction(kind, atoms){
-  atoms = (atoms || []).filter(a => a && a.t === 'atom');
+  atoms = (atoms || []).filter(a => a?.t === 'atom');
   if (!atoms.length){ toast('Selecione átomos primeiro'); return; }
-  pushUndo();
-  const labels = [];
-  for (const a of atoms){
-    if (kind === 'clear'){ page().objects = objs().filter(o => !(o.t === 'orb' && o.at === a.id)); continue; }
-    if (kind === 'perp'){ if (a.el !== 'H') addAtomOrbital(a, {l: 1, rot: 0, len: 0.6, alpha: 0.5}); continue; }
-    if (kind === 's'){ addAtomOrbital(a, {n: a.el === 'H' ? 1 : 2, l: 0, len: 0.55, alpha: 0.45}); continue; }
-    if (kind === 'hyb'){ const lab = addHybridOrbitals(a); if (lab) labels.push(`${a.el}: ${lab}`); }
+  const plan = planAtomOrbitals(kind, atoms);
+  applyAtomOrbitalPlan(plan);
+  if (plan.hybridization.length){
+    const labels = plan.hybridization.map(a => a.element + ': ' + a.hybridization);
+    flashHint(tt('Hibridização') + ' — ' + [...new Set(labels)].join(', '), 2400);
   }
-  afterChange();
-  if (kind === 'hyb' && labels.length) flashHint(tt('Hibridização') + ' — ' + [...new Set(labels)].join(', '), 2400);
   if (kind === 'perp') flashHint(tt('Orbitais p perpendiculares ao plano: o sistema π'), 2000);
 }
 function hasAtomOrbitals(a){ return objs().some(o => o.t === 'orb' && o.at === a.id); }
@@ -16783,15 +16837,12 @@ function defineLousaTools(){
     }, {required: ['n', 'l', 'm']});
   defTool('atom_orbitals', 'Draw orbitals on atoms of a structure: "hybrid" (spⁿ toward bonds and lone pairs, plus leftover p), "p_perp" (p perpendicular to the plane: π system), "s", or "clear".',
     {atom_ids: ids('Atom ids'), kind: str('hybrid, p_perp, s, clear', {enum: ['hybrid', 'p_perp', 's', 'clear']})}, a => {
-      const out = [];
-      for (const id of a.atom_ids){ const t = apiAtom(id);
-        if (a.kind === 'clear'){ page().objects = objs().filter(o => !(o.t === 'orb' && o.at === t.id)); reindex(); continue; }
-        if (a.kind === 'p_perp'){ if (t.el !== 'H') addAtomOrbital(t, {l: 1, rot: 0, len: 0.6, alpha: 0.5}); continue; }
-        if (a.kind === 's'){ addAtomOrbital(t, {n: t.el === 'H' ? 1 : 2, l: 0, len: 0.55, alpha: 0.45}); continue; }
-        const lab = addHybridOrbitals(t); if (lab) out.push({atom: t.id, element: t.el, hybridization: lab});
-      }
-      return {hybridization: out};
-    }, {required: ['atom_ids', 'kind']});
+      const kind = ({hybrid: 'hyb', p_perp: 'perp', s: 's', clear: 'clear'})[a.kind];
+      if (!['hyb', 'perp', 's', 'clear'].includes(kind)) throw new Error('unknown attached orbital type');
+      const plan = planAtomOrbitals(kind, a.atom_ids.map(apiAtom));
+      applyAtomOrbitalPlan(plan);
+      return {hybridization: plan.hybridization};
+    }, {required: ['atom_ids', 'kind'], own: true});
   defTool('open_orbital_viewer', 'Open the atomic orbital panel (3D surface, 2D cut or radial plot) for the teacher to show.',
     {n: num('n'), l: num('l'), m: num('m'), form: str('real or complex', {enum: ['real', 'complex']}), view: str('3d, 2d or radial', {enum: ['3d', '2d', 'radial']})}, a => {
       const n = clamp(a.n | 0, 1, 7), l = clamp(a.l | 0, 0, Math.min(3, n - 1));
