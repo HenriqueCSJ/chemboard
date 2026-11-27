@@ -34,6 +34,8 @@ ChemBoard is a browser whiteboard for chemistry instructors. Draw Lewis structur
 
 With **Select** or the **Lewis pen**, drag a formal or partial charge label to reposition it. The label follows its atom when you move or rotate the structure. Double-click the label to restore automatic placement.
 
+Drag a lone pair with **Select** to move it around its atom. With the **Lewis pen**, hold **Shift** before you start dragging the pair to move it without a chemistry action. Use **Undo** to reverse the placement.
+
 ## Draw carbon chains and add hydrogens
 
 - Press **Z** and drag on the board. The zigzag preview shows the carbon count before you release. Hold **Shift** to snap the direction in 15° steps. Drag from a carbon with an available valence to extend the structure, or choose **Insert by count…** for a chain of 2–80 carbons. New chains use skeletal notation by default.

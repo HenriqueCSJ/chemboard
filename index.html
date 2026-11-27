@@ -4559,6 +4559,8 @@ const EN = {
   'Selecionar e mover': 'Select and move', 'Mover o quadro': 'Pan the board', 'Caneta química (Lewis)': 'Chem pen (Lewis)', 'Caneta': 'Pen',
   'Marca-texto': 'Highlighter', 'Formas': 'Shapes', 'Setas químicas': 'Chemical arrows', 'Texto químico': 'Chemical text', 'Borracha': 'Eraser',
   'Laser': 'Laser', 'Holofote': 'Spotlight', 'Anéis': 'Rings', 'Orbitais': 'Orbitals',
+  'Arraste um par isolado': 'Drag a lone pair',
+  'Shift + arraste um par': 'Shift + drag a lone pair', 'reposiciona o par no átomo': 'reposition the pair on its atom',
   'Posição automática da carga formal': 'Automatic formal charge position',
   'Posição automática da carga parcial': 'Automatic partial charge position',
   'Mais opções da ferramenta': 'More tool options', 'Mais ações do quadro': 'More board actions',
@@ -5661,7 +5663,7 @@ function popUndoIfUnchanged(){
   if (st && st.length && st[st.length - 1] === snapshot()) st.pop();
 }
 function undo(){
-  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge') cancelGesture();
+  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge' || P?.mode === 'pair') cancelGesture();
   if (S.crop) S.crop = null;
   const id = page().id, st = S.undo[id];
   if (!st || !st.length){ toast('Nada para desfazer'); return; }
@@ -5670,7 +5672,7 @@ function undo(){
   afterChange();
 }
 function redo(){
-  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge') cancelGesture();
+  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge' || P?.mode === 'pair') cancelGesture();
   const id = page().id, st = S.redo[id];
   if (!st || !st.length){ toast('Nada para refazer'); return; }
   (S.undo[id] = S.undo[id] || []).push(snapshot());
@@ -7336,21 +7338,24 @@ function hasCovalent(a, g){ return (g.adj.get(a.id) || []).some(n => isCovLike(n
 function hasIonic(a, g){ return (g.adj.get(a.id) || []).some(n => n.bond.k === 'ion'); }
 function chargeText(q){ const n = Math.abs(q); return (n > 1 ? n : '') + (q > 0 ? '+' : '−'); }
 
-/* ---------- posicionamento de cargas ---------- */
+/* ---------- geometria dos elétrons ---------- */
+function electronGroupGeometry(a, G, angle){
+  const sn = Math.sin(angle), cs = Math.cos(angle);
+  return {x: a.x + G.rxE * cs, y: a.y + G.ryE * sn, dx: -sn * G.gap / 2, dy: cs * G.gap / 2};
+}
 function lonePairMarks(a, G, visit){
   const hide = S.dragHide && S.dragHide.id === a.id ? S.dragHide : null;
   for (let gi = 0; gi < (a.e || []).length; gi++){
     const grp0 = a.e[gi];
     let grp = grp0;
     if (hide && hide.gidx === gi){ if (hide.n >= grp0.n) continue; grp = {a: grp0.a, n: grp0.n - hide.n}; }
-    const ex = a.x + G.rxE * Math.cos(grp.a), ey = a.y + G.ryE * Math.sin(grp.a);
-    if (grp.n === 2){
-      const tx = -Math.sin(grp.a) * G.gap / 2, ty = Math.cos(grp.a) * G.gap / 2;
-      visit(ex + tx, ey + ty);
-      visit(ex - tx, ey - ty);
-    } else visit(ex, ey);
+    const {x, y, dx, dy} = electronGroupGeometry(a, G, grp.a);
+    if (grp.n === 2){ visit(x + dx, y + dy); visit(x - dx, y - dy); }
+    else visit(x, y);
   }
 }
+
+/* ---------- posicionamento de cargas ---------- */
 function bracketSize(a, G){
   const hasE = (a.e || []).length > 0;
   return {hw: (hasE ? G.rxE + G.dot : G.rxT) + 0.2 * G.fs,
@@ -7943,7 +7948,7 @@ function renderMain(){
   const L = sceneLayer();
   L.setTransform(1, 0, 0, 1, 0, 0); L.clearRect(0, 0, LAYER.cv.width, LAYER.cv.height);
   L.setTransform(DPR * v.s, 0, 0, DPR * v.s, DPR * v.ox, DPR * v.oy);
-  const DL = animDisplay();
+  const DL = pairDragDisplay(animDisplay());
   const drag = P?.mode === 'charge' ? P.charge : null;
   const chargePreview = drag && drag.page === page() && getObj(drag.atom.id) === drag.atom && !isLocked(drag.atom) ? drag.preview : null;
   LAYER.list = DL ? DL.list : null;
@@ -8794,6 +8799,7 @@ function onMove(e){
   }
   if (P.mode === 'chain'){ previewCarbonChain(P, q, e.shiftKey); return; }
   if (P.mode === 'charge'){ previewChargeDrag(P, q); return; }
+  if (P.mode === 'pair'){ previewPairDrag(P, q); return; }
   const lastPt = P.pts[P.pts.length - 1];
   if (Math.hypot(q.x - lastPt[0], q.y - lastPt[1]) > tolW(1.2)){
     P.pts.push([q.x, q.y]); if (P.pr) P.pr.push(q.p ?? 0.5);
@@ -8869,6 +8875,7 @@ function onUp(e){
       case 'crop': S.dirty = true; break;
       case 'chain': finishCarbonChain(p, q, e.shiftKey); break;
       case 'charge': finishChargeDrag(p, q); break;
+      case 'pair': finishPairDrag(p, q); break;
       case 'ring': if (!p.moved) ringClick(q); break;
       case 'spot': if (!p.moved) S.spotRect = null; break;
       default: if (S.tool === 'lewis') upLewis(p, q, e); else if (S.tool === 'mo') moUp(p, q, e);
@@ -9088,6 +9095,11 @@ function downSelect(q, e){
   } else if (!S.sel.has(id)){
     S.sel = new Set([id]);
   } else P.clickSelect = id;
+  const pair = e.button === 0 && !e.shiftKey ? hitLonePair(hit, q) : null;
+  if (pair && startPairDrag(pair, q)){
+    updateSelectionUI();
+    return;
+  }
   let ids = Array.from(S.sel);
   if (hit.type === 'bond' && !e.shiftKey && S.sel.size === 1){
     ids = moleculeIds(hit.bond.a);
@@ -9392,6 +9404,101 @@ function finishChargeDrag(p, q){
   setChargeOffset(atom, kind, preview.offset);
 }
 
+/* ---------- reposicionar um par sem ação química ---------- */
+function hitLonePair(hit, q){
+  if (hit?.type !== 'egroup') return null;
+  const atom = hit.atom, G = atomGeom(atom);
+  const slop = Math.min(tolW(4), 0.2 * G.fs);
+  let best = null, nearest = G.dot + slop;
+  for (let idx = 0; idx < atom.e.length; idx++){
+    const group = atom.e[idx];
+    if (group.n !== 2) continue;
+    const {x, y, dx, dy} = electronGroupGeometry(atom, G, group.a);
+    const distance = distToSeg(q.x, q.y, x - dx, y - dy, x + dx, y + dy);
+    if (distance <= nearest){ best = {atom, idx}; nearest = distance; }
+  }
+  return best;
+}
+function pairPointerAngle(q, atom, G){
+  const dx = (q.x - atom.x) / G.rxE, dy = (q.y - atom.y) / G.ryE;
+  return Math.hypot(dx, dy) >= 0.2 ? Math.atan2(dy, dx) : null;
+}
+function startPairDrag({atom, idx}, q){
+  if (isLocked(atom)) return false;
+  const group = atom.e?.[idx], angle = pairPointerAngle(q, atom, atomGeom(atom));
+  if (group?.n !== 2 || angle == null) return false;
+  stopViewAnim();
+  P.mode = 'pair';
+  P.pair = {atom, idx, group, page: page(), offset: group.a - angle, angle: null};
+  canvas.style.cursor = 'grabbing';
+  return true;
+}
+function pairDragValid(drag){
+  return drag.page === page() && getObj(drag.atom.id) === drag.atom &&
+    !isLocked(drag.atom) && drag.atom.e?.[drag.idx] === drag.group && drag.group.n === 2;
+}
+function freePairAngle(a, G, idx, desired){
+  const dot = G.dot * (S.settings.lewis.bondStyle === 'dotcross' ? 1.6 : 1);
+  const marks = [];
+  a.e.forEach((g, i) => {
+    if (i === idx) return;
+    const {x, y, dx, dy} = electronGroupGeometry(a, G, g.a);
+    if (g.n === 2) marks.push([x + dx, y + dy], [x - dx, y - dy]); else marks.push([x, y]);
+  });
+  const clear = angle => {
+    const {x, y, dx, dy} = electronGroupGeometry(a, G, angle);
+    return marks.every(([mx, my]) => Math.hypot(x + dx - mx, y + dy - my) >= 2.1 * dot &&
+      Math.hypot(x - dx - mx, y - dy - my) >= 2.1 * dot);
+  };
+  if (clear(desired)) return desired;
+  for (let step = 1; step <= 90; step++){
+    const d = step * 2 * DEG2;
+    if (clear(desired + d)) return angNorm(desired + d);
+    if (clear(desired - d)) return angNorm(desired - d);
+  }
+  return a.e[idx].a;
+}
+function previewPairDrag(p, q){
+  const drag = p.pair;
+  if (!p.moved || !pairDragValid(drag)) return null;
+  const {atom, group, idx, offset} = drag, G = atomGeom(atom);
+  const pointed = pairPointerAngle(q, atom, G);
+  if (pointed == null) return null;
+  const desired = angNorm(pointed + offset);
+  const angle = angDiff(group.a, desired) < 0.003 ? group.a : freePairAngle(atom, G, idx, desired);
+  if (angle !== drag.angle){ drag.angle = angle; S.dirty = true; }
+  return angle;
+}
+function finishPairDrag(p, q){
+  if (Math.hypot(q.sx - p.sx, q.sy - p.sy) > (p.type === 'touch' ? 8 : 4)) p.moved = true;
+  if (!p.moved && p.clickSelect){ clickSelectAfter(p); return; }
+  const angle = previewPairDrag(p, q), group = p.pair.group;
+  if (angle == null || angDiff(group.a, angle) < 0.003) return;
+  pushUndo();
+  group.a = angle;
+  syncArrowAnchors(objs());
+  afterChange();
+}
+function pairDragDisplay(draw){
+  const drag = P?.mode === 'pair' ? P.pair : null;
+  if (drag?.angle == null || !pairDragValid(drag)) return draw;
+  const source = draw?.index || S.index;
+  const a = source.get(drag.atom.id);
+  if (a?.e?.[drag.idx]?.n !== 2) return draw;
+  // Cópias mantêm os pontos, as cargas e as setas coerentes na prévia, sem gravar no quadro.
+  const atom = {...a, e: a.e.map((g, i) => i === drag.idx ? {...g, a: drag.angle} : g)};
+  const index = new Map(source);
+  const list = (draw?.list || objs()).map(o => {
+    let copy;
+    if (o.id === atom.id) copy = atom;
+    else if (o.t === 'shape' && [o.a1, o.a2].some(anchor => anchor?.id === atom.id && anchor.k === 'e' && anchor.g === drag.idx)) copy = {...o};
+    else return o;
+    index.set(copy.id, copy);
+    return copy;
+  });
+  return {list, index, post: draw?.post || []};
+}
+
 /* ---------- caneta química (Lewis) ---------- */
 function lewisHit(x, y, includeLocked = false){
   let hit = hitAtomParts(x, y, includeLocked);
@@ -9402,7 +9509,14 @@ function downLewis(q, e){
   const hit = lewisHit(q.x, q.y, true);
   if (hit && isLocked(hit.atom || hit.bond)){ flashHint('Destrave o objeto antes de editar.'); return; }
   if (hit && hit.type === 'bond'){ P.mode = 'lewis-bond'; P.bond = hit.bond; return; }
-  if (hit && hit.type === 'egroup'){ P.mode = 'lewis-egroup'; P.atom = hit.atom; P.gidx = hit.idx; P.hit = hit; P.grpN = hit.atom.e[hit.idx].n; return; }
+  if (hit && hit.type === 'egroup'){
+    if (e.shiftKey){
+      const pair = hitLonePair(hit, q) || (hit.atom.e[hit.idx].n === 2 ? hit : null);
+      if (pair){ startPairDrag(pair, q); return; }
+    }
+    P.mode = 'lewis-egroup'; P.atom = hit.atom; P.gidx = hit.idx; P.hit = hit; P.grpN = hit.atom.e[hit.idx].n;
+    return;
+  }
   if (hit && hit.type === 'atom'){
     P.atom = hit.atom;
     if (e.shiftKey){ P.mode = 'move'; P.moveIds = [hit.atom.id]; P.startBoxes = [{atom: true, x: hit.atom.x, y: hit.atom.y}]; return; }
@@ -9796,7 +9910,10 @@ function hoverUpdate(q){
         const ang = magnetOn() ? snapAngle(hit.ang, 45) : hit.ang;
         S.hover = {type: 'zone', atom: hit.atom, ang};
         cursor = 'cell';
-      } else if (hit.type === 'egroup'){ S.hover = {type: 'egroup', atom: hit.atom, idx: hit.idx}; cursor = 'pointer'; }
+      } else if (hit.type === 'egroup'){
+        S.hover = {type: 'egroup', atom: hit.atom, idx: hit.idx};
+        cursor = S.shiftDown && (hitLonePair(hit, q) || hit.atom.e?.[hit.idx]?.n === 2) ? 'grab' : 'pointer';
+      }
       else if (hit.type === 'atom'){ S.hover = {type: 'atom', atom: hit.atom}; cursor = 'crosshair'; }
       else if (hit.type === 'bond'){ S.hover = {type: 'bond', bond: hit.bond}; cursor = 'pointer'; }
     } else cursor = 'crosshair';
@@ -9804,7 +9921,10 @@ function hoverUpdate(q){
     const hd = handleAt(q.sx, q.sy), rot = selectionRotationHandle();
     if (rot && Math.hypot(q.x - rot.x, q.y - rot.y) <= tolW(13)) cursor = 'grab';
     else if (hd) cursor = hd.k === 'cp' || hd.k === 'p1' || hd.k === 'p2' ? 'move' : ({nw: 'nwse-resize', se: 'nwse-resize', ne: 'nesw-resize', sw: 'nesw-resize', n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize'}[hd.k]);
-    else { const hit = hitTest(q.x, q.y); cursor = hit && hit.type !== 'zone' ? 'move' : 'default'; }
+    else {
+      const hit = hitTest(q.x, q.y);
+      cursor = !S.shiftDown && hitLonePair(hit, q) ? 'grab' : hit && hit.type !== 'zone' ? 'move' : 'default';
+    }
   } else if (S.tool === 'ring'){ ringHover(q); cursor = 'crosshair'; }
   else if (S.tool === 'mo'){ cursor = moHover(q) || 'default'; }
   else if (S.tool === 'eraser'){
@@ -10138,9 +10258,9 @@ const TOOLS = [
 const TOOL_KEYS = Object.fromEntries(TOOLS.map(t => [t[2].toLowerCase(), t[0]]));
 
 const HINTS = {
-  select: [['Clique', 'seleciona'], ['Arraste', 'move'], ['Arraste uma ligação', 'move a molécula'], ['Duplo clique', 'molécula inteira'], ['Shift', 'adiciona à seleção'], ['↻', 'Arraste a alça circular para girar. Shift usa passos de 15°.']],
+  select: [['Clique', 'seleciona'], ['Arraste', 'move'], ['Arraste uma ligação', 'move a molécula'], ['Arraste um par isolado', 'reposiciona o par no átomo'], ['Duplo clique', 'molécula inteira'], ['Shift', 'adiciona à seleção'], ['↻', 'Arraste a alça circular para girar. Shift usa passos de 15°.']],
   hand: [['Arraste', 'move o quadro'], ['Roda', 'zoom']],
-  lewis: [['Clique no vazio', 'átomo'], ['Arraste do átomo', 'ligação'], ['Toque ao lado', 'elétron'], ['Arraste um elétron', 'transfere ou compartilha'], ['Segure', 'move o átomo']],
+  lewis: [['Clique no vazio', 'átomo'], ['Arraste do átomo', 'ligação'], ['Toque ao lado', 'elétron'], ['Arraste um elétron', 'transfere ou compartilha'], ['Shift + arraste um par', 'reposiciona o par no átomo'], ['Segure', 'move o átomo']],
   mo: [['Clique na coluna', 'novo nível (a prévia mostra onde)'], ['Arraste o nível', 'move; solto sobre outro nível, liga os dois'], ['Arraste o rótulo', 'muda de lugar'], ['Duplo clique', 'rótulo e energia'], ['↑ ↓', 'ajusta a altura'], ['Del', 'apaga']],
   chain: [['Arraste', 'desenha a cadeia em zigue-zague'], ['Desenhar do carbono', 'estende a cadeia se houver valência livre'], ['Shift', 'fixa a direção a cada 15°']],
   ring: [['Clique', 'novo anel'], ['Clique numa ligação', 'anel fundido'], ['Clique num átomo', 'anel espiro'], ['Clique num H', 'substituinte'], ['Clique no centro', 'ressonância']],
@@ -10262,7 +10382,7 @@ function initUI(){
 }
 
 function setTool(t){
-  if (t !== S.tool && (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge')) cancelGesture();
+  if (t !== S.tool && (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge' || P?.mode === 'pair')) cancelGesture();
   if (S.editing) commitTextEdit();
   if (S.crop && t !== 'select') endCrop(true);
   S.tool = t;
@@ -10931,7 +11051,7 @@ function updatePageBar(){
 function gotoPage(i){
   if (i < 0 || i >= S.doc.pages.length) return;
   if (i !== S.doc.cur){
-    if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge') cancelGesture();
+    if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge' || P?.mode === 'pair') cancelGesture();
     stopViewAnim(); MO.sel = null; S.moHover = null; S.moPreview = null;
   }
   if (S.editing) commitTextEdit();
@@ -11648,7 +11768,7 @@ function openBoardFile(text, mode){
     h('button', {class: 'btn', onclick: () => { closeModal(); load(true); }}, 'Adicionar ao quadro atual')]);
 }
 function loadBoardDoc(doc, assets, append){
-  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge') cancelGesture();
+  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain' || P?.mode === 'charge' || P?.mode === 'pair') cancelGesture();
   normalizeBoardDoc(doc, true);
   return prepareDocAssets(doc, assets).then(() => {
     if (S.editing) commitTextEdit();
