@@ -4915,7 +4915,10 @@ const EN = {
   'Vídeo muito grande (mais de 300 MB). Use um arquivo menor.': 'Video too large (over 300 MB). Use a smaller file.',
   'Vídeo grande: o quadro salvo em arquivo (.json) vai ficar grande também.': 'Large video: the board saved to a file (.json) will be large too.',
   'Aplicar recorte': 'Apply crop', 'Cancelar recorte': 'Cancel crop', 'Imagem travada': 'Locked image', 'Vídeo travado': 'Locked video', 'Objeto travado': 'Locked object',
-  'Destravar': 'Unlock', 'Travar': 'Lock', 'Formatar como química (H2O → H₂O)': 'Format as chemistry (H2O → H₂O)',
+  'Destravar': 'Unlock', 'Travar': 'Lock',
+  'Destrave o objeto antes de editar.': 'Unlock the object before editing.',
+  'Destravar objeto sobreposto': 'Unlock overlapping object',
+  'Objetos travados ficam na página. Você pode desfazer com Ctrl+Z.': 'Locked objects stay on the page. You can undo with Ctrl+Z.', 'Formatar como química (H2O → H₂O)': 'Format as chemistry (H2O → H₂O)',
   'Abrir o link': 'Open the link', 'Copiar o endereço': 'Copy the address', 'Endereço copiado': 'Address copied',
   'Recortar (duplo clique na imagem)': 'Crop (double-click the image)', 'Sem fundo': 'No background',
   'Fundo transparente: a cor do fundo da imagem some e aparece o quadro': 'Transparent background: the image’s background color disappears and the board shows through',
@@ -5460,6 +5463,7 @@ const S = {
   tool: 'lewis',
   sel: new Set(),
   index: new Map(),
+  lockOwners: new Map(),
   undo: Object.create(null), redo: Object.create(null),
   dirty: true,
   hover: null,
@@ -5510,11 +5514,39 @@ const theme = () => THEMES[S.settings.theme] || THEMES.branco;
 const fam = () => theme().fam;
 
 function reindex(){
+  const list = objs();
   S.index.clear();
-  for (const o of objs()) S.index.set(o.id, o);
-  for (const id of Array.from(S.sel)) if (!S.index.has(id)) S.sel.delete(id);
+  for (const o of list) S.index.set(o.id, o);
+  indexLocks(list);
+  for (const id of S.sel) if (!S.index.has(id) || isLocked(S.index.get(id))) S.sel.delete(id);
 }
 const getObj = id => S.index.get(id) || (S.tmpIndex ? S.tmpIndex.get(id) : undefined);
+const lockOwner = o => o && (o.lock ? o : S.lockOwners.get(o.id));
+const isLocked = o => !!lockOwner(o);
+function indexLocks(list){
+  const owners = S.lockOwners;
+  owners.clear();
+  const protect = (id, owner) => {
+    const o = S.index.get(id);
+    if (!o || o.lock || owners.has(id)) return;
+    owners.set(id, owner);
+    protectAttachments(o, owner);
+  };
+  // Os apoios de um objeto travado também precisam ficar no lugar.
+  function protectAttachments(o, owner){
+    if (o.t === 'bond'){ protect(o.a, owner); protect(o.b, owner); }
+    else if (o.t === 'brk') (o.atoms || []).forEach(id => protect(id, owner));
+    else if (o.t === 'sea') (o.ids || []).forEach(id => protect(id, owner));
+    else if (o.t === 'orb') protect(o.at, owner);
+    else if (o.t === 'shape'){ protect(o.a1?.id, owner); protect(o.a2?.id, owner); }
+  }
+  for (const o of list) if (o.lock) protectAttachments(o, o);
+  // Editar a ordem ou apagar a ligação também alteraria um átomo travado.
+  for (const b of list) if (b.t === 'bond' && !isLocked(b)){
+    const owner = lockOwner(S.index.get(b.a)) || lockOwner(S.index.get(b.b));
+    if (owner) owners.set(b.id, owner);
+  }
+}
 
 function resolveColor(c){
   if (!c) return S.settings.palettes[fam()][0];
@@ -5571,11 +5603,25 @@ function addObj(o, opts = {}){
   return o;
 }
 function removeIds(ids){
-  const set = new Set(ids);
+  const list = objs();
+  const requested = new Set(ids);
+  const set = new Set([...requested].filter(id => {
+    const o = getObj(id);
+    return o && !isLocked(o);
+  }));
   // na fórmula de esqueleto, os H ocultos saem junto com o átomo
   if (S._skel && S._skel.h.size){
     const g = buildGraph();
-    for (const id of ids) for (const n of g.adj.get(id) || []) if (S._skel.h.has(n.other.id)) set.add(n.other.id);
+    for (const id of set) for (const n of g.adj.get(id) || []){
+      if (S._skel.h.has(n.other.id) && !isLocked(n.other)) set.add(n.other.id);
+    }
+  }
+  // Um vizinho editável não pode levar junto a ligação de um átomo travado.
+  for (const b of list) if (b.t === 'bond' && isLocked(b)){ set.delete(b.a); set.delete(b.b); }
+  const deleted = [...requested].filter(id => set.has(id)).length;
+  if (!set.size){
+    if (ids.length) flashHint('Destrave o objeto antes de editar.');
+    return 0;
   }
   // remover átomo remove ligações, colchetes e orbitais presos a ele
   for (const o of objs()){
@@ -5592,6 +5638,8 @@ function removeIds(ids){
   page().objects = objs().filter(o => !(o.t === 'brk' && o.atoms.length === 0));
   for (const id of set) S.sel.delete(id);
   afterChange();
+  if (deleted < requested.size) flashHint('Destrave o objeto antes de editar.');
+  return deleted;
 }
 function bringToFront(ids){
   const set = new Set(ids);
@@ -6005,6 +6053,7 @@ function describeConnection(a, b, g){
 
 /* Liga dois átomos (com animação e ajuste de elétrons). Retorna mensagem. */
 function connectAtoms(a, b, opts = {}){
+  if (isLocked(a) || isLocked(b)) return 'Destrave o objeto antes de editar.';
   const g = buildGraph();
   const c = classifyConnection(a, b, g);
   if (c.kind === 'exists'){
@@ -7808,13 +7857,13 @@ const magnetOn = () => S.settings.magnet && !S.altDown;
 const tolW = px => px / view().s;
 
 /* ---------- testes de acerto ---------- */
-function hitAtomParts(x, y){
+function hitAtomParts(x, y, includeLocked = false){
   // percorre do topo para baixo: grupos de elétrons, núcleo do átomo, zona de elétrons
   const list = objs();
   let zone = null;
   for (let i = list.length - 1; i >= 0; i--){
     const a = list[i];
-    if (a.t !== 'atom') continue;
+    if (a.t !== 'atom' || (!includeLocked && isLocked(a))) continue;
     if (S._skel && S._skel.h.has(a.id)) continue;
     const G = atomGeom(a), dx = x - a.x, dy = y - a.y;
     if (Math.abs(dx) > G.rxE * 2.6 + 20 || Math.abs(dy) > G.ryE * 2.6 + 20) continue;
@@ -7831,10 +7880,11 @@ function hitAtomParts(x, y){
   }
   return zone;
 }
-function hitBond(x, y){
+function hitBond(x, y, includeLocked = false){
   const g = buildGraph();
   let best = null, bd = 1e9;
   for (const b of g.bonds){
+    if (!includeLocked && isLocked(b)) continue;
     const a1 = g.atoms.get(b.a), a2 = g.atoms.get(b.b);
     const E = bondEnds(a1, a2);
     const d = distToSeg(x, y, E.x1, E.y1, E.x2, E.y2);
@@ -7847,7 +7897,7 @@ function hitObject(x, y){
   const list = objs(), t = tolW(7);
   for (let i = list.length - 1; i >= 0; i--){
     const o = list[i];
-    if (o.t === 'atom' || o.t === 'bond' || o.lock) continue;
+    if (o.t === 'atom' || o.t === 'bond' || isLocked(o)) continue;
     if (objHit(o, x, y, t)) return {type: 'obj', obj: o};
   }
   return null;
@@ -7901,14 +7951,14 @@ function hitTest(x, y){
   if (h && h.type !== 'zone') return h;
   return hitBond(x, y) || hitObject(x, y) || h;
 }
-function hitCore(x, y){
-  const h = hitAtomParts(x, y);
+function hitCore(x, y, includeLocked = false){
+  const h = hitAtomParts(x, y, includeLocked);
   return h && h.type === 'atom' ? h.atom : null;
 }
-function atomNear(x, y, maxRho = 1.6){
+function atomNear(x, y, maxRho = 1.6, includeLocked = false){
   let best = null, bd = 1e9;
   for (const a of objs()){
-    if (a.t !== 'atom') continue;
+    if (a.t !== 'atom' || (!includeLocked && isLocked(a))) continue;
     const G = atomGeom(a);
     const r = Math.hypot((x - a.x) / G.rxE, (y - a.y) / G.ryE);
     if (r < maxRho && r < bd){ bd = r; best = a; }
@@ -7918,9 +7968,10 @@ function atomNear(x, y, maxRho = 1.6){
 
 /* ---------- movimento ---------- */
 function moveObj(o, dx, dy){
+  if (isLocked(o)) return;
   switch (o.t){
     case 'orb': if (o.at){ o.dx = (o.dx || 0) + dx; o.dy = (o.dy || 0) + dy; } else { o.x += dx; o.y += dy; } break;
-    case 'sea': for (const id of o.ids){ if (S.sel.has(id)) continue; const a = getObj(id); if (a){ a.x += dx; a.y += dy; } } break;
+    case 'sea': for (const id of o.ids){ if (S.sel.has(id)) continue; const a = getObj(id); if (a && !isLocked(a)){ a.x += dx; a.y += dy; } } break;
     case 'atom': case 'text': case 'img': case 'video': case 'link': case 'ptab': case 'card': case 'mo': case 'table': case 'chart': case 'pbox': case 'lcao': o.x += dx; o.y += dy; break;
     case 'ink': for (let i = 0; i < o.pts.length; i += 2){ o.pts[i] += dx; o.pts[i + 1] += dy; } break;
     case 'shape':
@@ -7945,12 +7996,12 @@ function movableIds(ids){
     const g = buildGraph();
     for (const id of Array.from(out)) for (const n of g.adj.get(id) || []) if (S._skel.h.has(n.other.id)) out.add(n.other.id);
   }
-  return Array.from(out);
+  return Array.from(out).filter(id => getObj(id) && !isLocked(getObj(id)));
 }
 function selectMolecule(atomId){
   const ids = new Set(moleculeIds(atomId));
   for (const o of objs()) if ((o.t === 'bond' && ids.has(o.a) && ids.has(o.b)) || (o.t === 'brk' && o.atoms.every(a => ids.has(a)))) ids.add(o.id);
-  S.sel = ids; S.dirty = true;
+  S.sel = new Set([...ids].filter(id => !isLocked(getObj(id)))); S.dirty = true;
   if (typeof updateSelectionUI === 'function') updateSelectionUI();
 }
 function moleculeIds(atomId, kinds = ['cov', 'dat', 'ion']){
@@ -8395,12 +8446,12 @@ function finishMarquee(p, q){
   const r = {x1: Math.min(p.x0, q.x), y1: Math.min(p.y0, q.y), x2: Math.max(p.x0, q.x), y2: Math.max(p.y0, q.y)};
   if (r.x2 - r.x1 < tolW(3) && r.y2 - r.y1 < tolW(3)){ updateSelectionUI(); return; }
   for (const o of objs()){
-    if (o.t === 'bond' || o.lock) continue;
+    if (o.t === 'bond' || isLocked(o)) continue;
     const b = o.t === 'atom' ? {x1: o.x, y1: o.y, x2: o.x, y2: o.y} : objBBox(o);
     if (b && b.x1 >= r.x1 && b.x2 <= r.x2 && b.y1 >= r.y1 && b.y2 <= r.y2) S.sel.add(o.id);
   }
   // ligações entre átomos selecionados também
-  for (const o of objs()) if (o.t === 'bond' && S.sel.has(o.a) && S.sel.has(o.b)) S.sel.add(o.id);
+  for (const o of objs()) if (o.t === 'bond' && !isLocked(o) && S.sel.has(o.a) && S.sel.has(o.b)) S.sel.add(o.id);
   updateSelectionUI();
 }
 
@@ -8477,13 +8528,14 @@ function dragHandle(q, e){
 }
 
 /* ---------- caneta química (Lewis) ---------- */
-function lewisHit(x, y){
-  let hit = hitAtomParts(x, y);
-  if (!hit || hit.type === 'zone'){ const hb = hitBond(x, y); if (hb) hit = hb; }
+function lewisHit(x, y, includeLocked = false){
+  let hit = hitAtomParts(x, y, includeLocked);
+  if (!hit || hit.type === 'zone'){ const hb = hitBond(x, y, includeLocked); if (hb) hit = hb; }
   return hit;
 }
 function downLewis(q, e){
-  const hit = lewisHit(q.x, q.y);
+  const hit = lewisHit(q.x, q.y, true);
+  if (hit && isLocked(hit.atom || hit.bond)){ flashHint('Destrave o objeto antes de editar.'); return; }
   if (hit && hit.type === 'bond'){ P.mode = 'lewis-bond'; P.bond = hit.bond; return; }
   if (hit && hit.type === 'egroup'){ P.mode = 'lewis-egroup'; P.atom = hit.atom; P.gidx = hit.idx; P.hit = hit; P.grpN = hit.atom.e[hit.idx].n; return; }
   if (hit && hit.type === 'atom'){
@@ -8501,7 +8553,12 @@ function moveLewis(q, e){
   if (P.mode === 'lewis-atom' || P.mode === 'lewis-bonddrag'){
     P.mode = 'lewis-bonddrag';
     const a = P.atom;
-    const tgt = hitCore(q.x, q.y) || atomNear(q.x, q.y, 1.5);
+    const tgt = hitCore(q.x, q.y, true) || atomNear(q.x, q.y, 1.5, true);
+    if (isLocked(tgt)){
+      P.target = P.ghost = S.preview = null;
+      P.label = tt('Destrave o objeto antes de editar.');
+      return;
+    }
     if (tgt && tgt.id !== a.id){
       P.target = tgt; P.ghost = null;
       P.label = describeConnection(a, tgt, buildGraph());
@@ -8524,8 +8581,13 @@ function moveLewis(q, e){
     const sx = a.x + G.rxE * Math.cos(grp.a), sy = a.y + G.ryE * Math.sin(grp.a);
     const n = P.grpN;
     S.dragHide = {id: a.id, gidx: P.gidx, n};
-    const parts = hitAtomParts(q.x, q.y);
-    let tgt = parts && parts.atom && parts.atom.id !== a.id ? parts.atom : (atomNear(q.x, q.y, 1.6) || null);
+    const parts = hitAtomParts(q.x, q.y, true);
+    let tgt = parts && parts.atom && parts.atom.id !== a.id ? parts.atom : atomNear(q.x, q.y, 1.6, true);
+    if (isLocked(tgt)){
+      P.target = P.action = S.preview = null;
+      P.label = tt('Destrave o objeto antes de editar.');
+      return;
+    }
     if (tgt && tgt.id === a.id) tgt = null;
     const own = !tgt && (parts && parts.atom && parts.atom.id === a.id || Math.hypot((q.x - a.x) / G.rxE, (q.y - a.y) / G.ryE) < 2.3);
     P.action = null; P.target = tgt; P.tgroup = null;
@@ -8551,6 +8613,7 @@ function moveLewis(q, e){
 }
 function upLewis(p, q, e){
   S.preview = null;
+  if (isLocked(p.atom) || isLocked(p.bond) || isLocked(p.target)){ S.dragHide = null; return; }
   const L = S.settings.lewis;
   switch (p.mode){
     case 'lewis-atom': {
@@ -8659,7 +8722,7 @@ function finishLewisInk(p, e){
   // 4) traço paralelo a uma ligação = aumenta a ordem
   if (st > 0.85){
     for (const b of g.bonds){
-      if (b.k !== 'cov') continue;
+      if (b.k !== 'cov' || isLocked(b)) continue;
       const a1 = g.atoms.get(b.a), a2 = g.atoms.get(b.b);
       const bl = Math.hypot(a2.x - a1.x, a2.y - a1.y);
       const maxD = Math.max(...pts.map(v => distToSeg(v[0], v[1], a1.x, a1.y, a2.x, a2.y)));
@@ -8748,6 +8811,7 @@ function eraseAt(x, y){
   const kill = new Set();
   let changed = false;
   for (const o of objs()){
+    if (isLocked(o)) continue;
     if (o.t === 'atom'){
       const G = atomGeom(o);
       for (let k = (o.e || []).length - 1; k >= 0; k--){
@@ -8759,7 +8823,7 @@ function eraseAt(x, y){
     } else if (o.t === 'bond'){
       const a = getObj(o.a), b = getObj(o.b);
       if (a && b){ const E = bondEnds(a, b); if (distToSeg(x, y, E.x1, E.y1, E.x2, E.y2) < r) kill.add(o.id); }
-    } else if (!o.lock && objHit(o, x, y, r)) kill.add(o.id);
+    } else if (objHit(o, x, y, r)) kill.add(o.id);
   }
   if (kill.size){
     if (!P.undoPushed){ pushUndo(); P.undoPushed = true; }
@@ -9409,7 +9473,11 @@ function renderOptBar(){
   }
   bar.classList.toggle('empty', !bar.children.length);
 }
-function updateSelectionUI(){ if (S.tool === 'select') renderOptBar(); S.dirty = true; }
+function updateSelectionUI(){
+  for (const id of S.sel) if (isLocked(getObj(id))) S.sel.delete(id);
+  if (S.tool === 'select') renderOptBar();
+  S.dirty = true;
+}
 function setElement(el){
   S.settings.lewis.element = el; saveSettings();
   if (S.tool !== 'lewis') setTool('lewis'); else renderOptBar();
@@ -9418,10 +9486,11 @@ function setElement(el){
 
 /* ---------- ações químicas ---------- */
 function targetAtoms(){
-  const sel = Array.from(S.sel).map(getObj).filter(o => o && o.t === 'atom');
+  const editableAtom = o => o && o.t === 'atom' && !isLocked(o);
+  const sel = Array.from(S.sel).map(getObj).filter(editableAtom);
   if (sel.length) return sel;
-  if (S.hover && S.hover.atom) return Array.from(moleculeIds(S.hover.atom.id)).map(getObj);
-  return objs().filter(o => o.t === 'atom');
+  if (S.hover && S.hover.atom) return Array.from(moleculeIds(S.hover.atom.id)).map(getObj).filter(editableAtom);
+  return objs().filter(editableAtom);
 }
 function fillPairs(){
   const atoms = targetAtoms(); if (!atoms.length){ toast('Desenhe átomos primeiro'); return; }
@@ -9592,9 +9661,17 @@ function openPageMenu(anchor){
 function showContextMenu(x, y, hit, wx, wy){
   const items = [];
   if (S.crop){ menu([{label: 'Aplicar recorte', icon: 'check', key: 'Enter', fn: () => endCrop(true)}, {label: 'Cancelar recorte', key: 'Esc', fn: () => endCrop(false)}], x, y); return; }
-  if (!hit){
-    const lk = lockedAt(wx, wy);
-    if (lk){ menu([{label: lk.t === 'img' ? 'Imagem travada' : lk.t === 'video' ? 'Vídeo travado' : 'Objeto travado', header: true}, {label: 'Destravar', icon: 'unlock', fn: () => { toggleLock([lk.id], false); S.sel = new Set([lk.id]); updateSelectionUI(); }}], x, y); return; }
+  const locked = lockedAt(wx, wy);
+  const unlockItem = locked && {label: 'Destravar', icon: 'unlock', fn: () => {
+    const owner = lockOwner(locked);
+    if (!owner) return;
+    toggleLock([owner.id], false);
+    if (!isLocked(locked)) S.sel = new Set([locked.id]);
+    updateSelectionUI();
+  }};
+  if (locked && (!hit || hit.type === 'zone' || (hit.type === 'obj' && ['atom', 'bond'].includes(locked.t)))){
+    menu([{label: 'Objeto travado', header: true}, unlockItem], x, y);
+    return;
   }
   const palRow = (fn, cur) => ({palette: h('div', {class: 'mpal'}, swatchRow(cur, c => { closeMenus(); fn(c); }, {custom: true}))});
   if (hit && (hit.type === 'atom' || hit.type === 'egroup' || hit.type === 'zone')){
@@ -9633,7 +9710,7 @@ function showContextMenu(x, y, hit, wx, wy){
     if (vs.X >= 2 && conjugatedLP(a, g)) items.push({label: `${vs.notation}: ${vs.X === 3 ? tt('trigonal plana') : tt('angular')} (${tt('par conjugado')})`, header: true});
     else if (vs.X >= 2 && vs.mgeom) items.push({label: `${vs.notation}: ${vs.mgeom}`, header: true});
     items.push(...animMenuItems(hit));
-    items.push(palRow(c => { pushUndo(); a.c = c; afterChange(); }, a.c), '-', {label: 'Apagar átomo', icon: 'trash', danger: true, fn: () => removeIds([a.id])});
+    items.push(palRow(c => { pushUndo(); a.c = c; afterChange(); }, a.c), '-', {label: 'Travar', icon: 'lock', fn: () => toggleLock([a.id], true)}, {label: 'Apagar átomo', icon: 'trash', danger: true, fn: () => removeIds([a.id])});
   } else if (hit && hit.type === 'bond'){
     const b = hit.bond;
     const setK = (k, o) => () => { pushUndo(); b.k = k; if (o) b.o = o; delete b.wd; afterChange(); };
@@ -9651,6 +9728,7 @@ function showContextMenu(x, y, hit, wx, wy){
       {label: b.glow ? 'Remover destaque' : 'Destacar', icon: 'glow', fn: () => { pushUndo(); b.glow = b.glow ? null : 'glow'; afterChange(); }},
       ...animMenuItems(hit),
       palRow(c => { pushUndo(); b.c = c; afterChange(); }, b.c),
+      {label: 'Travar', icon: 'lock', fn: () => toggleLock([b.id], true)},
       {label: 'Apagar ligação', icon: 'trash', danger: true, fn: () => removeIds([b.id])});
   } else if (hit && hit.type === 'obj'){
     const o = hit.obj;
@@ -9711,6 +9789,7 @@ function showContextMenu(x, y, hit, wx, wy){
     if (page().stops && page().stops.length) items.push({label: 'Apagar as paradas desta página', icon: 'trash', fn: clearStops});
     items.push(...animEmptyMenuItems());
   }
+  if (unlockItem) items.push('-', {...unlockItem, label: 'Destravar objeto sobreposto'});
   menu(items, x, y);
 }
 
@@ -9740,14 +9819,15 @@ function renamePage(){
   promptDialog('Nome da página', page().name, v => { if (v){ page().name = v; updatePageBar(); scheduleSave(); } });
 }
 function clearPage(){
-  confirmDialog('Limpar esta página?', 'Você pode desfazer com Ctrl+Z.', 'Limpar página', () => { pushUndo(); page().objects = []; afterChange(); });
+  const msg = objs().some(o => o.lock) ? 'Objetos travados ficam na página. Você pode desfazer com Ctrl+Z.' : 'Você pode desfazer com Ctrl+Z.';
+  confirmDialog('Limpar esta página?', msg, 'Limpar página', () => { pushUndo(); removeIds(objs().map(o => o.id)); popUndoIfUnchanged(); });
 }
 function newBoard(){
   confirmDialog('Começar um quadro novo?', 'O quadro atual será substituído. Salve antes se quiser guardá-lo.', 'Novo quadro', () => {
     S.doc = newDoc(); S.undo = Object.create(null); S.redo = Object.create(null); reindex(); updatePageBar(); S.dirty = true; scheduleSave();
   });
 }
-function selectAll(){ setTool('select'); S.sel = new Set(objs().filter(o => !o.lock).map(o => o.id)); updateSelectionUI(); }
+function selectAll(){ setTool('select'); S.sel = new Set(objs().filter(o => !isLocked(o)).map(o => o.id)); updateSelectionUI(); }
 function centerWorld(){ return toWorld(innerWidth / 2, innerHeight / 2); }
 function fitAll(animate = false){
   let bb = null;
@@ -10424,7 +10504,7 @@ function cellDown(ev, e){
   // modo desenhar: escolhe o elemento
   if (S.replaceAtom){
     const a = getObj(S.replaceAtom); S.replaceAtom = null;
-    if (a){ pushUndo(); a.el = e.sym; if (S.settings.lewis.autoPairs) autoElectrons(a, buildGraph()); afterChange(); toast(`Átomo trocado por ${e.nome}`, 'chem'); }
+    if (a && !isLocked(a)){ pushUndo(); a.el = e.sym; if (S.settings.lewis.autoPairs) autoElectrons(a, buildGraph()); afterChange(); toast(`Átomo trocado por ${e.nome}`, 'chem'); }
   } else setElement(e.sym);
   refreshPTable();
   if (!PT.pinned) togglePTable(false);
@@ -12749,18 +12829,20 @@ function tidySnap(comp, g){
 }
 /* arruma as moléculas inteiras a que pertencem os átomos dados */
 function tidyStructures(atomIds){
-  const g = buildGraph(), sk = skelState(g), done = new Set();
+  const g = buildGraph(), sk = skelState(g), done = new Set(), editable = [];
   for (const id of atomIds){
     if (done.has(id) || !g.atoms.has(id)) continue;
     const comp = Array.from(componentOf(id, g, TIDY_KINDS));
     comp.forEach(x => done.add(x));
+    if (comp.some(x => isLocked(g.atoms.get(x)))) continue;
+    editable.push(...comp);
     if (comp.length < 2) continue;
     // fórmula de esqueleto (ou cadeia de carbonos desenhada sem os H): a forma fica; só ângulos e comprimentos
     const bare = x => { const a = g.atoms.get(x); return a.el === 'C' && !a.q && !(a.e || []).length && bondOrderSum(a, g) < 4 && (g.adj.get(x) || []).filter(n => isCovLike(n.bond) && n.other.el !== 'H').length >= 2; };
     if (comp.some(x => sk.c.has(x) || bare(x))) tidySnap(comp, g); else tidyLayout(comp, g);
   }
   const g2 = buildGraph();
-  for (const id of done){ const a = g2.atoms.get(id); if (a && eCount(a)) relayoutElectrons(a, g2); }
+  for (const id of editable){ const a = g2.atoms.get(id); if (a && eCount(a)) relayoutElectrons(a, g2); }
 }
 
 function optimizeDrawing(){
@@ -12919,10 +13001,11 @@ function fixHydrogens(ids, addH){
   const kill = new Set(), added = [];
   for (const id of ids){
     const g = buildGraph();
-    const a = g.atoms.get(id); if (!a) continue;
+    const a = g.atoms.get(id); if (!a || isLocked(a)) continue;
     const target = ringTarget(a); if (target == null) continue;
     const nb = (g.adj.get(id) || []).filter(n => isCovLike(n.bond) && !kill.has(n.other.id));
     const termH = nb.filter(n => n.other.el === 'H' && (g.adj.get(n.other.id) || []).length === 1);
+    if (termH.some(n => isLocked(n.other))) continue;
     const heavy = nb.filter(n => !termH.includes(n));
     const heavySum = heavy.reduce((s, n) => s + (n.bond.k === 'dat' ? 1 : n.bond.o), 0);
     const need = Math.max(0, target - heavySum);
@@ -13010,7 +13093,7 @@ function angDiffSigned(a, b){ let d = a - b; while (d > Math.PI) d -= TAU; while
 /* ---------- aplicar ---------- */
 function heavyAtomNear(x, y, tol, skip){
   let best = null, bd = tol;
-  for (const o of objs()) if (o.t === 'atom' && o.el !== 'H' && !(skip && skip.has(o.id))){ const d = Math.hypot(o.x - x, o.y - y); if (d < bd){ bd = d; best = o; } }
+  for (const o of objs()) if (o.t === 'atom' && !isLocked(o) && o.el !== 'H' && !(skip && skip.has(o.id))){ const d = Math.hypot(o.x - x, o.y - y); if (d < bd){ bd = d; best = o; } }
   return best;
 }
 function hasDouble(g, id, exclude){
@@ -13028,6 +13111,10 @@ function assignKekule(ids, ringBonds, start){
 function applyRingPlan(plan){
   const T = S.settings.tools.ring, L = bondLen();
   const n = plan.n, arom = plan.kind[2];
+  if ([...plan.existing, plan.H, plan.Y, plan.bond].some(id => isLocked(getObj(id)))){
+    flashHint('Destrave o objeto antes de editar.');
+    return [];
+  }
   pushUndo();
   if (plan.type === 'subst') removeIdsSilent([plan.H]);
   const ids = [], created = new Set();
@@ -13069,7 +13156,7 @@ function removeIdsSilent(ids){
 /* ---------- ressonância: Kekulé → Kekulé deslocado → círculo ---------- */
 function ringResonance(R){
   const bonds = R.bonds;
-  if (bonds.length !== R.ids.length) return;
+  if (bonds.length !== R.ids.length || bonds.some(isLocked)) return;
   pushUndo();
   if (R.arom){
     bonds.forEach(b => { delete b.ar; delete b.rk; });
@@ -13096,6 +13183,8 @@ function ringResonance(R){
 
 /* ---------- ponteiro ---------- */
 function ringClick(q){
+  const target = lewisHit(q.x, q.y, true);
+  if (target && isLocked(target.atom || target.bond)){ flashHint('Destrave o objeto antes de editar.'); return; }
   const plan = ringPlan(q.x, q.y);
   if (plan.type === 'res') ringResonance(plan.ring);
   else applyRingPlan(plan);
@@ -15296,6 +15385,7 @@ function moDown(q, e){
   S.moHover = null;
   const it = moIntent(q);
   P.mode = 'mo-none';
+  if (isLocked(it.d)){ flashHint('Destrave o objeto antes de editar.'); return; }
   const sel = (d, lv) => { MO.sel = {d: d.id, l: lv.id}; renderOptBar(); S.dirty = true; };
   switch (it.k){
     case 'newdiag': {
@@ -15491,7 +15581,7 @@ function drawMOHover(c){
   c.restore();
 }
 function moDblClick(x, y){
-  const d = moAt(x, y, 0); if (!d) return false;
+  const d = moAt(x, y, 0); if (!d || isLocked(d)) return false;
   if (S.tool === 'mo' && MO.mode === 'electron') return true;   // cliques rápidos põem ↑↓, não abrem o editor
   const [lx, ly] = moLocal(d, x, y);
   const lv = (moHitLevel(d, lx, ly) || {}).lv || moHitLabel(d, lx, ly);
@@ -15505,7 +15595,7 @@ function moDblClick(x, y){
 }
 function moDeleteSel(){
   const s = MO.sel; if (!s) return false;
-  const d = getObj(s.d); if (!d) return false;
+  const d = getObj(s.d); if (!d || isLocked(d)) return false;
   pushUndo();
   d.levels = d.levels.filter(l => l.id !== s.l);
   d.links = (d.links || []).filter(l => l.a !== s.l && l.b !== s.l);
@@ -15515,7 +15605,7 @@ function moDeleteSel(){
 }
 function moSelLevel(){
   const s = MO.sel; if (!s) return null;
-  const d = getObj(s.d); if (!d) return null;
+  const d = getObj(s.d); if (!d || isLocked(d)) return null;
   const lv = d.levels.find(l => l.id === s.l);
   return lv ? {d, lv} : null;
 }
@@ -15885,8 +15975,8 @@ function seaAtomSet(list){ const s = new Set(); for (const o of list || objs()) 
 /* junta átomos metálicos num mar de elétrons (cria, amplia ou funde mares) */
 function makeMetallic(atoms, animate = true){
   atoms = atoms.filter(a => a && a.t === 'atom' && isMetal(a.el));
-  if (!atoms.length) return null;
   const seas = [...new Set(atoms.map(a => seaOf(a.id)).filter(Boolean))];
+  if (!atoms.length || atoms.some(isLocked) || seas.some(o => isLocked(o) || o.ids.some(id => isLocked(getObj(id))))) return null;
   let sea = seas[0];
   if (!sea) sea = addObj({t: 'sea', ids: [], c: 'p1', seed: 1 + Math.floor(Math.random() * 1e6), showE: true});
   for (const s2 of seas.slice(1)){ for (const id of s2.ids) if (!sea.ids.includes(id)) sea.ids.push(id); page().objects = objs().filter(o => o !== s2); }
@@ -15916,6 +16006,10 @@ function makeMetallic(atoms, animate = true){
 }
 /* desfaz: átomos neutros de novo, com os elétrons de valência de volta */
 function undoMetallic(sea){
+  if (isLocked(sea) || sea.ids.some(id => isLocked(getObj(id)))){
+    flashHint('Destrave o objeto antes de editar.');
+    return;
+  }
   const g = buildGraph();
   for (const id of sea.ids){ const a = getObj(id); if (a && a.t === 'atom'){ a.q = 0; autoElectrons(a, g); } }
   page().objects = objs().filter(o => o !== sea);
@@ -16498,7 +16592,7 @@ function defineLousaTools(){
     for (const id of a.ids){ const o = apiObj(id); if (o.t === 'bond') continue; if (o.t === 'sea'){ for (const t of o.ids){ if (set.has(t)) continue; const at = getObj(t); if (at){ at.x += +a.dx || 0; at.y += +a.dy || 0; } } continue; } moveObj(o, +a.dx || 0, +a.dy || 0); }
     return {moved: a.ids.length};
   }, {required: ['ids']});
-  defTool('delete_objects', 'Delete objects (deleting an atom also removes its bonds and attached orbitals).', {ids: ids('Object ids')}, a => { a.ids.forEach(id => apiObj(id)); removeIds(a.ids); return {deleted: a.ids.length}; }, {required: ['ids']});
+  defTool('delete_objects', 'Delete objects (deleting an atom also removes its bonds and attached orbitals).', {ids: ids('Object ids')}, a => { a.ids.forEach(id => apiObj(id)); return {deleted: removeIds(a.ids)}; }, {required: ['ids']});
   defTool('set_color', 'Set the color of objects.', {ids: ids('Object ids'), color: COLOR_SCHEMA}, a => { const c = apiColor(a.color); for (const id of a.ids) apiObj(id).c = c; return {count: a.ids.length}; }, {required: ['ids', 'color']});
   defTool('select', 'Select objects on the board (so the teacher sees them highlighted); empty list clears the selection.', {ids: ids('Object ids')}, a => { S.sel = new Set((a.ids || []).filter(id => getObj(id))); updateSelectionUI(); S.dirty = true; return {selected: S.sel.size}; }, {mutates: false});
 
@@ -17407,16 +17501,30 @@ function mediaContextItems(o){
 
 /* ---------- travar ---------- */
 function toggleLock(ids, on){
+  const targets = ids.map(getObj).filter(o => o && !!o.lock !== on);
+  if (!targets.length) return;
   pushUndo();
-  for (const id of ids){ const o = getObj(id); if (!o || o.t === 'bond') continue; if (on) o.lock = true; else delete o.lock; }
-  if (on){ for (const id of ids) S.sel.delete(id); }
+  for (const o of targets) if (on) o.lock = true; else delete o.lock;
   afterChange(); renderOptBar();
-  flashHint(tt(on ? 'Travado: não é selecionado nem apagado. Botão direito → Destravar.' : 'Destravado'));
+  toast(on ? 'Travado: não é selecionado nem apagado. Botão direito → Destravar.' : 'Destravado', 'ok', 3600);
 }
 function lockedAt(x, y){
   const list = objs(), t = tolW(6);
-  for (let i = list.length - 1; i >= 0; i--){ const o = list[i]; if (o.lock && objHit(o, x, y, t)) return o; }
-  return null;
+  let other = null;
+  for (let i = list.length - 1; i >= 0; i--){
+    const o = list[i];
+    if (!isLocked(o)) continue;
+    if (o.t === 'bond'){
+      const a = getObj(o.a), b = getObj(o.b);
+      if (!a || !b) continue;
+      const e = bondEnds(a, b);
+      if (distToSeg(x, y, e.x1, e.y1, e.x2, e.y2) < t) return o;
+    } else if (objHit(o, x, y, t)){
+      if (o.t === 'atom') return o;
+      if (!other) other = o;
+    }
+  }
+  return other;
 }
 function drawLockBadges(c){
   if (S.tool !== 'select' || !S.mouseIn) return;
@@ -20050,7 +20158,7 @@ function chartLiveToggle(o, i){
   animRun({kind: 'chartLive', id: o.id, i, loop: true, ph0: Math.acos(1 - 2 * u) / Math.PI});
 }
 function chartLiveStop(r){
-  const o = getObj(r.id); if (!o || !o.params || !o.params[r.i]) return;
+  const o = getObj(r.id); if (!o || isLocked(o) || !o.params || !o.params[r.i]) return;
   const p = o.params[r.i], st = chartNice(p.b - p.a, 200);
   p.v = clamp(Math.round(chartLiveValue(o, r) / st) * st, p.a, p.b);
   S.rev = (S.rev || 0) + 1; scheduleSave();
@@ -22449,6 +22557,15 @@ function mechCommit(r){
   const arrows = r.ids.map(id => getObj(id)).filter(Boolean);
   if (!arrows.length) return;
   const res = mechApply(mechStateFrom(objs()), arrows);
+  const BK = mechBrackets(objs(), res.after);
+  const changedAtoms = [...res.after.atoms].filter(([id, a]) => {
+    const b = res.before.atoms.get(id);
+    return !b || a.x !== b.x || a.y !== b.y || a.q !== b.q || !molSameE(a.e, b.e);
+  }).map(([id]) => id);
+  if (arrows.some(isLocked) || [...changedAtoms, ...res.touched, ...BK.remove, ...BK.q.keys()].some(id => isLocked(getObj(id)))){
+    flashHint('Destrave o objeto antes de editar.');
+    return;
+  }
   pushUndo();
   for (const [id, a] of res.after.atoms){ const d = getObj(id); if (d){ d.x = a.x; d.y = a.y; d.e = a.e.map(g => ({a: g.a, n: g.n})); d.q = a.q || 0; if (!d.q) delete d.q; } }
   const rm = [];
@@ -22458,7 +22575,6 @@ function mechCommit(r){
     if (d){ d.o = b.o; d.k = b.k; if (!b.wd) delete d.wd; }
     else addObj({t: 'bond', a: b.a, b: b.b, o: b.o, k: 'cov'}, {silent: true});
   }
-  const BK = mechBrackets(objs(), res.after);
   for (const [id, q] of BK.q){ const o = getObj(id); if (o) o.q = q; }
   page().objects = objs().filter(o => !rm.includes(o.id) && !r.ids.includes(o.id) && !BK.remove.has(o.id));
   afterChange();
@@ -22657,6 +22773,7 @@ function animPointerDown(e, q){
     return true;
   }
   if (ctl.part === 'play'){ chartLiveToggle(o, ctl.s.i); return true; }
+  if (isLocked(o)){ flashHint('Destrave o objeto antes de editar.'); return true; }
   // trilho, botão deslizante ou linha do "ponto": arrasta o valor
   const r = chartLiveRun(o, ctl.s.i); if (r){ AN_RUNS.splice(AN_RUNS.indexOf(r), 1); }
   pushUndo();

@@ -38,6 +38,7 @@ Both lectures below are in Portuguese. They are built into the app. The download
 - **Draw structures.** Press **L** for the Lewis pen. Choose an element and click to place an atom. Drag between atoms to bond them, or click beside an atom to add lone pairs. Use **D** to open a selected molecule in 3D.
 - **Explain a change.** Add curved electron arrows, build a molecular orbital diagram, or plot a curve with a parameter you can vary during class.
 - **Prepare the presentation.** Add a page with the **+** beside the page counter. Right-click the board and choose **Save this view as a stop** to return to a particular region with the arrow keys. Use the laser pointer or spotlight to direct attention.
+- **Protect a completed drawing.** Right-click an object and choose **Lock**, or use the lock icon after selecting several objects. Right-click the locked object and choose **Unlock** to edit it again. Locking a bond also holds its atoms in place.
 - **Keep a copy.** Use **Menu → Save board (.json)** for an editable file or **Export image (PNG)** for a handout. Browser autosave keeps the current board on this device and site, so use JSON to move it to another computer.
 
 ## Run locally
