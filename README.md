@@ -32,6 +32,12 @@ ChemBoard is a browser whiteboard for chemistry instructors. Draw Lewis structur
 
 *Building water directly on the board. [Play the recording with controls](https://henriquecsj.github.io/chemboard/docs/media/lewis-pen.mp4).*
 
+## Draw carbon chains and add hydrogens
+
+- Press **Z** and drag on the board. The zigzag preview shows the carbon count before you release. Hold **Shift** to snap the direction in 15° steps. Drag from a carbon with an available valence to extend the structure, or choose **Insert by count…** for a chain of 2–80 carbons. New chains use skeletal notation by default.
+- Click **Complete H** to add the missing hydrogens to the selection while preserving bond orders. The new chain is selected after drawing. Double-click an atom or bond with **Select** to select an existing molecule.
+- To illustrate hydrogenation, select a C=C or C≡C bond or both of its carbons and click **Hydrogenate C=C/C≡C**. The tool reduces eligible non-aromatic bonds to single bonds and completes the hydrogens on their carbons. A single **Undo** reverses the edit.
+
 ## Draw and rotate on the board
 
 - **Rotate.** Select a molecule, drawing, text, image or video. Use **−90°**, **+90°**, or **Rotate…** for an exact angle. Drag the round handle for 1° steps and hold **Shift** to snap to 15°. Press **Esc** to cancel the drag.

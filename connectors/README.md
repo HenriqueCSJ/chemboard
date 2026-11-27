@@ -76,12 +76,13 @@ Run the companion yourself, pair the board, and configure your client for **Stre
 
 ## Board capabilities
 
-Start with `get_board` for object IDs, the current selection, lock owners, and drawing defaults. The paired board advertises 74 tools through MCP. The in-board assistant uses the same catalog for drawing and reading text.
+Start with `get_board` for object IDs, the current selection, lock owners, and drawing defaults. The paired board advertises 77 tools through MCP. The in-board assistant uses the same catalog for drawing and reading text.
 
 | Task | Tools |
 | --- | --- |
 | Add or edit formatted labels and equations | `add_text`, `update_text` |
 | Draw exact shapes and freehand strokes | `add_shape` with `circle`, `square` or `equilateral_triangle`. `add_ink` accepts optional smoothing, pressure samples, and shape recognition. |
+| Draw carbon chains, complete H or saturate a bond | Use `add_carbon_chain` with a count of 2–80. `complete_hydrogens` keeps bond orders. `hydrogenate` reduces selected non-aromatic C=C/C≡C and completes H on their carbons. |
 | Rotate or lock objects | `rotate_objects` takes a signed angle in degrees. `set_object_lock` reports the owner of an inherited lock. |
 | Change Pen and Shapes defaults | `set_board` takes `pen_smoothing`, `shape_recognition`, and `constrain_shapes`. Use `add_ink` options to control a single tool-generated stroke. |
 | Open a sample lecture | `list_lectures`, `insert_lecture`. Insertion reuses an existing copy unless `another_copy` is true. |

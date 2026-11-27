@@ -26,6 +26,12 @@ Use a caneta de Lewis para construir uma estrutura diante da turma, abra um mode
 
 *[Reproduzir a gravação da caneta de Lewis com controles](https://henriquecsj.github.io/chemboard/docs/media/lewis-pen.mp4).*
 
+## Desenhe cadeias carbônicas e adicione hidrogênios
+
+- Pressione **Z** e arraste no quadro. A prévia mostra o zigue-zague e a contagem de carbonos antes de soltar. Segure **Shift** para orientar a cadeia em passos de 15°. Arraste a partir de um carbono com valência livre para estender a estrutura ou use **Inserir por número…** para montar uma cadeia de 2 a 80 carbonos. As novas cadeias começam em fórmula de esqueleto.
+- Clique em **Completar H** para acrescentar os hidrogênios que faltam à seleção e manter as ordens de ligação. A cadeia nova já fica selecionada. Em uma molécula existente, use **Selecionar e mover** e dê um duplo clique em um átomo ou ligação para selecionar a molécula inteira.
+- Para ilustrar a hidrogenação, selecione uma ligação C=C ou C≡C ou seus dois carbonos. **Hidrogenar C=C/C≡C** converte as ligações não aromáticas elegíveis em simples e completa os H nesses carbonos. A operação pode ser revertida em um único **Desfazer**.
+
 ## Desenhe e gire no quadro
 
 - **Rotação.** Selecione uma molécula, desenho, texto, imagem ou vídeo. Use **−90°**, **+90°** ou **Girar…** para indicar o ângulo exato. Arraste a alça circular em passos de 1° e mantenha **Shift** pressionado para usar passos de 15°. **Esc** cancela o arraste.

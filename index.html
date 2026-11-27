@@ -4542,6 +4542,20 @@ const EN = {
   'Selecionar e mover': 'Select and move', 'Mover o quadro': 'Pan the board', 'Caneta química (Lewis)': 'Chem pen (Lewis)', 'Caneta': 'Pen',
   'Marca-texto': 'Highlighter', 'Formas': 'Shapes', 'Setas químicas': 'Chemical arrows', 'Texto químico': 'Chemical text', 'Borracha': 'Eraser',
   'Laser': 'Laser', 'Holofote': 'Spotlight', 'Anéis': 'Rings', 'Orbitais': 'Orbitals',
+  'Cadeia carbônica': 'Carbon chain', 'Cadeia carbônica (Z)': 'Carbon chain (Z)', 'Inserir por número…': 'Insert by count…',
+  'Número de carbonos': 'Number of carbons', 'Desenhar uma cadeia com um número exato de carbonos': 'Draw a chain with an exact number of carbons',
+  'Arraste para desenhar a cadeia': 'Drag to draw the chain', 'Escolha um carbono neutro com valência livre.': 'Choose a neutral carbon with an available valence.',
+  'A cadeia sobrepõe átomos existentes.': 'The chain overlaps existing atoms.',
+  'Ocultar os símbolos C nas novas cadeias': 'Hide C labels in new chains',
+  'Completar H': 'Complete H', 'Hidrogenar C=C/C≡C': 'Hydrogenate C=C/C≡C',
+  'Adicionar os H que faltam aos átomos selecionados, preservando as ligações': 'Add missing H to selected atoms and preserve bond orders',
+  'Converter C=C e C≡C selecionadas em ligações simples e completar os H': 'Convert selected C=C and C≡C to single bonds and add H',
+  'Selecione átomos ou ligações no quadro.': 'Select atoms or bonds on the board.',
+  'Nenhuma ligação não aromática C=C ou C≡C elegível na seleção.': 'No eligible non-aromatic C=C or C≡C in the selection.',
+  'Nenhum hidrogênio a acrescentar aos átomos elegíveis.': 'No hydrogens to add to the eligible atoms.',
+  'H adicionados': 'H added', 'Ligações saturadas': 'Bonds saturated',
+  'Desenhar do carbono': 'Drag from a carbon', 'estende a cadeia se houver valência livre': 'extend the chain if it has an available valence',
+  'desenha a cadeia em zigue-zague': 'draw a zigzag chain', 'fixa a direção a cada 15°': 'snap the direction in 15° steps',
   'Clique': 'Click', 'seleciona': 'selects', 'Arraste': 'Drag', 'move': 'moves', 'Arraste uma ligação': 'Drag a bond', 'move a molécula': 'moves the molecule',
   'Duplo clique': 'Double-click', 'molécula inteira': 'whole molecule', 'adiciona à seleção': 'adds to selection', 'move o quadro': 'pans the board',
   'Roda': 'Wheel', 'zoom': 'zoom', 'Clique no vazio': 'Click empty space', 'átomo': 'atom', 'Escreva Na, Cl, Fe…': 'Write Na, Cl, Fe…',
@@ -5498,7 +5512,7 @@ const DEFAULT_SETTINGS = {
   tools: {
     pen: {c: 'p0', w: 3, smooth: false}, hl: {c: HL_COLORS[0], w: 22}, shape: {c: 'p1', w: 3, kind: 'rect', fill: 'none', dash: false},
     arrow: {c: 'p2', w: 3, kind: 'arrow', dash: false}, text: {c: 'p0', fs: 30, font: 'sans', chem: true, bold: false},
-    lewis: {c: 'p0'}, eraser: {w: 18}, ring: {kind: 'bz', h: true}
+    lewis: {c: 'p0'}, eraser: {w: 18}, ring: {kind: 'bz', h: true}, chain: {skeletal: true}
   },
   spot: {r: 160},
   ui: {scale: 1, startTheme: 'last', startGrid: 'last', hints: true, wheel: 'zoom', touch: 'auto', perf: 'auto'},
@@ -5622,7 +5636,7 @@ function popUndoIfUnchanged(){
   if (st && st.length && st[st.length - 1] === snapshot()) st.pop();
 }
 function undo(){
-  if (P?.mode === 'erase' || P?.mode === 'rotate') cancelGesture();
+  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain') cancelGesture();
   if (S.crop) S.crop = null;
   const id = page().id, st = S.undo[id];
   if (!st || !st.length){ toast('Nada para desfazer'); return; }
@@ -5631,7 +5645,7 @@ function undo(){
   afterChange();
 }
 function redo(){
-  if (P?.mode === 'erase' || P?.mode === 'rotate') cancelGesture();
+  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain') cancelGesture();
   const id = page().id, st = S.redo[id];
   if (!st || !st.length){ toast('Nada para refazer'); return; }
   (S.undo[id] = S.undo[id] || []).push(snapshot());
@@ -8405,6 +8419,7 @@ function onDown(e){
   }
   if (tool === 'select') downSelect(q, e);
   else if (tool === 'lewis') downLewis(q, e);
+  else if (tool === 'chain') downCarbonChain(q);
   else if (tool === 'pen' || tool === 'hl') { P.mode = 'ink'; if (tool === 'hl' || shapeRecognitionMode() !== 'off') armHold(); }
   else if (tool === 'shape' || tool === 'arrow'){ P.mode = 'shape'; }
   else if (tool === 'text'){ e.preventDefault(); downText(q); }
@@ -8438,6 +8453,7 @@ function onMove(e){
   if (P.mode === 'erase'){
     P.x = q.x; P.y = q.y; queueErase(e, P); return;
   }
+  if (P.mode === 'chain'){ previewCarbonChain(P, q, e.shiftKey); return; }
   const lastPt = P.pts[P.pts.length - 1];
   if (Math.hypot(q.x - lastPt[0], q.y - lastPt[1]) > tolW(1.2)){
     P.pts.push([q.x, q.y]); if (P.pr) P.pr.push(q.p ?? 0.5);
@@ -8511,6 +8527,7 @@ function onUp(e){
       case 'laser': case 'mseek': break;
       case 'aslide': animSlideEnd(p); break;
       case 'crop': S.dirty = true; break;
+      case 'chain': finishCarbonChain(p, q, e.shiftKey); break;
       case 'ring': if (!p.moved) ringClick(q); break;
       case 'spot': if (!p.moved) S.spotRect = null; break;
       default: if (S.tool === 'lewis') upLewis(p, q, e); else if (S.tool === 'mo') moUp(p, q, e);
@@ -8861,6 +8878,122 @@ function dragHandle(q, e){
   realign();
 }
 
+/* ---------- cadeia carbônica ---------- */
+const MAX_CHAIN_CARBONS = 80;
+
+function chainAnchorAvailable(a, g){
+  return a.el === 'C' && !isLocked(a) && !(a.q || eCount(a)) &&
+    (g.adj.get(a.id) || []).every(n => n.bond.k === 'cov') && bondOrderSum(a, g) < 4;
+}
+function carbonChainPoints(x, y, count, angle, anchor, g){
+  const L = bondLen(), turn = Math.PI / 6;
+  const adjacent = anchor ? g.adj.get(anchor.id) || [] : [];
+  const neighbors = adjacent.map(n => Math.atan2(n.other.y - y, n.other.x - x));
+  const clearance = t => {
+    if (neighbors.length === 1) return -Math.abs(angDiff(t, neighbors[0]) - 2 * Math.PI / 3);
+    return neighbors.reduce((gap, a) => Math.min(gap, angDiff(t, a)), Math.PI);
+  };
+  let side = clearance(angle + turn) >= clearance(angle - turn) ? 1 : -1;
+  const pts = [[x, y]];
+  for (let i = 1; i < count; i++){
+    const t = angle + side * turn;
+    x += Math.cos(t) * L;
+    y += Math.sin(t) * L;
+    pts.push([x, y]);
+    side *= -1;
+  }
+  return pts;
+}
+function insertCarbonChain(pts, anchor, skeletal){
+  const g = buildGraph();
+  if (anchor && !chainAnchorAvailable(anchor, g)) throw new Error(tt('Escolha um carbono neutro com valência livre.'));
+  const start = anchor ? 1 : 0;
+  const minGap = bondLen() * 0.4;
+  const existing = [...g.atoms.values()];
+  if (pts.slice(start).some(([x, y]) => existing.some(a => Math.hypot(a.x - x, a.y - y) < minGap))){
+    throw new Error(tt('A cadeia sobrepõe átomos existentes.'));
+  }
+  pushUndo();
+  const atoms = anchor ? [anchor.id] : [], bonds = [];
+  for (let i = start; i < pts.length; i++){
+    const [x, y] = pts[i];
+    const a = addObj({t: 'atom', el: 'C', x, y, q: 0, e: [], ...(skeletal ? {sk: true} : {})}, {silent: true});
+    if (i){
+      const b = addObj({t: 'bond', a: atoms[i - 1], b: a.id, o: 1, k: 'cov'}, {silent: true});
+      bonds.push(b.id);
+    }
+    atoms.push(a.id);
+  }
+  afterChange();
+  return {atoms, bonds};
+}
+function downCarbonChain(q){
+  const a = hitCore(q.x, q.y, true);
+  if (isLocked(a)){ flashHint('Destrave o objeto antes de editar.'); return; }
+  const g = a ? buildGraph() : null;
+  if (a && !chainAnchorAvailable(a, g)){
+    flashHint('Escolha um carbono neutro com valência livre.');
+    return;
+  }
+  P.mode = 'chain';
+  P.chainAnchor = a?.id;
+  P.chainGraph = g;
+  P.chainPage = page();
+  if (a){ P.x0 = a.x; P.y0 = a.y; }
+}
+function chainDragPoints(p, q, snap){
+  if (Math.hypot(q.sx - p.sx, q.sy - p.sy) < (p.type === 'touch' ? 8 : 5)) return null;
+  const dx = q.x - p.x0, dy = q.y - p.y0;
+  const count = clamp(1 + Math.round(Math.hypot(dx, dy) / (bondLen() * Math.cos(Math.PI / 6))), 2, MAX_CHAIN_CARBONS);
+  const t = Math.atan2(dy, dx);
+  return carbonChainPoints(p.x0, p.y0, count, snap ? snapAngle(t, 15) : t, getObj(p.chainAnchor), p.chainGraph);
+}
+function previewCarbonChain(p, q, snap){
+  const pts = chainDragPoints(p, q, snap);
+  S.preview = pts ? {kind: 'chain', pts} : null;
+  p.label = pts ? pts.length + ' C' : '';
+  S.ovDirty = true;
+}
+function finishCarbonChain(p, q, snap){
+  if (page() !== p.chainPage) return;
+  const pts = chainDragPoints(p, q, snap);
+  if (!pts){ flashHint('Arraste para desenhar a cadeia'); return; }
+  const anchor = getObj(p.chainAnchor);
+  if (p.chainAnchor && !anchor) return;
+  try {
+    selectNewChain(insertCarbonChain(pts, anchor, S.settings.tools.chain.skeletal));
+  } catch (e){ flashHint(e.message, 2000); }
+}
+function selectNewChain(result){
+  S.sel = new Set([...result.atoms, ...result.bonds]);
+  updateSelectionUI();
+}
+function carbonChainDialog(){
+  const input = h('input', {type: 'number', required: true, min: 2, max: MAX_CHAIN_CARBONS, step: 1, value: 8, class: 'tinput'});
+  const submit = () => {
+    if (!input.reportValidity() || !Number.isInteger(input.valueAsNumber)) return;
+    const count = input.valueAsNumber, L = bondLen();
+    const span = (count - 1) * L * Math.cos(Math.PI / 6);
+    const [cx, cy] = freeSpot(...centerWorld(), span + L, L * 2);
+    try {
+      selectNewChain(insertCarbonChain(carbonChainPoints(cx - span / 2, cy - L / 4, count, 0), null, S.settings.tools.chain.skeletal));
+      closeModal();
+      const v = view();
+      const s = Math.min(v.s, Math.max(ZMIN, (innerWidth - 150) / (span + L)));
+      if (s < v.s) animateViewTo(s, innerWidth / 2 - cx * s, innerHeight / 2 - cy * s);
+      else revealWorld(cx, cy);
+      canvas.focus({preventScroll: true});
+    } catch (e){ toast(e.message); }
+  };
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter'){ e.preventDefault(); submit(); }
+    else if (e.key === 'Escape'){ e.preventDefault(); closeModal(); canvas.focus({preventScroll: true}); }
+  });
+  modal('Cadeia carbônica', h('label', {}, 'Número de carbonos', input),
+    [h('button', {class: 'btn ghost', onclick: closeModal}, 'Cancelar'), h('button', {class: 'btn', onclick: submit}, 'Inserir')]);
+  input.focus({preventScroll: true}); input.select();
+}
+
 /* ---------- caneta química (Lewis) ---------- */
 function lewisHit(x, y, includeLocked = false){
   let hit = hitAtomParts(x, y, includeLocked);
@@ -9137,6 +9270,7 @@ function buildShapeFromDrag(x0, y0, x1, y1, shift){
 }
 function refreshDragConstraint(shift){
   if (P?.mode === 'rotate'){ dragRotation(P, {x: P.x, y: P.y}, shift); return; }
+  if (P?.mode === 'chain'){ previewCarbonChain(P, S.mouse, shift); return; }
   if (P?.mode !== 'shape' || (S.tool === 'arrow' && S.settings.tools.arrow.free)) return;
   S.preview = {kind: 'shape', obj: buildShapeFromDrag(P.x0, P.y0, P.x, P.y, shift)};
   S.ovDirty = true;
@@ -9393,6 +9527,13 @@ function drawOverlaysWorld(c, g){
         pts.forEach(v => flat.push(v[0], v[1]));
         drawInk(c, {pts: flat, pr: pv.pr && pv.pr.length === pts.length ? pv.pr : null, c: T.c, w: T.w, hl: isHL});
       }
+    } else if (pv.kind === 'chain'){
+      c.strokeStyle = acc; c.lineWidth = Math.max(2 / s, 0.085 * S.settings.lewis.fontSize);
+      c.lineJoin = c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(...pv.pts[0]);
+      for (const point of pv.pts.slice(1)) c.lineTo(...point);
+      c.stroke();
     } else if (pv.kind === 'shape') drawShape(c, pv.obj);
     else if (pv.kind === 'marquee'){
       c.fillStyle = withAlpha(acc, 0.08); c.strokeStyle = acc; c.lineWidth = 1 / s; c.setLineDash([4 / s, 3 / s]);
@@ -9464,11 +9605,12 @@ function drawOverlaysScreen(c){
   drawLockBadges(c);
   drawStepBadges(c);
   // rótulo da ligação em reconhecimento
-  if (P && P.label && (P.mode === 'lewis-bonddrag' || P.mode === 'lewis-edrag')){
+  if (P && P.label && ['lewis-bonddrag', 'lewis-edrag', 'chain'].includes(P.mode)){
     c.save();
     c.font = `600 13px ${FONT_STACKS.sans}`;
     const txt = tt(P.label), w = textW(txt, c.font) + 18;
-    const x = m.sx + 16, y = m.sy + 18;
+    const x = clamp(m.sx + 16, 4, Math.max(4, innerWidth - w - 4));
+    const y = clamp(m.sy + 18, 4, Math.max(4, innerHeight - 30));
     c.fillStyle = 'rgba(20,24,32,0.86)';
     c.beginPath(); c.roundRect ? c.roundRect(x, y, w, 26, 13) : c.rect(x, y, w, 26); c.fill();
     c.fillStyle = '#fff'; c.textBaseline = 'middle'; c.fillText(txt, x + 9, y + 13.5);
@@ -9527,6 +9669,7 @@ const ICONS = {
   lewis: '<text x="9" y="17" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor" stroke="none" font-family="IBM Plex Sans,Arial">N</text><circle cx="7.3" cy="5.2" r="1.2" fill="currentColor" stroke="none"/><circle cx="10.7" cy="5.2" r="1.2" fill="currentColor" stroke="none"/><circle cx="2.6" cy="10.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="2.6" cy="14.5" r="1.2" fill="currentColor" stroke="none"/><path d="M15 13h7"/>',
   pen: '<path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>',
   mo: '<path d="M4 3v18M2.5 5L4 3l1.5 2M8 7h4M15 7h4M8 12.5h3M14.5 12.5h4.5M8 18h11"/><path d="M12 7l2.5 5.5M15 7l-1 5.5" stroke-dasharray="1.6 1.8"/>',
+  chain: '<path d="M3 15l6-5 6 5 6-5"/>',
   ring: '<path d="M12.0 3.6L19.4 7.9L19.4 16.5L12.0 20.8L4.6 16.5L4.6 7.9ZM17.2 9.8L17.2 14.6M11.5 17.9L7.3 15.5M7.3 8.9L11.5 6.5"/>',
   orbital: '<ellipse cx="12" cy="7.2" rx="3.6" ry="5" /><ellipse cx="12" cy="16.8" rx="3.6" ry="5" fill="currentColor" fill-opacity=".3"/><path d="M3 12h18" stroke-dasharray="2 2.2"/>',
   hl: '<path d="M9 11l-6 6v3h9l3-3M22 12l-4.6 4.6a2 2 0 01-2.8 0l-5.2-5.2a2 2 0 010-2.8L14 4"/>',
@@ -9588,7 +9731,7 @@ const ICONS = {
 const icon = (n, size = 20) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
 const TOOLS = [
-  ['select', 'Selecionar e mover', 'V'], ['hand', 'Mover o quadro', 'H'], ['lewis', 'Caneta química (Lewis)', 'L'], ['ring', 'Anéis', 'R'], ['mo', 'Diagrama de OM', 'Y'],
+  ['select', 'Selecionar e mover', 'V'], ['hand', 'Mover o quadro', 'H'], ['lewis', 'Caneta química (Lewis)', 'L'], ['chain', 'Cadeia carbônica', 'Z'], ['ring', 'Anéis', 'R'], ['mo', 'Diagrama de OM', 'Y'],
   ['pen', 'Caneta', 'P'], ['hl', 'Marca-texto', 'M'], ['shape', 'Formas', 'S'], ['arrow', 'Setas químicas', 'A'],
   ['text', 'Texto químico', 'T'], ['eraser', 'Borracha', 'E'], ['laser', 'Laser', 'X'], ['spot', 'Holofote', 'O'],
 ];
@@ -9599,6 +9742,7 @@ const HINTS = {
   hand: [['Arraste', 'move o quadro'], ['Roda', 'zoom']],
   lewis: [['Clique no vazio', 'átomo'], ['Arraste do átomo', 'ligação'], ['Toque ao lado', 'elétron'], ['Arraste um elétron', 'transfere ou compartilha'], ['Segure', 'move o átomo']],
   mo: [['Clique na coluna', 'novo nível (a prévia mostra onde)'], ['Arraste o nível', 'move; solto sobre outro nível, liga os dois'], ['Arraste o rótulo', 'muda de lugar'], ['Duplo clique', 'rótulo e energia'], ['↑ ↓', 'ajusta a altura'], ['Del', 'apaga']],
+  chain: [['Arraste', 'desenha a cadeia em zigue-zague'], ['Desenhar do carbono', 'estende a cadeia se houver valência livre'], ['Shift', 'fixa a direção a cada 15°']],
   ring: [['Clique', 'novo anel'], ['Clique numa ligação', 'anel fundido'], ['Clique num átomo', 'anel espiro'], ['Clique num H', 'substituinte'], ['Clique no centro', 'ressonância']],
   pen: [['Segure no fim do traço', 'vira forma perfeita'], ['Alt', 'desliga o ímã']],
   hl: [['Shift', 'linha reta'], ['Segure', 'linha reta']],
@@ -9715,7 +9859,7 @@ function initUI(){
 }
 
 function setTool(t){
-  if (t !== S.tool && (P?.mode === 'erase' || P?.mode === 'rotate')) cancelGesture();
+  if (t !== S.tool && (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain')) cancelGesture();
   if (S.editing) commitTextEdit();
   if (S.crop && t !== 'select') endCrop(true);
   S.tool = t;
@@ -9812,7 +9956,15 @@ function renderOptBar(){
         chip('Cargas', 'Calcular as cargas formais a partir dos elétrons desenhados', computeFormalCharges, false, 'pm'),
         chip('Verificar', 'Mostrar contagem de elétrons e octetos', () => { L.check = !L.check; saveSettings(); renderOptBar(); S.dirty = true; }, L.check, 'check'),
         chip('Estilo', 'Estilo das estruturas de Lewis', e => openLewisStyle(e.currentTarget), false, 'style'),
+        sep(), ...hydrogenChips(),
       );
+      break;
+    }
+    case 'chain': {
+      const skeletal = chip('Esqueleto', 'Ocultar os símbolos C nas novas cadeias', () => set('chain', 'skeletal', !T.chain.skeletal), T.chain.skeletal, 'eye');
+      skeletal.setAttribute('aria-pressed', String(T.chain.skeletal));
+      add(chip('Inserir por número…', 'Desenhar uma cadeia com um número exato de carbonos', carbonChainDialog, false, 'chain'),
+        skeletal, sep(), ...hydrogenChips());
       break;
     }
     case 'ring': ringOptBar(add, sep); break;
@@ -9870,6 +10022,7 @@ function renderOptBar(){
         // só imagens, vídeos e links: sem cores nem "Otimizar" (não se aplicam), sobra espaço para as ações de imagem
         const onlyMedia = Array.from(S.sel).every(id => { const o = getObj(id); return o && (isMedia(o) || o.t === 'link'); });
         const ids = [...S.sel];
+        if (ids.some(id => ['atom', 'bond'].includes(getObj(id)?.t))) add(...hydrogenChips(), sep());
         if (!S.crop && ids.some(id => TURN_TYPES.has(getObj(id)?.t))){
           add(chip('−90°', 'Girar −90°', () => rotateSelection(ids, -90)),
             chip('+90°', 'Girar 90°', () => rotateSelection(ids, 90)),
@@ -9924,6 +10077,40 @@ function setElement(el){
 }
 
 /* ---------- ações químicas ---------- */
+function applyHydrogenEdit(ids, saturate){
+  const before = snapshot(), result = editHydrogens(ids, {saturate});
+  if (result.changed){
+    for (const id of result.atomIds){
+      const a = getObj(id);
+      if (a?.sk) delete a.sk;
+    }
+    pushUndo(before);
+    afterChange();
+  }
+  return result;
+}
+function hydrogenAction(saturate, ids = [...S.sel]){
+  const targets = ids.filter(id => ['atom', 'bond'].includes(getObj(id)?.t));
+  if (!targets.length){ flashHint('Selecione átomos ou ligações no quadro.', 2500); return; }
+  const result = applyHydrogenEdit(targets, saturate);
+  if (!result.changed){
+    flashHint(saturate ? 'Nenhuma ligação não aromática C=C ou C≡C elegível na seleção.' :
+      'Nenhum hidrogênio a acrescentar aos átomos elegíveis.', 3500);
+    return;
+  }
+  if (targets.some(id => S.sel.has(id))){
+    for (const id of [...result.hydrogenIds, ...result.bondIds]) S.sel.add(id);
+    updateSelectionUI();
+  }
+  const added = tt('H adicionados') + ' · ' + result.added;
+  flashHint(saturate ? tt('Ligações saturadas') + ' · ' + result.bondsChanged + '  |  ' + added : added, 2500);
+}
+function hydrogenChips(){
+  return [
+    chip('Completar H', 'Adicionar os H que faltam aos átomos selecionados, preservando as ligações', () => hydrogenAction(false)),
+    chip('Hidrogenar C=C/C≡C', 'Converter C=C e C≡C selecionadas em ligações simples e completar os H', () => hydrogenAction(true))
+  ];
+}
 function targetAtoms(){
   const editableAtom = o => o && o.t === 'atom' && !isLocked(o);
   const sel = Array.from(S.sel).map(getObj).filter(editableAtom);
@@ -10129,6 +10316,7 @@ function showContextMenu(x, y, hit, wx, wy){
       {label: 'Carga parcial δ+', on: a.pc === '+', fn: () => { pushUndo(); if (a.pc === '+') delete a.pc; else a.pc = '+'; afterChange(); }},
       {label: 'Carga parcial δ−', on: a.pc === '-', fn: () => { pushUndo(); if (a.pc === '-') delete a.pc; else a.pc = '-'; afterChange(); }},
       '-',
+      {label: 'Completar H', fn: () => hydrogenAction(false, [a.id])},
       {label: 'Completar pares deste átomo', icon: 'zap', fn: () => { pushUndo(); autoElectrons(a, buildGraph()); afterChange(); }},
       {label: 'Reorganizar elétrons', fn: () => { pushUndo(); relayoutElectrons(a, buildGraph()); afterChange(); }},
       {label: 'Remover elétrons', fn: () => { pushUndo(); a.e = []; afterChange(); }},
@@ -10159,6 +10347,10 @@ function showContextMenu(x, y, hit, wx, wy){
     const b = hit.bond;
     const setK = (k, o) => () => { pushUndo(); b.k = k; if (o) b.o = o; delete b.wd; afterChange(); };
     items.push({label: 'Ligação', header: true},
+      {label: 'Completar H', fn: () => hydrogenAction(false, [b.id])},
+      ...(b.k === 'cov' && b.o > 1 && [b.a, b.b].every(id => getObj(id)?.el === 'C') ?
+        [{label: 'Hidrogenar C=C/C≡C', fn: () => hydrogenAction(true, [b.id])}] : []),
+      '-',
       {label: 'Simples', on: b.k === 'cov' && b.o === 1, fn: setK('cov', 1)}, {label: 'Dupla', on: b.k === 'cov' && b.o === 2, fn: setK('cov', 2)},
       {label: 'Tripla', on: b.k === 'cov' && b.o === 3, fn: setK('cov', 3)},
       {label: 'Cunha (para a frente do plano)', on: b.k === 'cov' && b.o === 1 && b.wd === 'w', fn: () => { pushUndo(); b.k = 'cov'; b.o = 1; if (b.wd === 'w') delete b.wd; else b.wd = 'w'; afterChange(); }},
@@ -10246,7 +10438,7 @@ function updatePageBar(){
 function gotoPage(i){
   if (i < 0 || i >= S.doc.pages.length) return;
   if (i !== S.doc.cur){
-    if (P?.mode === 'erase' || P?.mode === 'rotate') cancelGesture();
+    if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain') cancelGesture();
     stopViewAnim(); MO.sel = null; S.moHover = null; S.moPreview = null;
   }
   if (S.editing) commitTextEdit();
@@ -10346,6 +10538,7 @@ function openHelp(){
       ['<kbd>R</kbd>', 'anéis (clique numa ligação para fundir, num átomo para anel espiro)'],
       ['Clique num H com a ferramenta de anéis', 'troca o H por um anel (fenila, ciclo-hexila…)'],
       ['Clique no centro de um benzeno', 'ressonância: Kekulé → Kekulé deslocado → círculo aromático'],
+      ['Cadeia carbônica (Z)', 'Arraste para desenhar a cadeia'],
       ['Esqueleto', 'carbonos viram vértices e os H ligados a C ficam ocultos (Estilo ou barra dos anéis)'],
       ['<kbd>W</kbd>', 'orbitais atômicos em 2D e 3D (n, ℓ, mℓ)'],
       ['<kbd>Y</kbd>', 'diagramas de orbitais moleculares: níveis, degenerescência, correlações, elétrons, cotas Δ, rótulos com letras gregas e escala numérica de energia (botão direito no diagrama)'],
@@ -10960,7 +11153,7 @@ function openBoardFile(text, mode){
     h('button', {class: 'btn', onclick: () => { closeModal(); load(true); }}, 'Adicionar ao quadro atual')]);
 }
 function loadBoardDoc(doc, assets, append){
-  if (P?.mode === 'erase' || P?.mode === 'rotate') cancelGesture();
+  if (P?.mode === 'erase' || P?.mode === 'rotate' || P?.mode === 'chain') cancelGesture();
   normalizeBoardDoc(doc, true);
   return prepareDocAssets(doc, assets).then(() => {
     if (S.editing) commitTextEdit();
@@ -13523,12 +13716,13 @@ function ringsOf(g){
 /* ---------- fórmula de esqueleto: C vira vértice, H ligado a C some ---------- */
 function skelState(g){
   const st = {c: new Set(), h: new Set()};
-  if (!S.settings.lewis.skeletal) return st;
+  const all = S.settings.lewis.skeletal;
   for (const a of g.atoms.values()){
-    if (a.el !== 'C' || (a.q || 0) !== 0 || (a.e || []).length) continue;
+    if ((!all && !a.sk) || a.el !== 'C' || (a.q || 0) !== 0 || (a.e || []).length) continue;
     const heavy = (g.adj.get(a.id) || []).filter(n => isCovLike(n.bond) && n.other.el !== 'H');
     if (heavy.length) st.c.add(a.id);
   }
+  if (!st.c.size) return st;
   for (const a of g.atoms.values()){
     if (a.el !== 'H' || (a.q || 0) !== 0) continue;
     const nb = g.adj.get(a.id) || [];
@@ -13583,6 +13777,117 @@ function hDirections(a, heavyAngles, count){
   if (count === 2) return [ext - 36 * DEG2, ext + 36 * DEG2];
   return [ext - 50 * DEG2, ext, ext + 50 * DEG2].slice(0, count);
 }
+/* Edição da estrutura no quadro. O chamador registra o histórico e chama afterChange. */
+function editHydrogens(ids, {saturate = false} = {}){
+  const g = buildGraph(), selectedAtoms = new Set(), selectedBonds = new Set();
+  const result = {changed: false, added: 0, bondsChanged: 0, atomIds: [], eligibleAtomIds: [], hydrogenIds: [], bondIds: [], skipped: []};
+  const skipped = new Set(), touched = new Set();
+  const skip = (id, reason) => {
+    const key = id + ':' + reason;
+    if (!skipped.has(key)){ skipped.add(key); result.skipped.push({id, reason}); }
+  };
+  for (const id of typeof ids === 'string' ? [ids] : ids || []){
+    const o = getObj(id);
+    if (!o){ skip(id, 'missing'); continue; }
+    if (o.t === 'atom') selectedAtoms.add(id);
+    else if (o.t === 'bond'){
+      selectedBonds.add(id);
+      if (!saturate){ selectedAtoms.add(o.a); selectedAtoms.add(o.b); }
+    } else skip(id, 'not_atom_or_bond');
+  }
+  // Grupos eletrônicos vazios também representam pares isolados omitidos no desenho.
+  const eligibility = new Map();
+  const eligible = a => {
+    if (!a) return false;
+    if (eligibility.has(a.id)) return eligibility.get(a.id);
+    let reason = null;
+    const target = RING_VAL[a.el], nb = g.adj.get(a.id) || [];
+    const expectedPairs = target == null ? -1 : valenceElectrons(a.el) - target;
+    if (isLocked(a) || nb.some(n => isLocked(n.bond))) reason = 'locked';
+    else if ((a.q || 0) !== 0) reason = 'charged';
+    else if (target == null || a.el === 'H') reason = 'unsupported_element';
+    else if ((a.e || []).some(e => e.n !== 2) || (eCount(a) && eCount(a) !== expectedPairs)) reason = 'unsupported_electrons';
+    else if (!Number.isFinite(a.x) || !Number.isFinite(a.y)) reason = 'invalid_geometry';
+    else if (nb.some(n => n.bond.k !== 'cov' || !Number.isInteger(n.bond.o) || n.bond.o < 1 || n.bond.o > 3 || n.other.id === a.id) || new Set(nb.map(n => n.other.id)).size !== nb.length) reason = 'unsupported_bonds';
+    else if (bondOrderSum(a, g) > target) reason = 'overvalent';
+    else if (nb.filter(n => n.bond.ar || n.bond.rk).length > 1 &&
+      !nb.some(n => (n.bond.ar || n.bond.rk) && n.bond.o === 2) && !saturate) reason = 'ambiguous_aromatic_valence';
+    eligibility.set(a.id, !reason);
+    if (reason) skip(a.id, reason);
+    return !reason;
+  };
+  // Marcas de ressonância e ciclos conjugados reconhecidos pela percepção de anéis.
+  const aromaticBonds = new Set(g.bonds.filter(b => b.ar || b.rk).map(b => b.id));
+  if (saturate) for (const R of ringsOf(g)){
+    if (R.bonds.length !== R.ids.length || R.ids.length < 5) continue;
+    let pi = 0, conjugated = true;
+    for (let i = 0; i < R.ids.length; i++){
+      const a = g.atoms.get(R.ids[i]), prev = R.bonds[(i + R.bonds.length - 1) % R.bonds.length], next = R.bonds[i];
+      if (!a || (a.q || 0) !== 0 || ![prev, next].every(b => b.k === 'cov' && (b.o === 1 || b.o === 2))){ conjugated = false; break; }
+      const doubles = [prev, next].filter(b => b.o === 2).length;
+      if (doubles === 1 && ['C', 'Si', 'N', 'P', 'B'].includes(a.el)) pi++;
+      else if (doubles === 0 && ['N', 'P', 'O', 'S', 'Se'].includes(a.el) && !(a.e || []).some(e => e.n !== 2) && !(g.adj.get(a.id) || []).some(n => !R.bonds.includes(n.bond) && n.bond.k === 'cov' && n.bond.o > 1)) pi += 2;
+      else { conjugated = false; break; }
+    }
+    if (conjugated && pi >= 6 && pi % 4 === 2) R.bonds.forEach(b => aromaticBonds.add(b.id));
+  }
+  const targets = new Set();
+  if (saturate){
+    for (const b of g.bonds){
+      if (b.k !== 'cov' || (b.o !== 2 && b.o !== 3)) continue;
+      if (!selectedBonds.has(b.id) && !(selectedAtoms.has(b.a) && selectedAtoms.has(b.b))) continue;
+      const A = g.atoms.get(b.a), B = g.atoms.get(b.b);
+      if (A.el !== 'C' || B.el !== 'C'){ skip(b.id, 'not_carbon_carbon'); continue; }
+      if (isLocked(b)){ skip(b.id, 'locked'); continue; }
+      if (aromaticBonds.has(b.id)){ skip(b.id, 'aromatic'); continue; }
+      const aOK = eligible(A), bOK = eligible(B);
+      if (!aOK || !bOK) continue;
+      b.o = 1; delete b.wd;
+      targets.add(A.id); targets.add(B.id); touched.add(A.id); touched.add(B.id);
+      result.bondIds.push(b.id); result.bondsChanged++;
+    }
+  } else {
+    for (const id of selectedAtoms){ const a = g.atoms.get(id); if (eligible(a)) targets.add(id); }
+  }
+  result.eligibleAtomIds = [...targets];
+  const sceneAtoms = [...g.atoms.values()];
+  for (const id of targets){
+    const a = g.atoms.get(id), need = RING_VAL[a.el] - bondOrderSum(a, g);
+    if (!need) continue;
+    const nb = g.adj.get(id) || [], angles = nb.map(n => Math.atan2(n.other.y - a.y, n.other.x - a.x));
+    let dirs = hDirections(a, angles, need);
+    if (need === 2 && angles.length === 2 && Math.abs(Math.cos(angles[0] - angles[1]) + 1) < 1e-3) dirs = [angles[0] + Math.PI / 2, angles[0] - Math.PI / 2];
+    const L = bondLen() * 0.86 * atomFS(a) / S.settings.lewis.fontSize;
+    // Ajusta os ângulos dos novos H para evitar sobreposição com átomos já desenhados.
+    const nearby = sceneAtoms.filter(other => other.id !== id &&
+      Math.abs(other.x - a.x) < L * 1.65 && Math.abs(other.y - a.y) < L * 1.65);
+    let best = dirs, bestScore = Infinity;
+    for (let k = 0; k < 24; k++){
+      const turn = k * Math.PI / 12, trial = dirs.map(t => t + turn);
+      let score = k ? 0.001 : 0;
+      for (const t of trial){
+        for (const old of angles){ const d = Math.acos(Math.max(-1, Math.min(1, Math.cos(t - old)))); score += 1 / Math.max(0.02, d) ** 4; }
+        const x = a.x + Math.cos(t) * L, y = a.y + Math.sin(t) * L;
+        for (const other of nearby){
+          const d = Math.hypot(x - other.x, y - other.y) / L;
+          if (d < 0.65) score += 50 / Math.max(0.05, d) ** 2;
+        }
+      }
+      if (score < bestScore){ bestScore = score; best = trial; }
+    }
+    for (const t of best){
+      const H = addObj({t: 'atom', el: 'H', x: a.x + Math.cos(t) * L, y: a.y + Math.sin(t) * L, q: 0, e: [], ...(a.fs ? {fs: a.fs} : {})}, {silent: true});
+      const b = addObj({t: 'bond', a: id, b: H.id, o: 1, k: 'cov'}, {silent: true});
+      sceneAtoms.push(H);
+      result.hydrogenIds.push(H.id); result.bondIds.push(b.id); result.added++;
+    }
+    touched.add(id);
+  }
+  result.atomIds = [...touched];
+  result.changed = result.added > 0 || result.bondsChanged > 0;
+  return result;
+}
+
 function fixHydrogens(ids, addH){
   const L = bondLen();
   const kill = new Set(), added = [];
@@ -17283,6 +17588,31 @@ function defineLousaTools(){
   defTool('optimize_geometry', 'Tidy structure geometry as a textbook Lewis structure: around each atom the neighbours are evenly spread (2 in a line; 3 at 120°, or a T when the atom has lone pairs; 4 as a cross), bonds get the standard length and electrons move to the free positions. The drawn orientation is kept. Rings stay as drawn (groups attached to them are spread in the free space); skeletal zig-zag formulas only get angles and lengths fixed.', {ids: ids('Atom ids: their whole molecules are tidied (default: all)')}, a => {
     const list = a.ids && a.ids.length ? a.ids : objs().filter(o => o.t === 'atom').map(o => o.id); tidyStructures(list); return {atoms: list.length};
   });
+  defTool('add_carbon_chain', 'Draw an editable carbon zigzag with single bonds. Use x and y together for the first carbon, or extend from on_atom.',
+    {count: {type: 'integer', minimum: 2, maximum: MAX_CHAIN_CARBONS, description: 'Total carbons, including the anchor when extending'},
+      x: num('First carbon x'), y: num('First carbon y'), on_atom: str('Existing neutral carbon id with a free valence'),
+      angle: num('Direction in degrees clockwise from right (default 0)'), skeletal: bool('Hide C labels on the new chain (default true)')}, a => {
+      if (!Number.isInteger(a.count) || a.count < 2 || a.count > MAX_CHAIN_CARBONS) throw new Error('count must be an integer from 2 to ' + MAX_CHAIN_CARBONS);
+      if ((a.x == null) !== (a.y == null) || (a.on_atom && a.x != null)) throw new Error('provide both x and y, or provide on_atom');
+      const anchor = a.on_atom ? apiRequireEditable(apiAtom(a.on_atom)) : null;
+      const angle = (a.angle ?? 0) * DEG2, L = bondLen(), g = anchor ? buildGraph() : null;
+      const rel = carbonChainPoints(0, 0, a.count, angle);
+      const xs = rel.map(p => p[0]), ys = rel.map(p => p[1]);
+      const left = Math.min(...xs), right = Math.max(...xs), top = Math.min(...ys), bottom = Math.max(...ys);
+      const mx = (left + right) / 2, my = (top + bottom) / 2;
+      const [cx, cy] = a.x == null && !anchor ? freeSpot(...centerWorld(), right - left + L, bottom - top + L) : [0, 0];
+      const x = anchor?.x ?? a.x ?? cx - mx, y = anchor?.y ?? a.y ?? cy - my;
+      const pts = carbonChainPoints(x, y, a.count, angle, anchor, g);
+      const result = insertCarbonChain(pts, anchor, a.skeletal !== false);
+      apiReveal(...pts[Math.floor(pts.length / 2)]);
+      return result;
+    }, {required: ['count'], own: true});
+  defTool('complete_hydrogens', 'Add explicit missing H to targeted neutral atoms at ordinary valence, preserving existing bond orders and H. Returns changed IDs and skipped targets.',
+    {ids: ids('Atom or bond ids; defaults to the current selection. A selected bond targets both ends.')}, a =>
+      applyHydrogenEdit(apiTargets(a.ids).map(o => o.id), false), {own: true});
+  defTool('hydrogenate', 'Change selected non-aromatic C=C or C≡C bonds to C–C and complete H on both carbons. Select the bond or both endpoint carbons. This is a formal edit of the drawing.',
+    {ids: ids('Atom or bond ids; defaults to the current selection.')}, a =>
+      applyHydrogenEdit(apiTargets(a.ids).map(o => o.id), true), {own: true});
   defTool('add_ring', 'Draw a ring: new, fused onto a bond, spiro/at the end of a chain on an atom, or replacing an H (phenyl).',
     {size: num('Ring size 3–8 (default 6)'), aromatic: str('none (default), kekule (benzene with alternating double bonds), circle (aromatic circle)', {enum: ['none', 'kekule', 'circle']}), x: num('Center x (new ring)'), y: num('Center y'), on_bond: str('Bond id to fuse onto'), on_atom: str('Atom id (spiro / chain end / replace H)'), hydrogens: bool('Add hydrogens (default true)')}, a => {
       const T = S.settings.tools.ring, old = {...T};
@@ -17716,7 +18046,7 @@ async function lousaCall(name, args, source){
 }
 const READ_BOARD_TOOLS = new Set(['get_board', 'get_board_image', 'list_pages', 'element_info', 'vsepr', 'get_mo_diagram',
   'list_lectures', 'get_presentation']);
-const NON_DESTRUCTIVE_BOARD_TOOLS = new Set(['add_atom', 'add_page', 'add_text', 'add_image', 'add_link', 'add_chart', 'add_shape',
+const NON_DESTRUCTIVE_BOARD_TOOLS = new Set(['add_atom', 'add_carbon_chain', 'complete_hydrogens', 'add_page', 'add_text', 'add_image', 'add_link', 'add_chart', 'add_shape',
   'add_table', 'add_particle_model', 'add_orbital', 'add_mo_diagram', 'add_periodic_table', 'add_interacting_orbitals', 'add_ink',
   'insert_lecture', 'add_camera_stop', 'go_to_camera_stop', 'set_object_lock']);
 function lousaToolDefs(){
