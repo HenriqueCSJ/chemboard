@@ -53,6 +53,10 @@ Pressione **T** e clique onde o texto deve ficar. O editor mostra uma prévia de
 
 Use **Aplicar** ou **Ctrl/⌘ + Enter** para confirmar a edição. Clicar no quadro também aplica a edição. Pressione **Esc** ou escolha **Cancelar** para descartar a edição.
 
+## Conecte um assistente de IA
+
+Pressione **J** para abrir o assistente. O conector local serve ao ChatGPT via Secure MCP Tunnel e a clientes MCP como Claude Desktop, Claude Code e Codex. Para pedir desenhos na própria lousa, configure uma API OpenAI, Anthropic ou compatível com ferramentas, como Gemini ou Ollama. [Guia do conector](../connectors/README.md#resumo-em-português)
+
 ## Aulas de exemplo
 
 Abra **Menu → Aulas prontas** e escolha uma aula. As páginas entram depois da página atual e ficam editáveis.

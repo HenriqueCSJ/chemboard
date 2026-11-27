@@ -60,6 +60,10 @@ Press **T** and click where the text should go. The editor previews multiline te
 
 Use **Apply** or **Ctrl/⌘ + Enter** to keep your edit. Clicking the board also applies it. Press **Esc** or choose **Cancel** to discard the edit.
 
+## Connect an AI assistant
+
+Press **J** to open the assistant. The local companion works with ChatGPT through Secure MCP Tunnel and with local MCP clients such as Claude Desktop, Claude Code and Codex. To draw from inside the board, configure an OpenAI, Anthropic, or compatible API such as Gemini or Ollama. [Connector setup](connectors/README.md)
+
 ## Teaching examples
 
 Open **Menu → Ready-made lectures** (**Aulas prontas**) and insert a lecture after the current page. Each lecture is editable and its teaching material is in Portuguese.

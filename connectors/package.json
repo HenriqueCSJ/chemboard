@@ -1,0 +1,17 @@
+{
+  "name": "chemboard-companion",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Authenticated loopback MCP companion for ChemBoard",
+  "engines": { "node": ">=20.19" },
+  "scripts": {
+    "test": "node --test",
+    "start": "node chemboard-bridge.mjs",
+    "stdio": "node chemboard-bridge.mjs --stdio"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "ws": "8.23.0"
+  }
+}
