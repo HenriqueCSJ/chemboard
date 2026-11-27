@@ -60,7 +60,7 @@ body.ui-hidden #uiRestore{ display: grid; }
 #topbar{ position: absolute; top: 12px; left: 12px; right: 12px; display: flex; align-items: flex-start; gap: 12px; pointer-events: none; }
 #topbar > *{ pointer-events: auto; }
 #brand{ height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 14px 0 4px; flex: 0 0 auto; }
-#optwrap{ flex: 1 1 auto; min-width: 0; display: flex; justify-content: center; pointer-events: none; }
+#optwrap{ flex: 1 1 auto; min-width: 0; display: flex; justify-content: center; pointer-events: none; container-type: inline-size; }
 .bname{ font-size: 15px; font-weight: 500; letter-spacing: -.01em; white-space: nowrap; }
 .bname b{ font-weight: 700; }
 
@@ -74,7 +74,7 @@ body.ui-hidden #uiRestore{ display: grid; }
 .rsep{ height: 1px; background: var(--ui-line); margin: 4px 6px; flex: 0 0 auto; }
 
 /* barra superior */
-#topright{ height: 44px; display: flex; align-items: center; gap: 2px; padding: 0 5px; flex: 0 0 auto; }
+#topright{ height: 44px; max-width: calc(100% - 54px); min-width: 0; display: flex; align-items: center; gap: 2px; padding: 0 5px; flex: 0 0 auto; overflow: clip; }
 .tsep{ width: 1px; height: 22px; background: var(--ui-line); margin: 0 4px; }
 .optbtn{ height: 34px; padding: 0 12px 0 9px; border-radius: var(--r-md); display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--accent-fg); background: var(--accent); white-space: nowrap; }
 .optbtn:hover{ filter: brightness(1.07); }
@@ -82,9 +82,15 @@ body.ui-hidden #uiRestore{ display: grid; }
 .ibtn:hover{ background: var(--ui-hover); }
 .ibtn.on{ color: var(--accent); background: var(--accent-soft); }
 .ibtn.sm{ width: 30px; height: 30px; }
-#optbar{ pointer-events: auto; min-height: 44px; max-width: 100%; display: flex; align-items: center; gap: 6px; padding: 4px 8px; overflow-x: auto; scrollbar-width: thin; }
-#optbar::-webkit-scrollbar{ height: 4px; } #optbar::-webkit-scrollbar-thumb{ background: var(--ui-line); border-radius: 4px; }
-#optbar.empty{ display: none; }
+#optbar{ pointer-events: auto; min-height: 44px; min-width: 0; max-width: 100%; display: flex; align-items: center; gap: 6px; padding: 4px 8px; overflow: clip; }
+#optbar.empty, #optbar > [hidden], #topright > [hidden]{ display: none; }
+#optbar > *, #topright > *{ flex-shrink: 0; }
+.strip-more{ font-size: 22px; font-weight: 700; }
+.strip-more[aria-expanded="true"]{ background: var(--ui-hover); }
+.toolbar-overflow.popover{ display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px; width: max-content; min-width: 0; max-width: min(450px, calc(100vw / var(--uiz, 1) - 16px)); max-height: calc(100dvh / var(--uiz, 1) - 16px); overflow: auto; }
+.toolbar-overflow :is(.seg, .elchips, .swatches){ flex-wrap: wrap; max-width: 100%; }
+.toolbar-overflow :is(.osep, .tsep){ display: none; }
+.toolbar-overflow .chip, .toolbar-overflow .olabel{ max-width: 100%; white-space: normal; }
 .osep{ width: 1px; height: 24px; background: var(--ui-line); flex: 0 0 auto; margin: 0 2px; }
 .olabel{ font-size: 13px; color: var(--ui-fg); white-space: nowrap; padding: 0 4px; }
 .olabel.muted, .muted{ color: var(--ui-muted); }
@@ -95,6 +101,12 @@ body.ui-hidden #uiRestore{ display: grid; }
 .elc.on{ background: var(--ec); color: var(--ui-solid); }
 :root[data-ui="dark"] .elc.on{ color: #1b1d22; }
 .elc.more{ color: var(--ui-muted); display: grid; place-items: center; }
+@container (max-width: 530px){
+  #optbar .elc:not(.elc-common, .on, .more){ display: none; }
+}
+@container (max-width: 330px){
+  #optbar .elc:not(.elc-core, .on, .more){ display: none; }
+}
 
 .seg{ display: inline-flex; background: var(--ui-hover); border-radius: var(--r-md); padding: 2px; gap: 2px; flex: 0 0 auto; }
 .seg button{ min-width: 30px; height: 30px; padding: 0 9px; border-radius: 8px; font-size: 13px; white-space: nowrap; color: var(--ui-fg); display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
@@ -155,6 +167,9 @@ body.dropping #dropHint{ display: grid; }
 .mhead{ font-size: 12px; color: var(--ui-muted); padding: 6px 10px 3px; }
 .mpal{ padding: 6px 8px; }
 .popover{ width: 400px; padding: 14px; }
+.lewis-style{ min-width: 0; max-width: calc(100vw / var(--uiz, 1) - 16px); max-height: calc(100dvh / var(--uiz, 1) - 16px); overflow: auto; }
+.lewis-style .prow, .lewis-style .seg{ flex-wrap: wrap; }
+.lewis-style .seg{ max-width: 100%; }
 .ptitle{ font-weight: 600; font-size: 14px; margin-bottom: 10px; }
 .prow{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0; font-size: 13px; }
 .prow input[type=range]{ width: 180px; accent-color: var(--accent); }
@@ -379,7 +394,6 @@ body.dropping #dropHint{ display: grid; }
 @media (max-width: 640px){
   .bname{ display: none; }
   #topbar{ gap: 8px; }
-  #topright{ max-width: calc(100% - 54px); overflow-x: auto; scrollbar-width: thin; }
   #topright .tsep, #b-opt span{ display: none; }
   #b-opt{ flex: 0 0 auto; padding: 0 8px; }
   .help{ grid-template-columns: 1fr; }
@@ -4545,6 +4559,7 @@ const EN = {
   'Selecionar e mover': 'Select and move', 'Mover o quadro': 'Pan the board', 'Caneta química (Lewis)': 'Chem pen (Lewis)', 'Caneta': 'Pen',
   'Marca-texto': 'Highlighter', 'Formas': 'Shapes', 'Setas químicas': 'Chemical arrows', 'Texto químico': 'Chemical text', 'Borracha': 'Eraser',
   'Laser': 'Laser', 'Holofote': 'Spotlight', 'Anéis': 'Rings', 'Orbitais': 'Orbitals',
+  'Mais opções da ferramenta': 'More tool options', 'Mais ações do quadro': 'More board actions',
   'Elementos da tabela…': 'Table elements…', 'Editar destaques e separar elementos da tabela': 'Edit highlights and separate elements from the table',
   'Elemento da tabela': 'Table element', 'Propriedade da tabela': 'Table property',
   'Separar do recorte': 'Separate from crop', 'Copiar para a lousa': 'Copy to the board',
@@ -9813,6 +9828,7 @@ function buildChrome(){
   for (const [ic, name, fn] of extra) rail.appendChild(h('button', {class: 'rbtn', title: name, 'aria-label': name, html: icon(ic), onclick: fn, id: 'rb-' + ic}));
 
   // barra superior direita
+  closeToolbarOverflow();
   const tr = $('#topright'); tr.innerHTML = '';
   const tbtn = (ic, title, fn, id) => h('button', {class: 'ibtn', title, 'aria-label': title, html: icon(ic, 19), onclick: fn, id});
   tr.append(
@@ -9828,6 +9844,7 @@ function buildChrome(){
     tbtn('full', 'Tela cheia (F)', toggleFullscreen, 'b-full'),
     tbtn('help', 'Ajuda e atalhos (?)', openHelp, 'b-help'),
   );
+  addToolbarOverflow(tr, 'Mais ações do quadro');
   applyBrand();
 }
 function applyBrand(){
@@ -9892,6 +9909,7 @@ function initUI(){
   document.addEventListener('pointerdown', e => {
     if (!e.target.closest('.menu, .popover, [data-menu-anchor]')) closeMenus();
   }, true);
+  document.fonts?.addEventListener('loadingdone', fitTopToolbars);
   syncTopButtons();
   applyThemeUI();
   setTool(S.tool);
@@ -9972,8 +9990,65 @@ function applyColorToSelection(c){
   for (const id of S.sel){ const o = getObj(id); if (!o || isMedia(o) || o.t === 'link' || o.t === 'chart') continue; if (o.t === 'table') o.ac = c; else o.c = c; }
   afterChange(); return true;
 }
+let toolbarOverflow = null;
+
+function addToolbarOverflow(bar, label){
+  const more = h('button', {class: 'ibtn strip-more', title: label, 'aria-label': label, 'aria-expanded': 'false',
+    'aria-controls': bar.id + '-more', 'data-menu-anchor': true, hidden: true, onclick: () => openToolbarOverflow(bar, more, label)}, '⋯');
+  bar.appendChild(more);
+  fitToolbar(bar);
+  return more;
+}
+function fitToolbar(bar){
+  const more = bar.querySelector('.strip-more');
+  if (!more || !bar.clientWidth) return;
+  if (toolbarOverflow?.bar === bar) closeToolbarOverflow(true);
+  const items = [...bar.children].filter(el => el !== more);
+  for (const item of items) item.hidden = false;
+  more.hidden = true;
+  if (bar.scrollWidth <= bar.clientWidth) return;
+  more.hidden = false;
+  let i = items.length - 1;
+  while (i >= 0 && bar.scrollWidth > bar.clientWidth){
+    items[i--].hidden = true;
+    while (i >= 0 && items[i].matches('.osep, .tsep')) items[i--].hidden = true;
+  }
+}
+function fitTopToolbars(){
+  fitToolbar($('#topright'));
+  fitToolbar($('#optbar'));
+}
+function openToolbarOverflow(bar, more, label){
+  if (toolbarOverflow?.bar === bar){ closeToolbarOverflow(true); return; }
+  closeMenus();
+  const overflow = [...bar.children].filter(el => el !== more && el.hidden);
+  if (!overflow.length) return;
+  const panel = h('div', {id: bar.id + '-more', class: 'popover toolbar-overflow', role: 'group', 'aria-label': label});
+  for (const item of overflow){ item.hidden = false; panel.appendChild(item); }
+  toolbarOverflow = {bar, more, panel};
+  more.setAttribute('aria-expanded', 'true');
+  panel.addEventListener('click', e => {
+    if (e.target.closest('button') && toolbarOverflow?.panel === panel) closeToolbarOverflow(true);
+  });
+  placeMenu(panel, ...anchorBelow(more));
+  panel.querySelector('button:not(:disabled), input:not(:disabled)')?.focus({preventScroll: true});
+}
+function closeToolbarOverflow(focus = false){
+  if (!toolbarOverflow) return false;
+  const {bar, more, panel} = toolbarOverflow;
+  toolbarOverflow = null;
+  for (const item of [...panel.children]){ item.hidden = true; bar.insertBefore(item, more); }
+  panel.remove();
+  more.setAttribute('aria-expanded', 'false');
+  if (focus) more.focus({preventScroll: true});
+  return true;
+}
+
 function renderOptBar(){
-  const bar = $('#optbar'); bar.innerHTML = '';
+  const bar = $('#optbar');
+  const focusedInOverflow = toolbarOverflow?.bar === bar && toolbarOverflow.panel.contains(document.activeElement);
+  if (toolbarOverflow?.bar === bar) closeToolbarOverflow();
+  bar.innerHTML = '';
   const T = S.settings.tools;
   const add = (...els) => els.forEach(e => bar.appendChild(e));
   const sep = () => h('div', {class: 'osep'});
@@ -9984,18 +10059,21 @@ function renderOptBar(){
       const els = h('div', {class: 'elchips'});
       const shown = QUICK_ELEMENTS.includes(L.element) ? QUICK_ELEMENTS : QUICK_ELEMENTS.concat([L.element]);
       for (const el of shown){
-        const b = h('button', {class: 'elc' + (el === L.element ? ' on' : ''), style: {'--ec': elBoardColor(el)}, title: EL[el].nome}, el);
+        const tier = ['H', 'C', 'O'].includes(el) ? ' elc-common elc-core' : ['N', 'F', 'Cl', 'Br'].includes(el) ? ' elc-common' : '';
+        const b = h('button', {class: 'elc' + tier + (el === L.element ? ' on' : ''), style: {'--ec': elBoardColor(el)}, title: EL[el].nome}, el);
         b.onclick = () => setElement(el);
         els.appendChild(b);
       }
-      els.appendChild(h('button', {class: 'elc more', title: 'Tabela periódica (Tab)', html: icon('table', 16), onclick: () => togglePTable(true)}));
+      els.appendChild(h('button', {class: 'elc more', title: 'Tabela periódica (Tab)', 'aria-label': 'Tabela periódica', html: icon('table', 16), onclick: () => togglePTable(true)}));
+      const [completeH, saturate] = hydrogenChips();
       add(els, sep(),
         seg([[1, '<span class="edot">•</span>', 'Cada toque = 1 elétron'], [2, '<span class="edot">••</span>', 'Cada toque = 1 par']], L.eMode, v => { L.eMode = v; saveSettings(); renderOptBar(); }),
         chip('Pares', 'Completar pares isolados pela contagem de elétrons (nos selecionados ou em todos)', fillPairs, false, 'zap'),
+        completeH,
+        chip('Estilo', 'Estilo das estruturas de Lewis', e => openLewisStyle(e.currentTarget), false, 'style'),
         chip('Cargas', 'Calcular as cargas formais a partir dos elétrons desenhados', computeFormalCharges, false, 'pm'),
         chip('Verificar', 'Mostrar contagem de elétrons e octetos', () => { L.check = !L.check; saveSettings(); renderOptBar(); S.dirty = true; }, L.check, 'check'),
-        chip('Estilo', 'Estilo das estruturas de Lewis', e => openLewisStyle(e.currentTarget), false, 'style'),
-        sep(), ...hydrogenChips(),
+        saturate,
       );
       break;
     }
@@ -10106,6 +10184,10 @@ function renderOptBar(){
       add(h('span', {class: 'olabel muted'}, 'Arraste para mover o quadro'));
   }
   bar.classList.toggle('empty', !bar.children.length);
+  if (!bar.classList.contains('empty')){
+    const more = addToolbarOverflow(bar, 'Mais opções da ferramenta');
+    if (focusedInOverflow) (more.hidden ? bar.querySelector('button:not([hidden])') : more)?.focus({preventScroll: true});
+  }
 }
 function updateSelectionUI(){
   for (const id of S.sel) if (isLocked(getObj(id))) S.sel.delete(id);
@@ -10191,7 +10273,7 @@ function duplicateSel(){
 }
 
 /* ---------- menus e popovers ---------- */
-function closeMenus(){ $$('.menu, .popover').forEach(m => m.remove()); }
+function closeMenus(){ closeToolbarOverflow(); $$('.menu, .popover').forEach(m => m.remove()); }
 function placeMenu(m, x, y){
   document.body.appendChild(m);
   const r = m.getBoundingClientRect();
@@ -10256,13 +10338,17 @@ function toggleFullscreen(){
     else document.exitFullscreen();
   } catch (e){ toast('Tela cheia não permitida aqui. Use F11.'); }
 }
-function toggleUI(){ S.uiHidden = !S.uiHidden; document.body.classList.toggle('ui-hidden', S.uiHidden); }
+function toggleUI(){
+  closeMenus();
+  S.uiHidden = !S.uiHidden; document.body.classList.toggle('ui-hidden', S.uiHidden);
+  if (!S.uiHidden) fitTopToolbars();
+}
 
-function openLewisStyle(anchor){
+function openLewisStyle(anchor, bounds = anchor.getBoundingClientRect()){
   closeMenus();
   const L = S.settings.lewis;
   const p = h('div', {class: 'popover lewis-style'});
-  const upd = (k, v) => { L[k] = v; saveSettings(); _clearElColors(); clearMeasureCache(); S.dirty = true; renderOptBar(); openLewisStyle(anchor); };
+  const upd = (k, v) => { L[k] = v; saveSettings(); _clearElColors(); clearMeasureCache(); S.dirty = true; renderOptBar(); openLewisStyle(anchor, bounds); };
   const row = (label, ctrl) => h('div', {class: 'prow'}, h('span', {}, label), ctrl);
   const tog = (k, label, title) => h('label', {class: 'tog', title: title || ''}, h('input', {type: 'checkbox', checked: !!L[k], onchange: e => upd(k, e.target.checked)}), h('i'), h('span', {}, label));
   p.append(
@@ -10279,8 +10365,7 @@ function openLewisStyle(anchor){
       tog('slowAnim', 'Animações lentas (para a turma ver)', 'Transferência de elétrons, formação de ligações e cargas aparecem devagar'),
       tog('skeletal', 'Esqueleto (C e H implícitos)', 'Carbonos viram vértices e os H ligados a C ficam ocultos')),
   );
-  const r = anchor.getBoundingClientRect();
-  placeMenu(p, r.left - 120, r.bottom + 8);
+  placeMenu(p, bounds.left - 120, bounds.bottom + 8);
 }
 
 function openMainMenu(anchor){
@@ -10865,6 +10950,7 @@ function initKeyboard(){
       return;
     }
     if (k === 'Escape'){
+      if (closeToolbarOverflow(true)) return;
       closeMenus();
       if (P) cancelGesture();
       else if (S.tool === 'mo' && MO.sel){ MO.sel = null; renderOptBar(); S.dirty = true; }
@@ -10874,7 +10960,10 @@ function initKeyboard(){
       else if (S.uiHidden) toggleUI();
       return;
     }
-    if (k === 'Tab'){ e.preventDefault(); togglePTable(); return; }
+    if (k === 'Tab'){
+      if (tgt?.closest?.('#topbar, .toolbar-overflow')) return;
+      e.preventDefault(); togglePTable(); return;
+    }
     if (k === 'Delete' || k === 'Backspace'){ if (S.tool === 'mo' && MO.sel){ e.preventDefault(); moDeleteSel(); return; } if (S.sel.size){ e.preventDefault(); removeIds(Array.from(S.sel)); } return; }
     if (k === 'PageDown'){ e.preventDefault(); if (!stepStop(1)) gotoPageStep(S.doc.cur + 1, 1); return; }
     if (k === 'PageUp'){ e.preventDefault(); if (!stepStop(-1)) gotoPageStep(S.doc.cur - 1, -1); return; }
@@ -17042,8 +17131,9 @@ function applyUIScale(){
   el.classList.toggle('ez-w1100', on && innerWidth / z <= 1320);
   el.classList.toggle('ez-h880', on && innerHeight / z <= 880);
   el.classList.toggle('ez-h740', on && innerHeight / z <= 740);
+  fitTopToolbars();
 }
-addEventListener('resize', () => { if (uiZoom() !== 1) applyUIScale(); });
+addEventListener('resize', applyUIScale);
 /* ao abrir: quadro, grade e tamanho da interface escolhidos nas preferências */
 function applyStartupPrefs(){
   const u = S.settings.ui || {};
