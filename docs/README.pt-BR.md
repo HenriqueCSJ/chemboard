@@ -35,6 +35,12 @@ Use a caneta de Lewis para construir uma estrutura diante da turma, abra um mode
 
 ![Visualizador de orbitais atômicos com a superfície do orbital 3d z ao quadrado e controles para números quânticos, modos de visualização e eixos.](images/atomic-orbitals.png)
 
+## Monte um diagrama de orbitais moleculares
+
+Pressione **Y**, clique em uma área vazia e ajuste a degenerescência e o tipo em **Próximo nível**. Clique em uma coluna para colocar o nível. Para alterar um nível já desenhado, dê um duplo clique nele ou selecione-o e escolha **Editar nível**.
+
+Use matemática em linha como `$\frac{\Delta_o}{2}$` junto ao texto de rótulos, títulos de coluna, cotas e eixos. O editor tem prévia e botões para negrito, itálico, sublinhado, frações e raízes. Nas anotações do quadro, use a mesma sintaxe na ferramenta **Texto** ou clique com o botão direito e escolha **Formatar texto**.
+
 ## Aulas de exemplo
 
 Abra **Menu → Aulas prontas** e escolha uma aula. As páginas entram depois da página atual e ficam editáveis.

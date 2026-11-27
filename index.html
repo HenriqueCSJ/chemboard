@@ -421,7 +421,9 @@ body.dropping #dropHint{ display: grid; }
 
 /* ---- diagramas de OM ---- */
 .moedit{ display: flex; flex-direction: column; gap: 10px; }
-.moprev{ width: 100%; height: 64px; border-radius: 10px; border: 1px solid var(--ui-line); }
+.moprev{ width: 100%; height: 104px; border-radius: 10px; border: 1px solid var(--ui-line); }
+.mo-level-fields{ display: flex; flex-wrap: wrap; gap: 10px 18px; }
+.mo-textarea{ min-height: 90px; resize: vertical; }
 .mobtns{ display: flex; flex-wrap: wrap; gap: 4px; }
 .mobtns .chip{ height: 30px; min-width: 32px; justify-content: center; border: 1px solid var(--ui-line); }
 .mobtns.quick .chip{ padding: 0 2px; }
@@ -4918,6 +4920,14 @@ const EN = {
   'Destravar': 'Unlock', 'Travar': 'Lock',
   'Destrave o objeto antes de editar.': 'Unlock the object before editing.',
   'Destravar objeto sobreposto': 'Unlock overlapping object',
+  'Próximo nível': 'Next level', 'Degenerescência do próximo nível': 'Next level degeneracy',
+  'Editar nível…': 'Edit level…', 'Editar nível': 'Edit level', 'Editar o nível selecionado': 'Edit the selected level',
+  'Rótulo da cota': 'Gap label', 'Formatar texto…': 'Format text…',
+  'Equação em linha': 'Inline equation', 'Itálico': 'Italic', 'Sublinhado': 'Underline', 'Fração': 'Fraction', 'Raiz quadrada': 'Square root',
+  'Tipo de nível': 'Level type', 'Prévia': 'Preview',
+  'Use $...$ ou \\( ... \\) para matemática em linha.': 'Use $...$ or \\( ... \\) for inline math.',
+  'Exemplos: \\frac{a}{b}, \\sqrt{x}, \\sigma^*_{2p}.': 'Examples: \\frac{a}{b}, \\sqrt{x}, \\sigma^*_{2p}.',
+  'Texto com misturas de matemática e formatação': 'Text with inline math and formatting',
   'Objetos travados ficam na página. Você pode desfazer com Ctrl+Z.': 'Locked objects stay on the page. You can undo with Ctrl+Z.', 'Formatar como química (H2O → H₂O)': 'Format as chemistry (H2O → H₂O)',
   'Abrir o link': 'Open the link', 'Copiar o endereço': 'Copy the address', 'Endereço copiado': 'Address copied',
   'Recortar (duplo clique na imagem)': 'Crop (double-click the image)', 'Sem fundo': 'No background',
@@ -6738,7 +6748,7 @@ function inkBBox(o){
 function textLines(o){ return String(o.s || '').split('\n'); }
 function textFont(o){ return `${o.bold ? 700 : 500} ${o.fs}px ${FONT_STACKS[o.font] || FONT_STACKS.sans}`; }
 function textBBox(o){
-  if (o.math){ const M = mathTextLayout(o); return {x1: o.x, y1: o.y, x2: o.x + M.w, y2: o.y + M.h}; }
+  if (o.math || usesInlineMath(o.s)){ const M = mathTextLayout(o); return {x1: o.x, y1: o.y, x2: o.x + M.w, y2: o.y + M.h}; }
   const lines = textLines(o), f = textFont(o);
   const w = Math.max(10, ...lines.map(l => textW(l || ' ', f)));
   return {x1: o.x, y1: o.y, x2: o.x + w, y2: o.y + lines.length * o.fs * 1.25};
@@ -6938,7 +6948,7 @@ function drawShape(c, o){
 }
 
 function drawText(c, o){
-  if (o.math){ drawMathText(c, o); return; }
+  if (o.math || usesInlineMath(o.s)){ drawMathText(c, o); return; }
   c.save();
   c.font = textFont(o);
   c.fillStyle = resolveColor(o.c);
@@ -8235,7 +8245,7 @@ function onCancel(e){
 }
 function cancelGesture(){
   const gesture = P;
-  clearHold(); P = null; S.preview = null; S.guides = []; S.dragHide = null;
+  clearHold(); P = null; S.preview = null; S.moPreview = null; S.guides = []; S.dragHide = null;
   canvas.style.cursor = '';
   if (gesture && gesture.undoPushed) afterChange();
   else S.dirty = true;
@@ -9292,7 +9302,7 @@ function setTool(t){
   S.tool = t;
   if (t !== 'spot') S.spotRect = null;
   if (t !== 'ring') S.ringPreview = null;
-  if (t !== 'mo') S.moHover = null;
+  if (t !== 'mo'){ MO.sel = null; S.moHover = null; }
   $$('#toolrail .rbtn[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === t));
   renderOptBar();
   renderHint();
@@ -9749,7 +9759,7 @@ function showContextMenu(x, y, hit, wx, wy){
     if (o.t === 'orb') items.push(...orbContextItems(o));
     if (o.t === 'sea') items.push(...seaContextItems(o));
     if (o.t === 'mo') items.push(...moContextItems(o, wx, wy));
-    if (o.t === 'text') items.push({label: 'Editar texto', fn: () => startTextEdit(o)}, {label: 'Formatar como química (H2O → H₂O)', fn: () => chemifyTexts([o])},
+    if (o.t === 'text') items.push({label: 'Editar texto', fn: () => startTextEdit(o)}, {label: 'Formatar texto…', fn: () => formatBoardText(o)}, {label: 'Formatar como química (H2O → H₂O)', fn: () => chemifyTexts([o])},
       {label: 'Equação (frações e índices, como no LaTeX)', on: !!o.math, fn: () => { pushUndo(); if (o.math) delete o.math; else o.math = true; afterChange(); }});
     if (o.t === 'table') items.push(...tableContextItems(o, wx, wy));
     if (o.t === 'chart') items.push(...chartContextItems(o));
@@ -9801,7 +9811,7 @@ function updatePageBar(){
 }
 function gotoPage(i){
   if (i < 0 || i >= S.doc.pages.length) return;
-  if (i !== S.doc.cur) stopViewAnim();
+  if (i !== S.doc.cur){ stopViewAnim(); MO.sel = null; S.moHover = null; S.moPreview = null; }
   if (S.editing) commitTextEdit();
   if (S.crop) endCrop(true);
   S.doc.cur = i; S.sel.clear(); reindex(); updatePageBar(); updateZoomLabel(); S.dirty = true; scheduleSave();
@@ -9990,7 +10000,7 @@ function commitTextEdit(){
   let txt = ed.ta.value.replace(/\s+$/, '');
   ed.ta.remove();
   const o = ed.o;
-  if (!o.math && o.chem !== false && S.settings.tools.text.chem) txt = formatChemText(txt);
+  if (!o.math && o.chem !== false && S.settings.tools.text.chem) txt = formatPlainParts(txt);
   if (o.id){
     o.s = o._backup; delete o._backup; delete o._hidden;
     if (!txt){ removeIds([o.id]); return; }
@@ -10380,7 +10390,7 @@ function loadBoardDoc(doc, assets, append){
     if (S.cellEdit) tableCommitEdit();
     if (S.crop) endCrop(true);
     stopViewAnim();
-    stepExit();
+    stepExit(); MO.sel = null; S.moHover = null; S.moPreview = null;
     if (append){
       const at = S.doc.cur + 1;
       for (const pg of doc.pages) pg.id = uid();
@@ -14718,7 +14728,7 @@ function arrowContextItems(o){
    linhas de correlação, elétrons, cotas (Δ) e eixo de energia.
    Coordenadas internas em px; y para baixo (energia maior = mais acima).
    ============================================================ */
-const MO = {mode: 'level', n: 1, kind: 'b', color: null, sel: null, fillN: null};
+const MO = {mode: 'level', n: 1, kind: 'b', color: null, sel: null};
 const MO_KINDS = [['b', 'Ligante'], ['ab', 'Antiligante'], ['nb', 'Não ligante'], ['ao', 'Atômico']];
 const MO_KIND_COLOR = {b: 'p1', ab: 'p2', nb: 'p5', ao: 'p0'};
 const MO_GAP = 10, MO_E = 70;   // 1 unidade de energia dos modelos = 70 px
@@ -14761,23 +14771,39 @@ function richLayout(text, fs, family){
   });
   return {items, w, fs, small, fN, fS};
 }
+function legacyRichLine(text, fs, family){
+  const L = richLayout(text, fs, family);
+  return {w: L.w, a: fs * 1.01, d: fs * 0.31, draw(c, x, base){
+    for (const it of L.items){
+      const r = it.r;
+      c.font = it.font;
+      const dy = r.k === 'sup' ? -fs * 0.42 : r.k === 'sub' ? fs * 0.24 : 0;
+      c.fillText(r.t, x + it.x, base + dy);
+      if (r.stack){ const s = r.stack; c.font = L.fS; c.fillText(s.t, x + it.x, base + (s.k === 'sup' ? -fs * 0.42 : fs * 0.24)); }
+    }
+  }};
+}
+function richLine(text, fs, family = FONT_STACKS.sans){
+  const src = String(text || '');
+  if (usesInlineMath(src)) return inlineMathLine(src, fs, false, part => legacyRichLine(part, fs, family));
+  if (FULL_LABEL_MATH.test(src)) return mathLine(src, fs, false);
+  return legacyRichLine(src, fs, family);
+}
 function drawRich(c, text, x, y, fs, align = 'left', family = FONT_STACKS.sans){
   if (!text) return 0;
-  const L = richLayout(text, fs, family);
-  const x0 = align === 'right' ? x - L.w : align === 'center' ? x - L.w / 2 : x;
+  const b = richLine(text, fs, family);
+  const x0 = align === 'right' ? x - b.w : align === 'center' ? x - b.w / 2 : x;
   c.save(); c.textAlign = 'left'; c.textBaseline = 'alphabetic';
-  const base = y + fs * 0.35;
-  for (const it of L.items){
-    const r = it.r;
-    c.font = it.font;
-    const dy = r.k === 'sup' ? -fs * 0.42 : r.k === 'sub' ? fs * 0.24 : 0;
-    c.fillText(r.t, x0 + it.x, base + dy);
-    if (r.stack){ const s = r.stack; c.font = L.fS; c.fillText(s.t, x0 + it.x, base + (s.k === 'sup' ? -fs * 0.42 : fs * 0.24)); }
-  }
+  b.draw(c, x0, y + (b.a - b.d) / 2);
   c.restore();
-  return L.w;
+  return b.w;
 }
-const richWidth = (text, fs, family = FONT_STACKS.sans) => text ? richLayout(text, fs, family).w : 0;
+const richWidth = (text, fs, family = FONT_STACKS.sans) => text ? richLine(text, fs, family).w : 0;
+function richBounds(text, x, y, fs, align = 'left'){
+  const b = richLine(text, fs), half = (b.a + b.d) / 2;
+  const x1 = align === 'right' ? x - b.w : align === 'center' ? x - b.w / 2 : x;
+  return {x1, x2: x1 + b.w, y1: y - half, y2: y + half};
+}
 
 /* ---------- geometria ---------- */
 function moFS(d){ return d.fs || 20; }
@@ -14793,7 +14819,7 @@ const moSegX = (g, i) => { const a = g.x0 + i * (g.w + MO_GAP); return [a, a + g
    lv.lo = {dx, dy} guarda o ajuste feito à mão (arrastando o rótulo). */
 const _moLayoutCache = new WeakMap();
 function moLayoutKey(d){
-  let k = (d.fs || 20) + '|' + (d.w || 44) + '|' + LANG + '|' + (d.scale ? [d.scale.u, d.scale.lo, d.scale.hi, d.scale.top, d.scale.h, d.scale.step, d.scale.vals].join(',') : '') + '|' + d.cols.map(c => c.x).join(',') + '|';
+  let k = LAYOUT_EPOCH + '|' + (d.fs || 20) + '|' + (d.w || 44) + '|' + LANG + '|' + (d.scale ? [d.scale.u, d.scale.lo, d.scale.hi, d.scale.top, d.scale.h, d.scale.step, d.scale.vals].join(',') : '') + '|' + d.cols.map(c => c.x).join(',') + '|';
   for (const lv of d.levels) k += lv.id + ':' + lv.y + ':' + lv.col + ':' + (lv.n || 1) + ':' + (lv.dx || 0) + ':' + (lv.label || '') + ':' + (lv.side || '') + ':' + (lv.lo ? lv.lo.dx + ',' + lv.lo.dy : '') + ':' + (lv.E == null ? '' : lv.E) + ';';
   for (const ln of d.links || []) k += ln.a + '>' + ln.b + ';';
   return k;
@@ -14827,7 +14853,9 @@ function moComputeLayout(d){
     const vtxt = d.scale && d.scale.vals ? moFmtLevel(d, lv) : '';
     const g = geo.get(lv.id), side = lv.side || moAutoSide(d, lv, geo, dirs);
     if (!lv.label && !vtxt){ res.set(lv.id, {side, y: g.y, lbox: null, vbox: null, leader: null}); continue; }
-    const lw = lv.label ? richWidth(lv.label, fs) : 0, vfs = fs * 0.72, vw = vtxt ? richWidth(vtxt, vfs) : 0;
+    const label = lv.label && richLine(lv.label, fs);
+    const lw = label ? label.w : 0, half = label ? (label.a + label.d) / 2 : fs * 0.66;
+    const vfs = fs * 0.72, vw = vtxt ? richWidth(vtxt, vfs) : 0;
     let ax = side === 'right' ? g.x1 : g.x0;
     for (const o of d.levels){
       if (o === lv || o.col !== lv.col) continue;
@@ -14835,12 +14863,13 @@ function moComputeLayout(d){
       if (Math.abs(go.y - g.y) < fs * 0.95) ax = side === 'right' ? Math.max(ax, go.x1) : Math.min(ax, go.x0);
     }
     ax += side === 'right' ? 10 : -10;
-    items.push({lv, g, side, ax, lw, vw, vtxt, vfs, ty: g.y, y: g.y});
+    items.push({lv, g, side, ax, lw, half, vw, vtxt, vfs, ty: g.y, y: g.y});
   }
   // rótulos na mesma coluna e lado não se sobrepõem: grupos que se tocam são afastados em bloco, em torno da média
-  const gap = fs * 1.32, groups = new Map();
+  const groups = new Map();
   for (const it of items){ const k = it.lv.col + it.side; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(it); }
   for (const arr of groups.values()){
+    const gap = Math.max(fs * 1.32, ...arr.map(it => it.half * 2));
     arr.sort((a, b) => a.ty - b.ty);
     const cl = [];
     for (const it of arr){
@@ -14864,7 +14893,7 @@ function moComputeLayout(d){
       vbox = R ? {x1: start, x2: start + it.vw} : {x1: start - it.vw, x2: start};
       Object.assign(vbox, {y1: y - it.vfs * 0.7, y2: y + it.vfs * 0.7, txt: it.vtxt, fs: it.vfs, side: it.side});
     }
-    if (lbox) Object.assign(lbox, {y1: y - fs * 0.66, y2: y + fs * 0.66, side: it.side});
+    if (lbox) Object.assign(lbox, {y1: y - it.half, y2: y + it.half, side: it.side});
     const ex = R ? it.g.x1 + 3 : it.g.x0 - 3, tx = ax + (R ? -3 : 3);
     const leader = Math.abs(y - it.g.y) > 3 || Math.abs(tx - ex) > 12 ? [ex, it.g.y, tx, y] : null;
     res.set(it.lv.id, {side: it.side, y, lbox, vbox, leader});
@@ -14889,14 +14918,27 @@ function moLocalBounds(d){
   const fs = moFS(d);
   for (const lv of d.levels){ const g = moLevelGeom(d, lv); add({x1: g.x0, y1: g.y - 20, x2: g.x1, y2: g.y + 20}); if (lv.label) add(moLabelBox(d, lv)); const vb = moValueBox(d, lv); if (vb) add(vb); }
   const maxY = moTitleBase(d);
-  d.cols.forEach((col, ci) => { const tw = richWidth(col.title, fs * 1.05); add({x1: col.x - Math.max(tw, 60) / 2, y1: maxY + 20, x2: col.x + Math.max(tw, 60) / 2, y2: maxY + 30 + fs * (d.showBO ? 2.8 : 1.4)}); });
+  const titleY = moColumnTitleY(d);
+  for (const col of d.cols){
+    add({x1: col.x - 30, y1: maxY + 20, x2: col.x + 30, y2: titleY + fs * (d.showBO ? 2.1 : 0.8)});
+    if (col.title) add(richBounds(col.title, col.x, titleY, fs * 1.05, 'center'));
+  }
+  const byId = new Map(d.levels.map(lv => [lv.id, lv]));
+  for (const gp of d.gaps || []){
+    const a = byId.get(gp.a), b = byId.get(gp.b);
+    if (a && b) add(moGapLabel(d, gp, moLevelGeom(d, a), moLevelGeom(d, b)).box);
+  }
   if (!b) b = {x1: -60, y1: -60, x2: 60, y2: 60};
   if (d.axis !== false && d.scale){
-    const A = moAxisInfo(d), lw = richWidth((d.axisLabel || 'E') + ' / ' + A.unit, fs);
-    add({x1: A.x - 12 - A.tw - 4, y1: A.top - fs * 1.4, x2: A.x + lw / 2, y2: A.bot});
-    add({x1: A.x - lw / 2, y1: A.top - fs * 1.4, x2: A.x + lw / 2, y2: A.top});
-  } else if (d.axis !== false) add({x1: b.x1 - 46, y1: b.y1 - 10, x2: b.x1, y2: b.y2});
-  if (d.title) add({x1: (b.x1 + b.x2) / 2 - richWidth(d.title, fs * 1.2) / 2, y1: b.y1 - fs * 2, x2: (b.x1 + b.x2) / 2 + richWidth(d.title, fs * 1.2) / 2, y2: b.y1});
+    const A = moAxisInfo(d);
+    add({x1: A.x - 16 - A.tw, y1: A.top, x2: A.x + 5, y2: A.bot});
+    add(moAxisHeading(d, A.x, A.top, A.unit).box);
+  } else if (d.axis !== false && d.levels.length){
+    const x = moAxisX(d), top = Math.min(...d.levels.map(lv => lv.y)) - 34;
+    add({x1: x - 5, y1: top, x2: x + 5, y2: Math.max(...d.levels.map(lv => lv.y)) + 26});
+    add(moAxisHeading(d, x, top).box);
+  }
+  if (d.title) add(richBounds(d.title, (b.x1 + b.x2) / 2, moDiagramTitleY(d, b.y1), fs * 1.2, 'center'));
   return b;
 }
 function moBBox(d){
@@ -15055,19 +15097,19 @@ function drawMO(c, d, opts = {}){
     c.setLineDash([]);
     c.beginPath(); c.moveTo(x, y1 + 2); c.lineTo(x, y2 - 2); c.stroke();
     arrowHead(c, x, y1, -Math.PI / 2, 9, 0); arrowHead(c, x, y2, Math.PI / 2, 9, 0);
-    const left = x < Math.min(ga.x0, gb.x0);
-    drawRich(c, gp.label || 'Δ', left ? x - 8 : x + 8, (y1 + y2) / 2, fs * 0.95, left ? 'right' : 'left');
+    const label = moGapLabel(d, gp, ga, gb);
+    drawRich(c, label.label, label.x, label.y, label.fs, label.align);
   }
   // títulos das colunas
-  const maxY = moTitleBase(d);
+  const titleY = moColumnTitleY(d);
   c.fillStyle = fg;
-  d.cols.forEach(col => { if (col.title && !col._h) drawRich(c, col.title, col.x, maxY + 40 + fs * 0.6, fs * 1.05, 'center'); });
+  d.cols.forEach(col => { if (col.title && !col._h) drawRich(c, col.title, col.x, titleY, fs * 1.05, 'center'); });
   if (d.showBO && !d._hBO){
     const bo = moBondOrder(d);
     if (bo){
       const ci = Math.floor(d.cols.length / 2), txt = `${tt('OL')} = (${bo.b} − ${bo.ab}) / 2 = ${decSep(String(bo.order))}` + (bo.unp ? ` · ${bo.unp} e⁻ ${tt(bo.unp > 1 ? 'desemparelhados' : 'desemparelhado')}` : '');
       c.font = `500 ${fs * 0.85}px ${FONT_STACKS.sans}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = withAlpha(fg, 0.85);
-      c.fillText(txt, d.cols[ci].x, maxY + 40 + fs * 2.1);
+      c.fillText(txt, d.cols[ci].x, titleY + fs * 1.5);
     }
   }
   // eixo de energia
@@ -15082,21 +15124,16 @@ function drawMO(c, d, opts = {}){
     for (const y of A.minors){ c.beginPath(); c.moveTo(x - 4, y); c.lineTo(x, y); c.stroke(); }
     c.font = `500 ${A.fsT}px ${FONT_STACKS.sans}`; c.textAlign = 'right'; c.textBaseline = 'middle';
     for (const t of A.ticks) c.fillText(t.txt, x - 11, t.y);
-    // rótulo "E / eV" (grandeza em itálico, unidade em pé)
-    const q = d.axisLabel || 'E', fq = `italic 600 ${fs * 1.05}px ${FONT_STACKS.serif}`, fu = `500 ${fs * 0.85}px ${FONT_STACKS.sans}`, ut = ' / ' + A.unit;
-    c.font = fq; const wq = c.measureText(q).width; c.font = fu; const wu = c.measureText(ut).width;
-    c.textAlign = 'left'; c.textBaseline = 'bottom';
-    c.font = fq; c.fillText(q, x - (wq + wu) / 2, A.top - 6);
-    c.font = fu; c.fillText(ut, x - (wq + wu) / 2 + wq, A.top - 7);
+    const H = moAxisHeading(d, x, A.top, A.unit);
+    drawRich(c, H.label, x, H.y, H.fs, 'center');
   } else if (d.axis !== false && d.levels.length){
     const ys = d.levels.map(l => l.y), top = Math.min(...ys) - 34, bot = Math.max(...ys) + 26, x = moAxisX(d);
     c.strokeStyle = fg; c.fillStyle = fg; c.lineWidth = 2;
     c.beginPath(); c.moveTo(x, bot); c.lineTo(x, top + 6); c.stroke();
-    arrowHead(c, x, top, -Math.PI / 2, 12, 0);
-    c.font = `italic 600 ${fs * 1.05}px ${FONT_STACKS.serif}`; c.textAlign = 'center'; c.textBaseline = 'bottom';
-    c.fillText(d.axisLabel || tt('Energia').charAt(0), x, top - 6);
+    const H = moAxisHeading(d, x, top);
+    drawRich(c, H.label, x, H.y, H.fs, 'center');
   }
-  if (d.title){ const b = moLocalBounds({...d, title: ''}); c.fillStyle = fg; drawRich(c, d.title, (b.x1 + b.x2) / 2, b.y1 - fs * 0.9, fs * 1.2, 'center'); }
+  if (d.title){ const b = moLocalBounds({...d, title: ''}); c.fillStyle = fg; drawRich(c, d.title, (b.x1 + b.x2) / 2, moDiagramTitleY(d, b.y1), fs * 1.2, 'center'); }
   c.restore();
 }
 function drawMOPreview(c){
@@ -15176,14 +15213,45 @@ function moHitGap(d, lx, ly){
   for (const gp of d.gaps || []){
     const a = byId.get(gp.a), b = byId.get(gp.b); if (!a || !b) continue;
     const ga = moLevelGeom(d, a), gb = moLevelGeom(d, b), x = moGapX(d, ga, gb, gp);
-    if (Math.abs(lx - x) < 10 && ly > Math.min(ga.y, gb.y) && ly < Math.max(ga.y, gb.y)) return gp;
+    const b0 = moGapLabel(d, gp, ga, gb).box;
+    if ((Math.abs(lx - x) < 10 && ly > Math.min(ga.y, gb.y) && ly < Math.max(ga.y, gb.y)) ||
+      (lx >= b0.x1 - 4 && lx <= b0.x2 + 4 && ly >= b0.y1 - 2 && ly <= b0.y2 + 2)) return gp;
   }
   return null;
 }
 const moTitleBase = d => d.levels.length ? Math.max(...d.levels.map(l => l.y)) : 0;
+function moColumnTitleY(d){
+  const fs = moFS(d);
+  const half = Math.max(0, ...d.cols.map(col => {
+    if (!col.title) return 0;
+    const b = richLine(col.title, fs * 1.05);
+    return (b.a + b.d) / 2;
+  }));
+  return moTitleBase(d) + 40 + Math.max(fs * 0.6, half - fs * 0.1);
+}
+function moDiagramTitleY(d, top){
+  const fs = moFS(d), b = richLine(d.title, fs * 1.2);
+  return top - Math.max(fs * 0.9, (b.a + b.d) / 2 + fs * 0.08);
+}
+function moGapLabel(d, gp, ga, gb){
+  const gx = moGapX(d, ga, gb, gp), left = gx < Math.min(ga.x0, gb.x0);
+  const x = gx + (left ? -8 : 8), y = (ga.y + gb.y) / 2, fs = moFS(d) * 0.95;
+  const label = gp.label || 'Δ', align = left ? 'right' : 'left';
+  return {x, y, fs, label, align, box: richBounds(label, x, y, fs, align)};
+}
+function moAxisHeading(d, x, top, unit = ''){
+  const raw = d.axisLabel || 'E';
+  const label = (FULL_LABEL_MATH.test(raw) && !usesInlineMath(raw) ? '\\(' + raw + '\\)' : raw) + (unit ? ' / ' + unit : '');
+  const fs = moFS(d), b = richLine(label, fs), y = top - 6 - (b.a + b.d) / 2;
+  return {label, y, fs, box: richBounds(label, x, y, fs, 'center')};
+}
 function moHitTitle(d, lx, ly){
-  const fs = moFS(d), maxY = moTitleBase(d);
-  return d.cols.findIndex(col => col.title && Math.abs(lx - col.x) < Math.max(richWidth(col.title, fs * 1.05) / 2 + 6, 14) && Math.abs(ly - (maxY + 40 + fs * 0.6)) < fs * 0.7);
+  const fs = moFS(d), y = moColumnTitleY(d);
+  return d.cols.findIndex(col => {
+    if (!col.title) return false;
+    const b = richBounds(col.title, col.x, y, fs * 1.05, 'center');
+    return lx >= b.x1 - 6 && lx <= b.x2 + 6 && ly >= b.y1 - 3 && ly <= b.y2 + 3;
+  });
 }
 function moAt(x, y, pad = 30, padY){
   const list = objs();
@@ -15374,7 +15442,7 @@ function moHover(q){
   if (P){ return; }
   const it = moIntent(q);
   S.moHover = it;
-  S.dirty = true;
+  S.ovDirty = true;
   const m = MO.mode;
   return it.k === 'new' || it.k === 'newdiag' ? 'crosshair'
     : it.k === 'level' ? (m === 'level' ? 'grab' : 'pointer')
@@ -15430,7 +15498,8 @@ function moDown(q, e){
       if (twin && twin.E != null) lv.E = twin.E;
       if (MO.color) lv.c = MO.color;
       d.levels.push(lv);
-      sel(d, lv);
+      MO.sel = null;
+      renderOptBar();
       // continua arrastando para ajustar a altura sem soltar o botão
       P.mode = 'mo-drag'; P.undoPushed = true; P.moDrag = {d: d.id, l: lv.id, y0: lv.y, E0: lv.E, col0: ci, ly0: it.ly, lx0: it.lx, fresh: true};
       return;
@@ -15493,15 +15562,16 @@ function moUp(p, q, e){
     const [lx, ly] = moLocal(d, q.x, q.y);
     const hit = moHitLevel(d, lx, ly);
     if (hit && hit.lv.id !== p.moFrom.l){
-      pushUndo();
       const a = p.moFrom.l, b = hit.lv.id;
-      if (MO.mode === 'link') moToggleLink(d, a, b);
-      else {
+      if (MO.mode === 'link'){
+        pushUndo(); moToggleLink(d, a, b); afterChange();
+      } else {
         const ex = d.gaps.find(l => (l.a === a && l.b === b) || (l.a === b && l.b === a));
-        if (ex) d.gaps = d.gaps.filter(l => l !== ex);
-        else { const gp = {a, b, label: '\\Delta'}; d.gaps.push(gp); afterChange(); moEditText(tt('Rótulo da cota (ex.: \\Delta_o, \\Delta E)'), gp.label, v => { pushUndo(); gp.label = v; afterChange(); }); return; }
+        if (ex){ pushUndo(); d.gaps = d.gaps.filter(l => l !== ex); afterChange(); }
+        else moEditText('Rótulo da cota', '\\Delta', label => {
+          pushUndo(); d.gaps.push({a, b, label}); afterChange();
+        });
       }
-      afterChange();
     }
     S.dirty = true; return;
   }
@@ -15610,49 +15680,140 @@ function moSelLevel(){
   return lv ? {d, lv} : null;
 }
 
-/* ---------- editor de rótulos (letras gregas, sobrescrito, subscrito) ---------- */
-function moEditText(title, value, fn, quick, energy){
-  const inp = h('input', {class: 'tinput mono', value: value || '', spellcheck: 'false', autocomplete: 'off'});
-  const prev = h('canvas', {class: 'moprev', width: 460, height: 64});
+/* ---------- editor de rótulos e texto formatado ---------- */
+function moEditText(title, value, onSave, quick, energy, options = {}){
+  const {board, level} = options;
+  const inp = h(board ? 'textarea' : 'input', {class: 'tinput mono' + (board ? ' mo-textarea' : ''), spellcheck: 'false', autocomplete: 'off', 'aria-label': board ? 'Texto' : 'Rótulo'});
+  inp.value = value || '';
+  const prev = h('canvas', {class: 'moprev', width: 460, height: 104, 'aria-label': 'Prévia'});
   const draw = () => {
-    const d = Math.min(2, devicePixelRatio || 1), W = prev.clientWidth || 460, H = 64;
+    const d = Math.min(2, devicePixelRatio || 1), W = prev.clientWidth || 460, H = 104;
     prev.width = W * d; prev.height = H * d;
-    const c = prev.getContext('2d'); c.setTransform(d, 0, 0, d, 0, 0); c.clearRect(0, 0, W, H);
+    const c = prev.getContext('2d');
+    c.setTransform(d, 0, 0, d, 0, 0);
     c.fillStyle = theme().bg; c.fillRect(0, 0, W, H);
-    c.fillStyle = resolveColor('p0'); drawRich(c, inp.value, W / 2, H / 2, 30, 'center');
+    c.fillStyle = resolveColor(board ? board.c : 'p0');
+    c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+    if (board){
+      const L = mathTextLayout({...board, s: inp.value, fs: 28});
+      const k = Math.min(1, (W - 28) / Math.max(1, L.w), (H - 18) / Math.max(1, L.h));
+      c.translate((W - L.w * k) / 2, (H - L.h * k) / 2); c.scale(k, k);
+      for (const ln of L.lines) ln.b.draw(c, 0, ln.base);
+    } else {
+      const b = richLine(inp.value, 30);
+      const k = Math.min(1, (W - 28) / Math.max(1, b.w), (H - 18) / Math.max(1, b.a + b.d));
+      c.translate((W - b.w * k) / 2, H / 2); c.scale(k, k);
+      b.draw(c, 0, (b.a - b.d) / 2);
+    }
   };
-  const ins = (txt, back = 0) => { const a = inp.selectionStart, b = inp.selectionEnd; inp.value = inp.value.slice(0, a) + txt + inp.value.slice(b); inp.focus(); const p = a + txt.length - back; inp.setSelectionRange(p, p); draw(); };
+  function put(before, after = '', math = false){
+    const a = inp.selectionStart, b = inp.selectionEnd, selected = inp.value.slice(a, b);
+    const inMath = board?.math || [...inp.value.matchAll(INLINE_MATH)].some(m => {
+      const delim = m[1] === undefined ? 2 : 1;
+      return a >= m.index + delim && b <= m.index + m[0].length - delim;
+    });
+    if (math && !inMath){ before = '\\(' + before; after += '\\)'; }
+    inp.setRangeText(before + selected + after, a, b);
+    inp.focus();
+    inp.setSelectionRange(a + before.length, a + before.length + selected.length);
+    draw();
+  }
+  const format = (label, title, before, after, math = true) =>
+    h('button', {class: 'chip', title, 'aria-label': title, onclick: () => put(before, after, math)}, label);
   const greek = ['σ', 'π', 'δ', 'φ', 'Δ', 'ψ', 'Ψ', 'α', 'β', 'γ', 'λ', 'ν'];
   const quickL = quick || ['\\sigma_{1s}', '\\sigma^*_{1s}', '\\sigma_{2s}', '\\sigma^*_{2s}', '\\sigma_{2p}', '\\sigma^*_{2p}', '\\pi_{2p}', '\\pi^*_{2p}', 'a_{1g}', 't_{1u}', 'e_g', 't_{2g}', 'e_g^*', 'n'];
   const einp = energy ? h('input', {class: 'tinput mono moein', value: energy.value, spellcheck: 'false', autocomplete: 'off', inputmode: 'decimal'}) : null;
+  const counts = [1, 2, 3, 4, 5, 6, 7];
+  if (level?.n > 7) counts.push(level.n);
+  const degeneracy = level && h('select', {class: 'tinput moein', 'aria-label': 'Degenerescência'}, ...counts.map(n => h('option', {value: n}, String(n))));
+  const kind = level && h('select', {class: 'tinput', 'aria-label': 'Tipo de nível'}, ...MO_KINDS.map(([k, label]) => h('option', {value: k}, label)));
+  if (level){ degeneracy.value = String(level.n || 1); kind.value = level.kind || 'b'; }
   const ok = () => {
-    if (einp){ const v = moParseNum(einp.value); if (Number.isNaN(v)){ einp.classList.add('bad'); einp.focus(); return; } }
-    closeModal(); fn(inp.value, einp ? einp.value : null);
+    if (einp){
+      const v = moParseNum(einp.value);
+      if (v != null && !Number.isFinite(v)){ einp.classList.add('bad'); einp.focus(); return; }
+    }
+    closeModal();
+    onSave(inp.value, einp ? einp.value : null, level ? {n: +degeneracy.value, kind: kind.value} : null);
+  };
+  const key = e => {
+    if (e.isComposing) return;
+    if (e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); closeModal(); }
+    if (e.key === 'Enter' && (e.target !== inp || !board || e.ctrlKey || e.metaKey)){
+      e.preventDefault(); e.stopPropagation(); ok();
+    }
   };
   inp.addEventListener('input', draw);
-  inp.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') ok(); });
-  if (einp) einp.addEventListener('keydown', e => { e.stopPropagation(); einp.classList.remove('bad'); if (e.key === 'Enter') ok(); });
-  const pv = (t) => { const cv = h('canvas', {class: 'moq', width: 64, height: 30}); requestAnimationFrame(() => { const d = Math.min(2, devicePixelRatio || 1); cv.width = 64 * d; cv.height = 30 * d; const c = cv.getContext('2d'); c.setTransform(d, 0, 0, d, 0, 0); c.fillStyle = getComputedStyle(document.body).color || '#222'; drawRich(c, t, 32, 15, 16, 'center'); }); return cv; };
+  inp.addEventListener('keydown', key);
+  if (einp){
+    einp.addEventListener('keydown', key);
+    einp.addEventListener('input', () => einp.classList.remove('bad'));
+  }
+  const pv = t => {
+    const cv = h('canvas', {class: 'moq', width: 64, height: 30});
+    requestAnimationFrame(() => {
+      const d = Math.min(2, devicePixelRatio || 1);
+      cv.width = 64 * d; cv.height = 30 * d;
+      const c = cv.getContext('2d'); c.setTransform(d, 0, 0, d, 0, 0);
+      c.fillStyle = getComputedStyle(document.body).color || '#222';
+      drawRich(c, t, 32, 15, 16, 'center');
+    });
+    return cv;
+  };
   const body = h('div', {class: 'moedit'},
     inp, prev,
+    level ? h('div', {class: 'mo-level-fields'},
+      h('label', {class: 'moerow'}, h('span', {}, 'Degenerescência'), degeneracy),
+      h('label', {class: 'moerow'}, h('span', {}, 'Tipo de nível'), kind)) : null,
     einp ? h('label', {class: 'moerow'}, h('span', {}, 'Energia'), einp, h('span', {class: 'muted'}, energy.unit)) : null,
     h('div', {class: 'mobtns'},
-      ...greek.map(g => h('button', {class: 'chip', onclick: () => ins(g)}, g)),
-      h('button', {class: 'chip', title: tt('Sobrescrito'), onclick: () => ins('^{}', 1)}, 'xⁿ'),
-      h('button', {class: 'chip', title: tt('Subscrito'), onclick: () => ins('_{}', 1)}, 'xₙ'),
-      h('button', {class: 'chip', title: tt('Antiligante'), onclick: () => ins('^*')}, '*')),
-    h('div', {class: 'mobtns quick'}, ...quickL.map(t => { const b = h('button', {class: 'chip', title: t, onclick: () => { inp.value = t; draw(); inp.focus(); }}); b.appendChild(pv(t)); return b; })),
-    h('p', {class: 'muted mohelp'}, tt('Escreva _ para subscrito e ^ para sobrescrito; use chaves para mais de um caractere: t_{2g}, \\sigma^*_{2p}. Letras gregas: \\sigma, \\pi, \\Delta ou os botões.')));
+      format('B', 'Negrito', '\\textbf{', '}'),
+      format('I', 'Itálico', '\\textit{', '}'),
+      format('U', 'Sublinhado', '\\underline{', '}'),
+      format('xⁿ', 'Sobrescrito', '^{', '}', !!board),
+      format('xₙ', 'Subscrito', '_{', '}', !!board),
+      format('a/b', 'Fração', '\\frac{', '}{}'),
+      format('√', 'Raiz quadrada', '\\sqrt{', '}'),
+      board?.math ? null : format('∑', 'Equação em linha', '\\(', '\\)', false)),
+    h('div', {class: 'mobtns'}, ...greek.map(g => h('button', {class: 'chip', onclick: () => {
+      const a = inp.selectionStart, b = inp.selectionEnd;
+      inp.setRangeText(g, a, b, 'end'); inp.focus(); draw();
+    }}, g))),
+    quickL.length ? h('div', {class: 'mobtns quick'}, ...quickL.map(t => {
+      const b = h('button', {class: 'chip', title: t, onclick: () => { inp.value = t; draw(); inp.focus(); }});
+      b.appendChild(pv(t)); return b;
+    })) : null,
+    h('p', {class: 'muted mohelp'}, board?.math ? 'Exemplos: \\frac{a}{b}, \\sqrt{x}, \\sigma^*_{2p}.'
+      : 'Use $...$ ou \\( ... \\) para matemática em linha.'));
   modal(title, body, [h('button', {class: 'btn ghost', onclick: closeModal}, 'Cancelar'), h('button', {class: 'btn', onclick: ok}, 'Salvar')], 'wide');
-  setTimeout(() => { const f = energy && energy.focus ? einp : inp; f.focus(); f.select(); draw(); }, 40);
+  requestAnimationFrame(() => {
+    if (!inp.isConnected) return;
+    const f = energy?.focus ? einp : inp;
+    f.focus(); f.select(); draw();
+  });
 }
 function moEditLabel(d, lv, focusEnergy){
   const en = d.scale ? {value: moFmtLevel(d, lv), unit: moUnit(d.scale.u)[1], focus: !!focusEnergy} : null;
-  moEditText(tt('Rótulo do nível'), lv.label || '', (v, ev) => {
-    pushUndo(); lv.label = v;
-    if (en && ev != null && ev.trim() !== en.value){ const E = moParseNum(ev); if (E != null && isFinite(E)) moSetLevelE(d, lv, E); }
-    afterChange();
-  }, null, en);
+  moEditText('Editar nível', lv.label || '', (value, ev, opts) => {
+    const energyChanged = en && ev != null && ev.trim() !== en.value && Number.isFinite(moParseNum(ev));
+    if ((lv.label || '') === value && (lv.n || 1) === opts.n && (lv.kind || 'b') === opts.kind && !energyChanged) return;
+    pushUndo();
+    lv.label = value;
+    lv.n = opts.n;
+    if (lv.occ) lv.occ = lv.occ.slice(0, opts.n);
+    if ((lv.kind || 'b') !== opts.kind){ lv.kind = opts.kind; delete lv.c; }
+    if (energyChanged) moSetLevelE(d, lv, moParseNum(ev));
+    afterChange(); renderOptBar();
+  }, null, en, {level: lv});
+}
+function formatBoardText(o){
+  moEditText('Formatar texto…', o.s, value => {
+    const s = o.math || o.chem === false || !S.settings.tools.text.chem ? value : formatPlainParts(value);
+    if (s === o.s) return;
+    pushUndo();
+    if (s.trim()){ o.s = s; afterChange(); }
+    else removeIds([o.id]);
+  }, [], null, {board: o});
 }
 
 /* ---------- diálogo da escala numérica ---------- */
@@ -15722,11 +15883,17 @@ function moDegIcon(n){
 function moOptBar(add, sep){
   const sl = moSelLevel();
   add(chip('Modelos', 'Diagramas prontos: H₂, O₂, N₂, HF, CO, complexo octaédrico', e => moTemplateMenu(e.currentTarget), false, 'flask'), sep(),
-    seg([['level', 'Nível', 'Clique: novo nível; arraste: move; duplo clique: rótulo; Del: apaga'], ['electron', 'Elétron', 'Clique num orbital: ↑ → ↑↓ → vazio (Shift: ↓)'], ['link', 'Correlação', 'Arraste de um nível a outro: linha tracejada'], ['gap', 'Cota Δ', 'Arraste de um nível a outro: seta dupla com rótulo']], MO.mode, v => { MO.mode = v; renderOptBar(); renderHint(); }), sep(),
-    seg([1, 2, 3, 4, 5].map(k => [k, moDegIcon(k), tt('Degenerescência') + ' ' + k]), sl ? sl.lv.n || 1 : MO.n, v => {
-      MO.n = v; const s = moSelLevel(); if (s){ pushUndo(); s.lv.n = v; s.lv.occ = (s.lv.occ || []).slice(0, v); afterChange(); } renderOptBar(); }, 'small degs'), sep(),
-    seg(MO_KINDS.map(([k, l]) => [k, `<i class="dot" style="background:${resolveColor(MO_KIND_COLOR[k])}"></i>`, tt(l)]), sl ? sl.lv.kind || 'b' : MO.kind, v => {
-      MO.kind = v; const s = moSelLevel(); if (s){ pushUndo(); s.lv.kind = v; delete s.lv.c; afterChange(); } renderOptBar(); }, 'small mokinds'));
+    seg([['level', 'Nível', 'Clique: novo nível; arraste: move; duplo clique: rótulo; Del: apaga'], ['electron', 'Elétron', 'Clique num orbital: ↑ → ↑↓ → vazio (Shift: ↓)'], ['link', 'Correlação', 'Arraste de um nível a outro: linha tracejada'], ['gap', 'Cota Δ', 'Arraste de um nível a outro: seta dupla com rótulo']], MO.mode, v => { MO.mode = v; MO.sel = null; S.moHover = null; S.dirty = true; renderOptBar(); renderHint(); }));
+  if (sl) add(sep(), chip('Editar nível…', 'Editar o nível selecionado', () => moEditLabel(sl.d, sl.lv)));
+  if (MO.mode === 'level'){
+    add(sep(), h('span', {class: 'olabel'}, 'Próximo nível'),
+      seg([1, 2, 3, 4, 5, 6, 7].map(k => [k, moDegIcon(k), tt('Degenerescência do próximo nível') + ' ' + k]), MO.n, v => {
+        MO.n = v; S.dirty = true; renderOptBar();
+      }, 'small degs'),
+      seg(MO_KINDS.map(([k, l]) => [k, `<i class="dot" style="background:${resolveColor(MO_KIND_COLOR[k])}"></i>`, tt(l)]), MO.kind, v => {
+        MO.kind = v; S.dirty = true; renderOptBar();
+      }, 'small mokinds'));
+  }
   const d = sl ? sl.d : objs().filter(o => o.t === 'mo').slice(-1)[0];
   if (d){
     const ci = moTargetCol(d), cur = moCount(d.levels.filter(l => l.col === ci));
@@ -15749,8 +15916,8 @@ function moContextItems(d, wx, wy){
     const lv = hit.lv;
     MO.sel = {d: d.id, l: lv.id};
     const set = fn => () => { pushUndo(); fn(); afterChange(); renderOptBar(); };
-    items.push({label: tt('Nível') + (lv.label ? ' ' + richPlain(lv.label) : ''), header: true},
-      {label: 'Editar rótulo…', fn: () => moEditLabel(d, lv)},
+    items.push({label: tt('Nível') + (lv.label && !usesInlineMath(lv.label) && !FULL_LABEL_MATH.test(lv.label) ? ' ' + richPlain(lv.label) : ''), header: true},
+      {label: 'Editar nível…', fn: () => moEditLabel(d, lv)},
       ...(d.scale ? [{label: 'Energia: ' + moFmtLevel(d, lv) + ' ' + moUnit(d.scale.u)[1] + '…', fn: () => moEditLabel(d, lv, true)}] : []),
       ...MO_KINDS.map(([k, l]) => ({label: l, on: (lv.kind || 'b') === k, fn: set(() => { lv.kind = k; delete lv.c; })})),
       '-',
@@ -17705,7 +17872,15 @@ function mathParse(src){
   function rawArg(){
     skip();
     if (s[i] !== '{') return s[i++] || '';
-    const j = s.indexOf('}', i); const t = s.slice(i + 1, j < 0 ? s.length : j); i = j < 0 ? s.length : j + 1; return t;
+    const start = ++i;
+    let depth = 1;
+    while (i < s.length){
+      const ch = s[i++];
+      if (ch === '\\' && /[{}\\]/.test(s[i] || '')){ i++; continue; }
+      if (ch === '{') depth++;
+      if (ch === '}' && --depth === 0) return s.slice(start, i - 1).replace(/\\([{}\\])/g, '$1');
+    }
+    return s.slice(start);
   }
   function delim(){
     skip();
@@ -17741,7 +17916,11 @@ function mathParse(src){
         const name = m[0]; i += name.length;
         if (name === 'frac' || name === 'dfrac' || name === 'tfrac'){ const a = arg(), b = arg(); out.push({k: 'frac', num: a, den: b}); }
         else if (name === 'sqrt') out.push({k: 'sqrt', body: arg()});
-        else if (name === 'text' || name === 'mathrm' || name === 'rm') out.push({k: 'text', s: rawArg(), rm: name !== 'text'});
+        else if (['text', 'mathrm', 'rm', 'textbf', 'textit', 'texttt', 'underline'].includes(name)){
+          out.push({k: 'text', s: rawArg(), style: name});
+        } else if (name === 'mathbf' || name === 'mathit'){
+          out.push({k: 'grp', body: arg(), style: name});
+        }
         else if (name === 'left'){ const l = delim(), body = group('right'), r = delim(); out.push({k: 'lr', l, r, body}); }
         else if (name === 'right'){ if (stop === 'right') return out; delim(); }
         else if (name === 'quad') out.push({k: 'space', w: 1});
@@ -17795,12 +17974,23 @@ function mathBoxOf(node, fs, st){
     case 'frac': base = mathFrac(node, fs, st); break;
     case 'sqrt': base = mathSqrt(node, fs, st); break;
     case 'lr': base = mathLR(node, fs, st); break;
-    case 'grp': base = mathLay(node.body, fs, st); break;
-    case 'text': base = mathRun(node.s, mathFont(fs, false, st.bold, node.rm ? 'serif' : 'sans'), fs); break;
-    default: base = mathRun(node.s, mathFont(fs, !!node.it, st.bold, 'serif'), fs);
+    case 'grp':
+      base = mathLay(node.body, fs, node.style ? {...st, bold: st.bold || node.style === 'mathbf', italic: st.italic || node.style === 'mathit'} : st);
+      break;
+    case 'text': {
+      const style = node.style;
+      const fam = style === 'texttt' ? 'mono' : style === 'mathrm' || style === 'rm' ? 'serif' : 'sans';
+      base = mathRun(node.s, mathFont(fs, style === 'textit', st.bold || style === 'textbf', fam), fs);
+      if (style === 'underline'){
+        const text = base;
+        base = {...text, draw(c, x, y){ text.draw(c, x, y); c.fillRect(x, y + fs * 0.12, text.w, Math.max(1, fs * 0.052)); }};
+      }
+      break;
+    }
+    default: base = mathRun(node.s, mathFont(fs, !!node.it || st.italic, st.bold, 'serif'), fs);
   }
   if (!node.sup && !node.sub) return base;
-  const sfs = fs * 0.68, st2 = {bold: st.bold, lvl: st.lvl + 2};
+  const sfs = fs * 0.68, st2 = {...st, lvl: st.lvl + 2};
   const sp = node.sup ? mathLay(node.sup, sfs, st2) : null, sb = node.sub ? mathLay(node.sub, sfs, st2) : null;
   const up = sp ? Math.max(0.42 * fs, base.a - 0.3 * fs) : 0, dn = sb ? Math.max(0.2 * fs, base.d - 0.06 * fs) : 0;
   const ic = node.it ? 0.06 * fs : 0.02 * fs;    // folga depois de uma letra em itálico
@@ -17809,7 +17999,7 @@ function mathBoxOf(node, fs, st){
     draw(c, x, y){ base.draw(c, x, y); if (sp) sp.draw(c, x + base.w + ic, y - up); if (sb) sb.draw(c, x + base.w + (node.it ? 0.01 * fs : ic), y + dn); }};
 }
 function mathFrac(node, fs, st){
-  const cf = st.lvl >= 1 ? fs * 0.8 : fs, st2 = {bold: st.bold, lvl: st.lvl + 1};
+  const cf = st.lvl >= 1 ? fs * 0.8 : fs, st2 = {...st, lvl: st.lvl + 1};
   const N = mathLay(node.num, cf, st2), D = mathLay(node.den, cf, st2);
   const t = Math.max(1.3, fs * 0.06), ax = fs * 0.27, gap = fs * 0.15, pad = fs * 0.14;
   const w = Math.max(N.w, D.w) + 2 * pad;
@@ -17871,11 +18061,42 @@ function mathLine(src, fs, bold){
   }
   return b;
 }
+// Delimitadores explícitos deixam o texto comum e os rótulos antigos intactos.
+const INLINE_MATH = /(?<!\\)\$([^$\n]+)\$|\\\(([^\n]*?)\\\)/g;
+const FULL_LABEL_MATH = /^\s*\\(?:d?frac|tfrac|sqrt|textbf|textit|texttt|underline|mathbf|mathit)\b/;
+function usesInlineMath(src){
+  return String(src || '').search(INLINE_MATH) >= 0;
+}
+function formatPlainParts(src){
+  let start = 0, result = '';
+  for (const m of src.matchAll(INLINE_MATH)){
+    result += formatChemText(src.slice(start, m.index)) + m[0];
+    start = m.index + m[0].length;
+  }
+  return result + formatChemText(src.slice(start));
+}
+function inlineMathLine(src, fs, bold, plain){
+  const items = [];
+  let start = 0, w = 0, a = 0, d = 0;
+  const append = b => { items.push({b, x: w}); w += b.w; a = Math.max(a, b.a); d = Math.max(d, b.d); };
+  for (const m of src.matchAll(INLINE_MATH)){
+    if (m.index > start) append(plain(src.slice(start, m.index)));
+    append(mathLine(m[1] ?? m[2], fs, bold));
+    start = m.index + m[0].length;
+  }
+  if (!items.length) return plain(src);
+  if (start < src.length) append(plain(src.slice(start)));
+  return {w, a, d, draw(c, x, y){ for (const it of items) it.b.draw(c, x + it.x, y); }};
+}
+function boardTextLine(src, o){
+  return o.math ? mathLine(src, o.fs, o.bold)
+    : inlineMathLine(src, o.fs, o.bold, text => mathRun(text, textFont(o), o.fs));
+}
 function mathTextLayout(o){
   const fs = o.fs, lines = [];
   let y = 0, w = 10;
   for (const src of textLines(o)){
-    const b = mathLine(src, fs, o.bold);
+    const b = boardTextLine(src, o);
     const hh = Math.max(1.25 * fs, b.a + b.d + 0.3 * fs);
     lines.push({b, base: y + (hh - (b.a + b.d)) / 2 + b.a});
     y += hh; if (b.w > w) w = b.w;

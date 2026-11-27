@@ -42,6 +42,12 @@ Press **W** to open **Atomic orbitals**. Change the quantum numbers and compare 
 
 ![ChemBoard's enlarged atomic-orbital viewer showing a 3d z-squared surface and controls for quantum numbers, views, nodes, and axes.](docs/images/atomic-orbitals.png)
 
+## Build a molecular orbital diagram
+
+Press **Y**, click open space to start a diagram, and choose degeneracy and type under **Next level**. Click a column to place the level. To change a level already on the board, double-click it or select it and choose **Edit level**.
+
+The level, column, gap, and axis labels accept inline math such as `$\frac{\Delta_o}{2}$` alongside text. The label editor previews the result and has buttons for bold, italic, underline, fractions, and roots. For a regular board annotation, type the same math syntax with the **Text** tool or right-click the annotation and choose **Format text**.
+
 ## Teaching examples
 
 Open **Menu → Ready-made lectures** (**Aulas prontas**) and insert a lecture after the current page. Each lecture is editable and its teaching material is in Portuguese.
