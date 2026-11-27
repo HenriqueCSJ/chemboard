@@ -74,6 +74,23 @@ Claude’s hosted custom connectors use a remotely reachable HTTPS server. For t
 
 Run the companion yourself, pair the board, and configure your client for **Streamable HTTP** at `http://127.0.0.1:8765/mcp`. Set the `Authorization` header to `Bearer YOUR_PAIRING_TOKEN`. The endpoint is accessible on the same machine and is stateless. Refresh the tool list after pairing or disconnecting.
 
+## Board capabilities
+
+Start with `get_board` for object IDs, the current selection, lock owners, and drawing defaults. The paired board advertises 74 tools through MCP. The in-board assistant uses the same catalog for drawing and reading text.
+
+| Task | Tools |
+| --- | --- |
+| Add or edit formatted labels and equations | `add_text`, `update_text` |
+| Draw exact shapes and freehand strokes | `add_shape` with `circle`, `square` or `equilateral_triangle`. `add_ink` accepts optional smoothing, pressure samples, and shape recognition. |
+| Rotate or lock objects | `rotate_objects` takes a signed angle in degrees. `set_object_lock` reports the owner of an inherited lock. |
+| Change Pen and Shapes defaults | `set_board` takes `pen_smoothing`, `shape_recognition`, and `constrain_shapes`. Use `add_ink` options to control a single tool-generated stroke. |
+| Open a sample lecture | `list_lectures`, `insert_lecture`. Insertion reuses an existing copy unless `another_copy` is true. |
+| Inspect or navigate a presentation | `get_presentation`, `add_camera_stop`, `go_to_camera_stop`. Stop indices are zero-based. |
+
+Object edits such as drawing, rotation, or locking support **Undo**. Inserting lecture pages and saving camera stops use the page controls and their separate persistence.
+
+After updating ChemBoard, reload and pair the board again. Refresh the tool list if your MCP client holds a snapshot from an earlier connection.
+
 ## Use a model inside the board
 
 The companion reads API keys and model IDs from `.env` or its server environment. **OpenAI**, **Anthropic**, and one compatible profile can be configured at the same time. Restart the companion after editing `.env`. Pair the board, press **J**, pick a provider, and ask for a drawing.

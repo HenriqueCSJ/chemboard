@@ -2,7 +2,7 @@
  * exclusively from the supplied server environment, never a browser request.
  * Compatible endpoints accept an absolute /v1 base or /chat/completions URL.
  */
-const LIMITS = Object.freeze({ steps: 8, calls: 24, perStep: 8, tools: 64,
+const LIMITS = Object.freeze({ steps: 8, calls: 24, perStep: 8, tools: 128,
   requestMs: 30_000, runMs: 120_000, resultChars: 24_576, responseBytes: 2_097_152,
   requestBytes: 1_048_576, argumentChars: 65_536 });
 const OMITTED_IMAGE = '[Image omitted: assistant tool results are text-only.]';
@@ -60,7 +60,7 @@ async function cancellable(operation, signal) {
 }
 
 function prepareTools(tools) {
-  if (!Array.isArray(tools) || tools.length > LIMITS.tools) throw new Error('Invalid assistant tool list (maximum 64).');
+  if (!Array.isArray(tools) || tools.length > LIMITS.tools) throw new Error(`Invalid assistant tool list (maximum ${LIMITS.tools}).`);
   const byName = new Map();
   const originals = new Set();
   const definitions = tools.map((tool, index) => {

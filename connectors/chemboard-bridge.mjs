@@ -15,6 +15,7 @@ const MAX_BODY = 16 * 1024 * 1024;
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{24,128}$/;
 const TOOL_TIMEOUT = 60_000;
 const ASSIST_TIMEOUT = 300_000;
+const MCP_INSTRUCTIONS = 'ChemBoard controls the currently paired board. Call get_board first to inspect the current page and free space; use object and page IDs or indexes returned by tools. Discover supported creation, editing, movement, styling, page and presentation operations through tools/list and their schemas. Inspect the result after edits. Delete objects, clear a page or delete a page only when explicitly requested. An empty tools/list means no board is paired or the paired board advertises no tools: pair the board, then request tools/list again (or reconnect/refresh tool discovery if your client caches the list).';
 const HOME = ['../index.html', 'text/html; charset=utf-8'];
 const STATIC_FILES = new Map([
   ['/', HOME],
@@ -93,7 +94,9 @@ export async function startBridge({ env = process.env, stdio = false, providers,
   }
 
   function createMcp() {
-    const mcp = new Server({ name: 'chemboard', version: '1.0.0' }, { capabilities: { tools: { listChanged: true } } });
+    const mcp = new Server({ name: 'chemboard', version: '1.0.0' }, {
+      capabilities: { tools: { listChanged: true } }, instructions: MCP_INSTRUCTIONS
+    });
     mcps.add(mcp);
     mcp.onclose = () => mcps.delete(mcp);
     mcp.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: active?.tools.map(t => t.definition) || [] }));
