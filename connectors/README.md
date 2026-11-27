@@ -33,7 +33,7 @@ For a stdio client or tunnel, let that client launch the companion as shown belo
 2. Press **J** and select **Set up connection**, or open **Preferences → AI agents**. Enter the token from `.env` and choose **Connect**.
 3. Keep the paired board open. Choose **Disconnect** before pairing another tab. Pair again after a page refresh.
 
-You can also pair the [GitHub Pages board](https://henriquecsj.github.io/chemboard/) if your browser permits local-network access. The loopback page and the published site each have their own browser storage. Export and reopen the board JSON to move a lecture between them.
+You can also pair the [GitHub Pages board](https://henriquecsj.github.io/chemboard/) if your browser permits local-network access. If the browser blocks it, select **Open local board** in the connector settings. The loopback page and the published site each have their own browser storage. Export and reopen the board JSON to move a lecture between them.
 
 ## Local MCP clients
 

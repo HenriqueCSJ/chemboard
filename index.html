@@ -4923,7 +4923,7 @@ const EN = {
   'aguardando o conector local': 'waiting for the local connector', 'conexão recusada': 'connection rejected',
   'Código de pareamento': 'Pairing token', 'Use o código configurado no conector local.': 'Use the token configured in the local connector.',
   'A conexão foi recusada. Confira o código, a origem da página e se outro quadro está conectado.': 'Connection rejected. Check the pairing token, the page origin, and whether another board is connected.',
-  'Abra o guia de conexão': 'Open the connector guide', 'Abrir o assistente': 'Open the assistant',
+  'Abra o guia de conexão': 'Open the connector guide', 'Abrir lousa local': 'Open local board', 'Abrir o assistente': 'Open the assistant',
   'Instale e inicie o conector ChemBoard no seu computador. Use MCP para conectar ChatGPT, Claude e outros clientes compatíveis.': 'Install and start the ChemBoard connector on your computer. Use MCP to connect ChatGPT, Claude, and other compatible clients.',
   'Pareie este quadro para aceitar comandos. O código fica na memória desta aba.': 'Pair this board to accept commands. The token stays in this tab’s memory.',
   'Copiar a configuração': 'Copy the configuration', 'Configuração copiada': 'Configuration copied',
@@ -16686,6 +16686,13 @@ function renderPrefs(){
     const port = h('input', {class: 'tinput sm mono', type: 'number', min: 1024, max: 65535, value: bridgePort(), 'aria-label': 'Porta'});
     const token = h('input', {class: 'tinput mono', type: 'password', autocomplete: 'off', spellcheck: 'false',
       maxlength: 128, 'aria-label': 'Código de pareamento'});
+    const localBoard = h('a', {target: '_blank', rel: 'noopener noreferrer'}, 'Abrir lousa local');
+    const localLink = () => {
+      const n = port.valueAsNumber;
+      localBoard.href = 'http://127.0.0.1:' + (Number.isInteger(n) && n >= 1024 && n <= 65535 ? n : bridgePort()) + '/';
+    };
+    port.addEventListener('input', localLink);
+    localLink();
     function pair(){
       const code = token.value.trim(), n = port.valueAsNumber;
       if (!/^[A-Za-z0-9_-]{24,128}$/.test(code)){ toast('Use o código configurado no conector local.', 'warn'); token.focus(); return; }
@@ -16715,7 +16722,7 @@ function renderPrefs(){
             try { await navigator.clipboard.writeText(cfg()); toast('Configuração copiada', 'ok'); }
             catch (e){ modal('Conector de IA', h('pre', {class: 'prefcode'}, cfg())); }
           }}, 'Copiar a configuração')),
-        h('p', {class: 'prefnote'}, h('a', {href: CONNECTOR_GUIDE, target: '_blank', rel: 'noopener noreferrer'}, 'Abra o guia de conexão'))),
+        h('p', {class: 'prefnote'}, localBoard, ' · ', h('a', {href: CONNECTOR_GUIDE, target: '_blank', rel: 'noopener noreferrer'}, 'Abra o guia de conexão'))),
       sec('Assistente de IA',
         h('div', {class: 'prefacts'}, h('button', {class: 'btn small', onclick: () => { closeModal(); openAssistant(); }}, 'Abrir o assistente'))),
       sec('Agentes do navegador (WebMCP)',
