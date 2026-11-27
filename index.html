@@ -7169,13 +7169,32 @@ function drawCard(c, o){
 }
 
 /* ---------- química ---------- */
-function bondEnds(a, b){
+function bondEnds(a, b, sk = S._skel){
   const ga = atomGeom(a), gb = atomGeom(b);
   const ang = Math.atan2(b.y - a.y, b.x - a.x);
-  const sk = S._skel;
   const da = sk && sk.c.has(a.id) ? 0 : ellipseEdge(ga.rxT, ga.ryT, ang), db = sk && sk.c.has(b.id) ? 0 : ellipseEdge(gb.rxT, gb.ryT, ang);
   const cs = Math.cos(ang), sn = Math.sin(ang);
   return {x1: a.x + cs * da, y1: a.y + sn * da, x2: b.x - cs * db, y2: b.y - sn * db, ang, len: Math.hypot(b.x - a.x, b.y - a.y) - da - db};
+}
+const bondStrokeWidth = fs => Math.max(1.6, 0.085 * fs);
+const wedgeHalfWidth = fs => Math.max(bondStrokeWidth(fs) * 2.1, 0.16 * fs);
+function ionicBondEnds(a, b, ang){
+  const distance = atom => {
+    const G = atomGeom(atom), pad = G.dot + 0.36 * G.fs;
+    return ellipseEdge(G.rxE + pad, G.ryE + pad, ang);
+  };
+  const d1 = distance(a), d2 = distance(b), cs = Math.cos(ang), sn = Math.sin(ang);
+  const x1 = a.x + cs * d1, y1 = a.y + sn * d1, x2 = b.x - cs * d2, y2 = b.y - sn * d2;
+  return (x2 - x1) * cs + (y2 - y1) * sn > 4 ? {x1, y1, x2, y2} : null;
+}
+function bondPairMarks(E, n, fs, visit){
+  const mx = (E.x1 + E.x2) / 2, my = (E.y1 + E.y2) / 2;
+  const cs = Math.cos(E.ang), sn = Math.sin(E.ang), r = Math.max(2.2, 0.095 * fs);
+  const pg = 0.15 * fs;
+  for (let i = 0; i < n; i++){
+    const t = (i - (n - 1) / 2) * 0.36 * fs, px = mx + cs * t, py = my + sn * t;
+    visit(px - sn * pg, py + cs * pg, px + sn * pg, py - cs * pg, r);
+  }
 }
 function markMaps(g){
   const map = new Map();
@@ -7197,7 +7216,7 @@ function drawBond(c, bond, g, marks){
   if (E.len < 2) return;
   const fs = (atomFS(a) + atomFS(b)) / 2;
   const col = bond.c ? resolveColor(bond.c) : resolveColor(S.settings.tools.lewis.c);
-  const lw = Math.max(1.6, 0.085 * fs);
+  const lw = bondStrokeWidth(fs);
   const nx = -Math.sin(E.ang), ny = Math.cos(E.ang);
   const style = S.settings.lewis.bondStyle;
   const an = S.bAnim.get(bond.id);
@@ -7231,7 +7250,7 @@ function drawBond(c, bond, g, marks){
   if (bond._part && bond.k !== 'ion' && bond.k !== 'hb') c.setLineDash([lw * 2.6, lw * 2.3]);
   // cunha (para a frente do plano) e tracejada (para trás): ponta fina no átomo a, larga no átomo b
   const wedge = kind => {
-    const hw = Math.max(lw * 2.1, 0.16 * fs);
+    const hw = wedgeHalfWidth(fs);
     c.setLineDash([]);
     if (kind === 'w'){
       c.lineJoin = 'round'; c.beginPath(); c.moveTo(E.x1, E.y1); c.lineTo(E.x2 + nx * hw, E.y2 + ny * hw); c.lineTo(E.x2 - nx * hw, E.y2 - ny * hw); c.closePath(); c.fill();
@@ -7244,29 +7263,21 @@ function drawBond(c, bond, g, marks){
   if (bond.k === 'ion'){
     if (S.settings.lewis.showIonic){
       // a linha da atração eletrostática começa e termina fora dos colchetes
-      const ga = atomGeom(a), gb = atomGeom(b);
-      const pad = q => q.dot + 0.36 * q.fs;
-      const da = ellipseEdge(ga.rxE + pad(ga), ga.ryE + pad(ga), E.ang), db = ellipseEdge(gb.rxE + pad(gb), gb.ryE + pad(gb), E.ang);
-      const cs = Math.cos(E.ang), sn = Math.sin(E.ang);
-      const x1 = a.x + cs * da, y1 = a.y + sn * da, x2 = b.x - cs * db, y2 = b.y - sn * db;
-      if ((x2 - x1) * cs + (y2 - y1) * sn > 4){
-        c.globalAlpha = 0.45 * bk; c.setLineDash([lw * 0.6, lw * 3.2]); c.lineWidth = lw * 1.1; seg(0, x1, y1, x2, y2);
+      const line = ionicBondEnds(a, b, E.ang);
+      if (line){
+        c.globalAlpha = 0.45 * bk; c.setLineDash([lw * 0.6, lw * 3.2]); c.lineWidth = lw * 1.1;
+        seg(0, line.x1, line.y1, line.x2, line.y2);
       }
     }
   } else if (bond.k === 'hb'){
     c.strokeStyle = resolveColor('p1'); c.setLineDash([lw * 0.5, lw * 2.6]); c.lineWidth = lw * 1.25; seg(0);
   } else if (style !== 'line'){
-    const mx = (E.x1 + E.x2) / 2, my = (E.y1 + E.y2) / 2;
-    const n = bond.k === 'dat' ? 1 : bond.o;
-    const dotR = Math.max(2.2, 0.095 * fs), sp = 0.36 * fs, pg = 0.15 * fs;
-    for (let i = 0; i < n; i++){
-      const t = (i - (n - 1) / 2) * sp;
-      const px = mx + Math.cos(E.ang) * t, py = my + Math.sin(E.ang) * t;
-      const ka = marks.get(a.id) ?? 0, kb = bond.k === 'dat' ? ka : (marks.get(b.id) ?? 0);
-      const ca = style === 'dotcross' ? atomColor(a) : col, cb = style === 'dotcross' ? (bond.k === 'dat' ? atomColor(a) : atomColor(b)) : col;
-      drawMark(c, px + nx * pg, py + ny * pg, style === 'dotcross' ? ka : 0, dotR, ca);
-      drawMark(c, px - nx * pg, py - ny * pg, style === 'dotcross' ? kb : 0, dotR, cb);
-    }
+    const ka = marks.get(a.id) ?? 0, kb = bond.k === 'dat' ? ka : (marks.get(b.id) ?? 0);
+    const ca = style === 'dotcross' ? atomColor(a) : col, cb = style === 'dotcross' ? (bond.k === 'dat' ? atomColor(a) : atomColor(b)) : col;
+    bondPairMarks(E, bond.k === 'dat' ? 1 : bond.o, fs, (px, py, qx, qy, r) => {
+      drawMark(c, px, py, style === 'dotcross' ? ka : 0, r, ca);
+      drawMark(c, qx, qy, style === 'dotcross' ? kb : 0, r, cb);
+    });
   } else if (bond.k === 'dat'){
     const head = Math.max(9, 0.32 * fs);
     seg(0, E.x1, E.y1, E.x2 - Math.cos(E.ang) * head * 0.55, E.y2 - Math.sin(E.ang) * head * 0.55);
@@ -7323,7 +7334,240 @@ function hasCovalent(a, g){ return (g.adj.get(a.id) || []).some(n => isCovLike(n
 function hasIonic(a, g){ return (g.adj.get(a.id) || []).some(n => n.bond.k === 'ion'); }
 function chargeText(q){ const n = Math.abs(q); return (n > 1 ? n : '') + (q > 0 ? '+' : '−'); }
 
-function drawAtom(c, a, g, marks, opts = {}){
+/* ---------- posicionamento de cargas ---------- */
+function lonePairMarks(a, G, visit){
+  const hide = S.dragHide && S.dragHide.id === a.id ? S.dragHide : null;
+  for (let gi = 0; gi < (a.e || []).length; gi++){
+    const grp0 = a.e[gi];
+    let grp = grp0;
+    if (hide && hide.gidx === gi){ if (hide.n >= grp0.n) continue; grp = {a: grp0.a, n: grp0.n - hide.n}; }
+    const ex = a.x + G.rxE * Math.cos(grp.a), ey = a.y + G.ryE * Math.sin(grp.a);
+    if (grp.n === 2){
+      const tx = -Math.sin(grp.a) * G.gap / 2, ty = Math.cos(grp.a) * G.gap / 2;
+      visit(ex + tx, ey + ty);
+      visit(ex - tx, ey - ty);
+    } else visit(ex, ey);
+  }
+}
+function bracketSize(a, G){
+  const hasE = (a.e || []).length > 0;
+  return {hw: (hasE ? G.rxE + G.dot : G.rxT) + 0.2 * G.fs,
+    hh: (hasE ? G.ryE + G.dot : G.ryT) + 0.22 * G.fs};
+}
+const ionChargeFont = size => '600 ' + size + 'px ' + FONT_STACKS.sans;
+function partialCharge(a, g, cov){
+  let pcs = a.pc ? String(a.pc) : '';
+  if (!pcs && S.settings.lewis.polarity && cov){
+    const sign = partialSign(a, g);
+    pcs = sign > 0 ? '+' : sign < 0 ? '-' : '';
+  }
+  if (!pcs) return null;
+  const neg = /[-−]/.test(pcs), mult = (pcs.match(/\d+/) || [''])[0];
+  return {text: mult + 'δ' + (neg ? '−' : '+'), neg, mult};
+}
+function addChargeBondObstacles(b, g, skel, add){
+  const a = g.atoms.get(b.a), z = g.atoms.get(b.b);
+  if (!a || !z || skel.h.has(a.id) || skel.h.has(z.id) || b._alpha === 0) return;
+  const E = bondEnds(a, z, skel);
+  if (E.len < 2) return;
+  const fs = (atomFS(a) + atomFS(z)) / 2, lw = bondStrokeWidth(fs);
+  const addLine = (P, r) => add(P.x1, P.y1, P.x2, P.y2, r);
+  const style = S.settings.lewis.bondStyle;
+  if (b.k === 'ion'){
+    const P = S.settings.lewis.showIonic && ionicBondEnds(a, z, E.ang);
+    if (P) addLine(P, lw * 0.55);
+  } else if (b.k === 'hb'){
+    addLine(E, lw * 0.625);
+  } else if (style !== 'line'){
+    bondPairMarks(E, b.k === 'dat' ? 1 : b.o, fs, (x, y, px, py, r) => {
+      const size = style === 'dotcross' ? r * 1.6 : r;
+      add(x, y, x, y, size); add(px, py, px, py, size);
+    });
+  } else if (b.k === 'dat'){
+    addLine(E, lw / 2);
+    const head = Math.max(9, 0.32 * fs);
+    add(E.x2 - Math.cos(E.ang) * head * 0.9, E.y2 - Math.sin(E.ang) * head * 0.9, E.x2, E.y2, head * 0.5);
+  } else if (b.o === 1 && b.wd && !b._part && !b.ar){
+    addLine(E, wedgeHalfWidth(fs));
+  } else {
+    const off = b.o === 2 ? (skel.c.has(a.id) && skel.c.has(z.id) ? 0.24 : 0.12) : b.o > 2 ? 0.19 : 0;
+    addLine(E, lw / 2 + off * fs);
+  }
+}
+
+function findChargePosition(x, y, rx, ry, radius, angle, obstacles, fs){
+  const clearance = Math.max(fs * 0.06, radius * 0.12);
+  const epsilon = fs * 1e-9;
+  const radialSteps = [0, 0.18, 0.38, 0.65, 0.95];
+  const angleStep = Math.PI / 36;
+
+  let best = null;
+  let bestMargin = -Infinity;
+
+  for (const radialStep of radialSteps) {
+    const outward = radialStep * fs;
+    // Desvia do ângulo preferido em passos alternados de 5°.
+    for (let index = 0; index < 72; index++) {
+      const offset = index === 0 ? 0 : (index % 2 ? -1 : 1) * Math.ceil(index / 2) * angleStep;
+      const theta = angle + offset;
+      const dx = rx * Math.cos(theta);
+      const dy = ry * Math.sin(theta);
+      const length = Math.hypot(dx, dy);
+      // Expand by actual world distance, including for a noncircular ellipse.
+      const ux = length > epsilon ? dx / length : Math.cos(theta);
+      const uy = length > epsilon ? dy / length : Math.sin(theta);
+      const px = x + dx + outward * ux;
+      const py = y + dy + outward * uy;
+      let margin = Infinity;
+
+      for (const [ax, ay, bx, by, obstacleR] of obstacles){
+        margin = Math.min(margin, distToSeg(px, py, ax, ay, bx, by) - radius - obstacleR - clearance);
+        if (margin < 0 && margin <= bestMargin + epsilon) break;
+      }
+
+      if (margin >= -epsilon) return {x: px, y: py};
+      if (margin > bestMargin + epsilon) {
+        bestMargin = margin;
+        best = {x: px, y: py};
+      }
+    }
+  }
+
+  return best;
+}
+
+function chargeObstacleIndex(size){
+  const bins = new Map(), wide = [];
+  const cell = pos => Math.floor(pos / size);
+  const key = (x, y) => x + ',' + y;
+  function add(x1, y1, x2, y2, r){
+    const shape = [x1, y1, x2, y2, r];
+    if (!shape.every(Number.isFinite)) return;
+    const left = cell(Math.min(x1, x2) - r), top = cell(Math.min(y1, y2) - r);
+    const right = cell(Math.max(x1, x2) + r), bottom = cell(Math.max(y1, y2) + r);
+    if (![left, top, right, bottom].every(Number.isSafeInteger) ||
+        (right - left + 1) * (bottom - top + 1) > 12){ wide.push(shape); return; }
+    for (let x = left; x <= right; x++) for (let y = top; y <= bottom; y++){
+      const id = key(x, y);
+      let bin = bins.get(id);
+      if (!bin) bins.set(id, bin = []);
+      bin.push(shape);
+    }
+  }
+  function near(x, y, reach){
+    const found = new Set(wide);
+    const left = cell(x - reach), top = cell(y - reach), right = cell(x + reach), bottom = cell(y + reach);
+    if (![left, top, right, bottom].every(Number.isSafeInteger) || (right - left + 1) * (bottom - top + 1) > 256){
+      for (const bin of bins.values()) for (const shape of bin) found.add(shape);
+      return found;
+    }
+    for (let col = left; col <= right; col++) for (let row = top; row <= bottom; row++){
+      for (const shape of bins.get(key(col, row)) || []) found.add(shape);
+    }
+    return found;
+  }
+  return {add, near};
+}
+function atomChargeLayout(list, g, skel, seaAtoms){
+  const positions = new Map(), L = S.settings.lewis;
+  const fixed = [], badges = [], partials = [];
+  let bounds = null;
+  const reserve = (x, y, hw, hh) => { bounds = bboxUnion(bounds, centeredBox(x, y, 2 * hw, 2 * hh)); };
+  for (const a of g.atoms.values()){
+    if ((!a.q && !a.pc && !L.polarity) || skel.c.has(a.id) || skel.h.has(a.id) || a._alpha === 0) continue;
+    const cov = hasCovalent(a, g), partial = partialCharge(a, g, cov);
+    if (!a.q && !partial) continue;
+    const G = atomGeom(a), fs = G.fs, p = {};
+    if (![a.x, a.y, G.w, fs].every(Number.isFinite) || fs <= 0) continue;
+    const brA = cov ? 0 : a._brA ?? 1;
+    positions.set(a.id, p);
+    if (a.q && brA > 0.004){
+      const text = chargeText(a.q), font = ionChargeFont(fs * 0.58);
+      const hw = textW(text, font) / 2, hh = fs * 0.31;
+      const r = Math.hypot(hw, hh);
+      if (L.ionBrackets && !seaAtoms.has(a.id)){
+        const b = bracketSize(a, G);
+        p.bracket = b;
+        const x = a.x + b.hw + 0.08 * fs + hw, y = a.y - b.hh + 0.12 * fs;
+        fixed.push([x, y, x, y, r]);
+        for (const side of [-1, 1]){
+          const edge = a.x + side * b.hw, top = a.y - b.hh, bottom = a.y + b.hh;
+          fixed.push([edge, top, edge, bottom, Math.max(1.4, 0.06 * fs) / 2],
+            [edge, top, edge - side * 0.2 * fs, top, 0.04 * fs],
+            [edge, bottom, edge - side * 0.2 * fs, bottom, 0.04 * fs]);
+        }
+        reserve(x, y, hw, hh);
+        reserve(a.x, a.y, b.hw + 0.05 * fs, b.hh + 0.05 * fs);
+      } else {
+        badges.push({a, p, kind: 'side', r, fs, hw, hh, text,
+          rx: (G.w / 2 + 0.06 * fs + hw) * Math.SQRT2, ry: 0.42 * fs * Math.SQRT2, ang: -Math.PI / 4});
+      }
+    }
+    if (a.q && brA < 0.996 && L.showCharges){
+      const text = chargeText(a.q), font = '700 ' + fs * (Math.abs(a.q) > 1 ? 0.32 : 0.42) + 'px ' + FONT_STACKS.sans;
+      const R = Math.max(0.24 * fs, textW(text, font) / 2 + 0.035 * fs);
+      const lw = Math.max(1.2, 0.045 * fs), r = R + lw / 2, grow = R - 0.24 * fs;
+      badges.push({a, p, kind: 'badge', R, r, lw, fs, font, text, hw: r, hh: r,
+        rx: G.rxE + 0.22 * fs + grow, ry: G.ryE + 0.16 * fs + grow, ang: -Math.PI / 4});
+    }
+    if (partial){
+      const font = 'italic 600 ' + fs * 0.48 + 'px ' + FONT_STACKS.serif;
+      const hw = textW(partial.text, font) / 2, hh = fs * 0.25, extra = partial.mult ? 0.14 * fs : 0;
+      const rx = G.rxE + 0.18 * fs + extra, ry = G.ryE + 0.12 * fs;
+      const info = {a, p, kind: 'partial', font, ...partial, hw, hh, r: Math.hypot(hw, hh), rx, ry, fs, ang: -3 * Math.PI / 4};
+      if (a.pca != null && Number.isFinite(+a.pca)){
+        const x = a.x + rx * Math.cos(a.pca), y = a.y + ry * Math.sin(a.pca);
+        p.partial = {...partial, font, x, y};
+        fixed.push([x, y, x, y, info.r]);
+        reserve(x, y, hw, hh);
+      } else partials.push(info);
+    }
+  }
+  if (!badges.length && !partials.length) return {positions, bounds};
+
+  const {add, near} = chargeObstacleIndex(Math.max(32, 3 * L.fontSize));
+  for (const f of fixed) add(...f);
+  for (const a of g.atoms.values()){
+    if (skel.c.has(a.id) || skel.h.has(a.id) || a._alpha === 0) continue;
+    const G = atomGeom(a), hw = Math.max(0, G.w / 2 - 0.16 * G.fs), y = a.y + 0.04 * G.fs;
+    add(a.x - hw, y, a.x + hw, y, 0.38 * G.fs);
+    const dot = G.dot * (L.bondStyle === 'dotcross' ? 1.6 : 1);
+    lonePairMarks(a, G, (x, y) => add(x, y, x, y, dot));
+  }
+  for (const b of g.bonds) addChargeBondObstacles(b, g, skel, add);
+  for (const object of list){
+    if (object.t !== 'brk' || object._alpha === 0) continue;
+    const B = brkBox(object);
+    if (!B) continue;
+    const fs = g.atoms.has(object.atoms[0]) ? atomFS(g.atoms.get(object.atoms[0])) : S.settings.lewis.fontSize;
+    const r = Math.max(1.6, 0.07 * fs) / 2;
+    for (const [x, side] of [[B.x1, 1], [B.x2, -1]]){
+      add(x, B.y1, x, B.y2, r);
+      for (const y of [B.y1, B.y2]) add(x, y, x + side * 0.28 * fs, y, r);
+    }
+    if (object.q){
+      const w = textW(chargeText(object.q), ionChargeFont(0.66 * fs)), x1 = B.x2 + 0.1 * fs, y = B.y1 + 0.17 * fs;
+      add(x1, y, x1 + w, y, 0.26 * fs);
+    }
+  }
+  // Primeiro as formais; depois os δ que não têm uma posição definida na aula.
+  for (const {a, p, kind, r, fs, rx, ry, hw, hh, ang, text, font, R, lw, neg} of badges.concat(partials)){
+    const reach = Math.max(rx, ry) + 1.02 * fs + r;
+    const local = near(a.x, a.y, reach);
+    const {x, y} = findChargePosition(a.x, a.y, rx, ry, r, ang, local, fs);
+    p[kind] = {x, y, text, font, R, lw, neg};
+    add(x, y, x, y, r);
+    reserve(x, y, hw, hh);
+  }
+  return {positions, bounds};
+}
+function boardChargeLayout(list){
+  if (!list.some(a => a.t === 'atom' && (a.q || a.pc || S.settings.lewis.polarity))) return null;
+  const g = buildGraph(list);
+  return atomChargeLayout(list, g, skelState(g), seaAtomSet(list));
+}
+
+function drawAtom(c, a, g, marks, charges){
   const sk = S._skel;
   if (sk && sk.h.has(a.id)) return;
   const skelC = sk && sk.c.has(a.id);
@@ -7351,18 +7595,7 @@ function drawAtom(c, a, g, marks, opts = {}){
   // elétrons
   const ecol = electronColor(a);
   const mk = L.bondStyle === 'dotcross' ? (marks.get(a.id) ?? 0) : 0;
-  const hide = S.dragHide && S.dragHide.id === a.id ? S.dragHide : null;
-  for (let gi = 0; gi < (a.e || []).length; gi++){
-    const grp0 = a.e[gi];
-    let grp = grp0;
-    if (hide && hide.gidx === gi){ if (hide.n >= grp0.n) continue; grp = {a: grp0.a, n: grp0.n - hide.n}; }
-    const ex = a.x + G.rxE * Math.cos(grp.a), ey = a.y + G.ryE * Math.sin(grp.a);
-    if (grp.n === 2){
-      const tx = -Math.sin(grp.a) * G.gap / 2, ty = Math.cos(grp.a) * G.gap / 2;
-      drawMark(c, ex + tx, ey + ty, mk, G.dot, ecol);
-      drawMark(c, ex - tx, ey - ty, mk, G.dot, ecol);
-    } else drawMark(c, ex, ey, mk, G.dot, ecol);
-  }
+  lonePairMarks(a, G, (x, y) => drawMark(c, x, y, mk, G.dot, ecol));
   c.shadowBlur = 0;
   // cargas
   const q = a.q || 0;
@@ -7375,9 +7608,8 @@ function drawAtom(c, a, g, marks, opts = {}){
   if (q !== 0 && brA > 0.004){
     const ga1 = ga0 * brA;
     c.globalAlpha = ga1 * Math.min(1, 0.15 + qk * 1.2);
-    const hasE = (a.e || []).length > 0;
-    const hw = (hasE ? G.rxE + G.dot : G.rxT) + 0.2 * fs, hh = (hasE ? G.ryE + G.dot : G.ryT) + 0.22 * fs;
-    if (L.ionBrackets && !(S._seaAtoms && S._seaAtoms.has(a.id))){
+    if (charges?.bracket){
+      const {hw, hh} = charges.bracket;
       const s = 0.2 * fs;
       c.strokeStyle = col; c.lineWidth = Math.max(1.4, 0.06 * fs); c.lineCap = 'square';
       c.beginPath();
@@ -7387,35 +7619,29 @@ function drawAtom(c, a, g, marks, opts = {}){
       c.globalAlpha = ga1;
       c.font = `600 ${fs * 0.58 * qs}px ${FONT_STACKS.sans}`; c.textAlign = 'left'; c.fillStyle = qk < 1 ? resolveColor('p2') : col;
       c.fillText(chargeText(q), a.x + hw + 0.08 * fs, a.y - hh + 0.12 * fs);
-    } else {
+    } else if (charges?.side){
+      const P = charges.side;
       c.globalAlpha = ga1;
-      c.font = `600 ${fs * 0.58 * qs}px ${FONT_STACKS.sans}`; c.textAlign = 'left'; c.fillStyle = qk < 1 ? resolveColor('p2') : col;
-      c.fillText(chargeText(q), a.x + G.w / 2 + 0.06 * fs, a.y - 0.42 * fs);
+      c.font = ionChargeFont(fs * 0.58 * qs); c.textAlign = 'center'; c.fillStyle = qk < 1 ? resolveColor('p2') : col;
+      c.fillText(P.text, P.x, P.y);
     }
     c.globalAlpha = ga0;
   }
-  if (q !== 0 && brA < 0.996 && L.showCharges){
+  if (charges?.badge){
+    const P = charges.badge;
     c.globalAlpha = ga0 * (1 - brA);
-    const ang = -Math.PI / 4, R = 0.24 * fs;
-    const cx = a.x + (G.rxE + 0.22 * fs) * Math.cos(ang), cy = a.y + (G.ryE + 0.16 * fs) * Math.sin(ang);
-    c.strokeStyle = col; c.lineWidth = Math.max(1.2, 0.045 * fs);
-    c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.stroke();
-    c.fillStyle = col; c.font = `700 ${fs * (Math.abs(q) > 1 ? 0.32 : 0.42)}px ${FONT_STACKS.sans}`;
+    c.strokeStyle = col; c.lineWidth = P.lw;
+    c.beginPath(); c.arc(P.x, P.y, P.R, 0, TAU); c.stroke();
+    c.fillStyle = col; c.font = P.font;
     c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText(chargeText(q), cx, cy + fs * 0.02);
+    c.fillText(P.text, P.x, P.y + fs * 0.02);
     c.globalAlpha = ga0;
   }
-  // δ+ / δ−
-  // carga parcial: a marcada no átomo (a.pc: '+', '-', '2-'…) ou, com a opção ligada, a calculada pela eletronegatividade
-  let pcs = a.pc ? String(a.pc) : '';
-  if (!pcs && L.polarity && cov){ const sgn = partialSign(a, g); pcs = sgn > 0 ? '+' : sgn < 0 ? '-' : ''; }
-  if (pcs){
-    const neg = /[-−]/.test(pcs), mult = (pcs.match(/\d+/) || [''])[0];
-    const ang = a.pca != null ? a.pca : -3 * Math.PI / 4, ex = mult ? 0.14 * fs : 0;
-    const px = a.x + (G.rxE + 0.18 * fs + ex) * Math.cos(ang), py = a.y + (G.ryE + 0.12 * fs) * Math.sin(ang);
-    c.fillStyle = resolveColor(neg ? 'p2' : 'p1');
-    c.font = `italic 600 ${fs * 0.48}px ${FONT_STACKS.serif}`; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText(mult + 'δ' + (neg ? '−' : '+'), px, py);
+  if (charges?.partial){
+    const P = charges.partial;
+    c.fillStyle = resolveColor(P.neg ? 'p2' : 'p1');
+    c.font = P.font; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(P.text, P.x, P.y);
   }
   c.restore();
 }
@@ -7533,6 +7759,7 @@ function drawScene(c, opts = {}){
     c.restore();
   }
   S._skel = skelState(g); S._rings = ringsOf(g);
+  const chargePlan = opts.chargePlan ?? atomChargeLayout(list, g, S._skel, S._seaAtoms);
   const fsM = 3 * (S.settings.lewis.fontSize || 30);
   const near = R ? ((x, y) => x >= R.x1 - fsM && x <= R.x2 + fsM && y >= R.y1 - fsM && y <= R.y2 + fsM) : null;
   for (const b of g.bonds){
@@ -7544,9 +7771,11 @@ function drawScene(c, opts = {}){
     else drawBond(c, b, g, marks);
   }
   drawAromaticCircles(c, S._rings, g);
-  for (const a of g.atoms.values()) if (!near || near(a.x, a.y)){
-    if (a._alpha != null){ c.save(); c.globalAlpha = a._alpha; drawAtom(c, a, g, marks); c.restore(); }
-    else drawAtom(c, a, g, marks);
+  for (const a of g.atoms.values()){
+    const charges = chargePlan.positions.get(a.id);
+    if (near && !near(a.x, a.y) && ![charges?.badge, charges?.partial, charges?.side].some(p => p && near(p.x, p.y))) continue;
+    if (a._alpha != null){ c.save(); c.globalAlpha = a._alpha; drawAtom(c, a, g, marks, charges); c.restore(); }
+    else drawAtom(c, a, g, marks, charges);
   }
   for (const o of list) if (o.t === 'brk'){ c.save(); if (o._alpha != null) c.globalAlpha = o._alpha; drawBracketObj(c, o); c.restore(); }
   for (const o of hl) drawInk(c, o);
@@ -10611,8 +10840,7 @@ function newBoard(){
 function selectAll(){ setTool('select'); S.sel = new Set(objs().filter(o => !isLocked(o)).map(o => o.id)); updateSelectionUI(); }
 function centerWorld(){ return toWorld(innerWidth / 2, innerHeight / 2); }
 function fitAll(animate = false){
-  let bb = null;
-  for (const o of objs()){ const b = objBBox(o); if (b) bb = bboxUnion(bb, b); }
+  const bb = contentBBox(objs());
   stopViewAnim();
   const go = animate ? animateViewTo : setView;
   if (!bb){ go(1, innerWidth / 2, innerHeight / 2); return; }
@@ -11321,13 +11549,13 @@ function loadBoardDoc(doc, assets, append){
     toast(append ? (n === 1 ? 'Página adicionada depois da atual' : `${n} páginas adicionadas depois da atual`) : 'Quadro aberto', 'ok');
   });
 }
-function contentBBox(list){
-  let bb = null;
+function contentBBox(list, chargePlan = boardChargeLayout(list)){
+  let bb = chargePlan?.bounds || null;
   for (const o of list){ const b = objBBox(o); if (b) bb = bboxUnion(bb, b); }
   return bb;
 }
-function renderToCanvas(list, scale = 2, bg = true){
-  const bb = contentBBox(list);
+function renderToCanvas(list, scale = 2, bg = true, chargePlan = boardChargeLayout(list)){
+  const bb = contentBBox(list, chargePlan);
   if (!bb) return null;
   const pad = 36;
   let W = (bb.x2 - bb.x1 + 2 * pad) * scale, H = (bb.y2 - bb.y1 + 2 * pad) * scale;
@@ -11337,7 +11565,7 @@ function renderToCanvas(list, scale = 2, bg = true){
   const saveDPR = DPR; DPR = scale;
   if (bg){ x.fillStyle = theme().bg; x.fillRect(0, 0, c.width, c.height); }
   x.setTransform(scale, 0, 0, scale, (pad - bb.x1) * scale, (pad - bb.y1) * scale);
-  drawScene(x, {list, export: true});
+  drawScene(x, {list, export: true, chargePlan});
   DPR = saveDPR;
   return c;
 }
@@ -17693,10 +17921,11 @@ function defineLousaTools(){
   defTool('get_board_image', 'Render the current page (or only the selected objects) as a PNG image so you can see the drawing.',
     {max_size: num('Longest side in pixels (default 1024, max 2048)'), selection_only: bool('Only the selected objects')}, a => {
       const list = a.selection_only && S.sel.size ? objs().filter(o => S.sel.has(o.id) || (o.t === 'bond' && S.sel.has(o.a) && S.sel.has(o.b))) : objs();
-      const bb = contentBBox(list); if (!bb) return {empty: true};
+      const chargePlan = boardChargeLayout(list);
+      const bb = contentBBox(list, chargePlan); if (!bb) return {empty: true};
       const max = clamp(+a.max_size || 1024, 128, 2048);
       const scale = Math.min(2, max / Math.max(bb.x2 - bb.x1 + 72, bb.y2 - bb.y1 + 72));
-      const c = renderToCanvas(list, scale, true); if (!c) return {empty: true};
+      const c = renderToCanvas(list, scale, true, chargePlan); if (!c) return {empty: true};
       return {__image: c.toDataURL('image/png').split(',')[1], width: c.width, height: c.height};
     }, {mutates: false, image: true});
   defTool('list_pages', 'List the pages of the board (each page is an infinite canvas).', {}, () => ({current: S.doc.cur, pages: S.doc.pages.map((p, i) => ({index: i, name: p.name, objects: p.objects.length}))}), {mutates: false});
