@@ -44,7 +44,7 @@ Drag a lone pair with **Select** to move it around its atom. With the **Lewis pe
 
 ## Draw and rotate on the board
 
-- **Rotate.** Select a molecule, drawing, text, image or video. Use **−90°**, **+90°**, or **Rotate…** for an exact angle. Drag the round handle for 1° steps and hold **Shift** to snap to 15°. Press **Esc** to cancel the drag.
+- **Rotate.** Select one atom to rotate its whole molecule. You can also rotate drawings, text, images and videos, individually or as a selection. Use **−90°**, **+90°**, or **Rotate…** for an exact angle. Drag the round handle for 1° steps and hold **Shift** to snap to 15°. Press **Esc** to cancel the drag.
 - **Freehand.** Open the **Pen** and enable **Smooth** to reduce wobble. Under **Shapes**, choose **Hold** and pause briefly at the end of a stroke, or choose **Auto** to convert recognized shapes on release. Choose **Off** for unrestricted ink.
 - **Preset shapes.** Press **S**, choose a shape and hold **Shift** while dragging for a circle, square or equilateral triangle. The **Constrain proportions** toggle offers the same control on a touchscreen.
 

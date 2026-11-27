@@ -38,7 +38,7 @@ Com **Selecionar e mover**, arraste um par isolado ao redor de seu átomo. Na **
 
 ## Desenhe e gire no quadro
 
-- **Rotação.** Selecione uma molécula, desenho, texto, imagem ou vídeo. Use **−90°**, **+90°** ou **Girar…** para indicar o ângulo exato. Arraste a alça circular em passos de 1° e mantenha **Shift** pressionado para usar passos de 15°. **Esc** cancela o arraste.
+- **Rotação.** Selecione um átomo para girar a molécula inteira. Você também pode girar desenhos, textos, imagens e vídeos, individualmente ou em grupo. Use **−90°**, **+90°** ou **Girar…** para indicar o ângulo exato. Arraste a alça circular em passos de 1° e mantenha **Shift** pressionado para usar passos de 15°. **Esc** cancela o arraste.
 - **Traço livre.** Na **Caneta**, ative **Suavizar** para reduzir oscilações. Em **Formas**, escolha **Segurar** e faça uma breve pausa no fim do traço ou escolha **Auto** para converter formas reconhecidas ao soltar. Use **Desligado** para escrever livremente.
 - **Formas prontas.** Pressione **S**, escolha uma forma e mantenha **Shift** pressionado enquanto arrasta para obter um círculo, quadrado ou triângulo equilátero. Use **Proporção fixa** em uma tela sensível ao toque.
 

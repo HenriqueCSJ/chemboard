@@ -5680,11 +5680,16 @@ function redo(){
   afterChange();
 }
 function afterChange(){
+  const selectionSize = S.sel.size;
+  const atomId = selectionSize === 1 ? S.sel.values().next().value : null;
+  const previousRotation = atomRotation?.page === page() && atomRotation.id === atomId ? atomRotation.ids.length > 0 : null;
   reindex();
   S.rev = (S.rev || 0) + 1;
   S.dirty = true;
   scheduleSave();
   if (typeof updatePageBar === 'function') updatePageBar();
+  if (S.tool === 'select' && (S.sel.size !== selectionSize ||
+      (previousRotation !== null && previousRotation !== (selectionRotationIds([atomId]).length > 0)))) renderOptBar();
 }
 
 /* ---------- objetos ---------- */
@@ -8484,7 +8489,7 @@ function moleculeIds(atomId, kinds = ['cov', 'dat', 'ion']){
 const TURN_TYPES = new Set(['atom', 'bond', 'brk', 'sea', 'ink', 'shape', 'text', 'img', 'video', 'orb']);
 const wrapTurn = d => ((d % 360) + 360) % 360;
 
-function rotationPlan(ids){
+function rotationTargets(ids){
   const selected = ids.map(getObj).filter(o => o && TURN_TYPES.has(o.t) && !isLocked(o));
   const centers = new Set(movableIds(selected.flatMap(o => o.t === 'sea' ? o.ids : [o.id])));
   const atoms = new Set([...centers].filter(id => getObj(id)?.t === 'atom'));
@@ -8495,7 +8500,7 @@ function rotationPlan(ids){
   };
   for (const o of objs()){
     if (o.t === 'bond' && isLocked(o) && (atoms.has(o.a) || atoms.has(o.b))){
-      flashHint('A seleção inclui uma ligação travada.'); return null;
+      return null;
     }
     if (isLocked(o)) continue;
     if (o.t === 'orb' && atoms.has(o.at)) centers.add(o.id);
@@ -8504,7 +8509,13 @@ function rotationPlan(ids){
       if (anchors.length && anchors.every(anchorMoves)) centers.add(o.id);
     }
   }
-  const b = selectionBBox(new Set([...selected.map(o => o.id), ...atoms]));
+  return {centers, atoms, anchorMoves, boxIds: new Set([...selected.map(o => o.id), ...atoms])};
+}
+function rotationPlan(ids){
+  const targets = rotationTargets(ids);
+  if (!targets){ flashHint('A seleção inclui uma ligação travada.'); return null; }
+  const {centers, atoms, anchorMoves, boxIds} = targets;
+  const b = selectionBBox(boxIds);
   if (!b || !centers.size) return null;
   const [x, y] = boxCenter(b);
   const entries = [...centers].map(getObj).map(o => {
@@ -8611,14 +8622,29 @@ function rotationDialog(ids){
     [h('button', {class: 'btn ghost', onclick: closeModal}, 'Cancelar'), h('button', {class: 'btn', onclick: apply}, 'Aplicar')]);
   input.focus({preventScroll: true}); input.select();
 }
+let atomRotation = null;
+function selectionRotationIds(ids){
+  const atom = ids.length === 1 ? getObj(ids[0]) : null;
+  if (atom?.t !== 'atom') return ids.filter(id => TURN_TYPES.has(getObj(id)?.t));
+  // A seleção continua no átomo; só a rotação usa a molécula inteira.
+  if (atomRotation?.page === page() && atomRotation.rev === S.rev && atomRotation.id === atom.id) return atomRotation.ids;
+  const connected = moleculeIds(atom.id);
+  const targets = rotationTargets(connected);
+  const canRotate = targets && connected.every(id => !isLocked(getObj(id))) &&
+    (targets.centers.size > 1 || atom.e?.length ||
+      (atom.q && chargeOffset(atom, 'formal')) || (atom.pc && chargeOffset(atom, 'partial')));
+  atomRotation = {page: page(), rev: S.rev, id: atom.id, ids: canRotate ? connected : []};
+  return atomRotation.ids;
+}
 function selectionRotationHandle(){
   if (S.tool !== 'select' || S.crop) return null;
-  const b = selectionBBox([...S.sel].filter(id => TURN_TYPES.has(getObj(id)?.t)));
+  const ids = selectionRotationIds([...S.sel]);
+  const b = selectionBBox(ids);
   if (!b) return null;
   const x = (b.x1 + b.x2) / 2, d = tolW(26);
   const above = toScreen(x, b.y1 - d)[1] > 132;
   const edge = above ? b.y1 : b.y2, y = edge + (above ? -d : d);
-  return {x, y, edge};
+  return {x, y, edge, ids};
 }
 function dragRotation(p, q, shift){
   const {x, y} = p.rotation;
@@ -8760,7 +8786,7 @@ function onDown(e){
     P.mode = 'erase'; P.erasePage = page(); S.mouse = q;
     queueErase(e, P); return;
   }
-  if (e.button === 0 && (tool === 'select' || tool === 'lewis') && !S.crop && downCharge(q, e)) return;
+  if (e.button === 0 && tool === 'lewis' && !S.crop && downCharge(q, e)) return;
   if (tool === 'select') downSelect(q, e);
   else if (tool === 'lewis') downLewis(q, e);
   else if (tool === 'chain') downCarbonChain(q);
@@ -9072,7 +9098,7 @@ function onDblClick(e){
 function downSelect(q, e){
   const rot = selectionRotationHandle();
   if (rot && Math.hypot(q.x - rot.x, q.y - rot.y) <= tolW(13)){
-    const plan = rotationPlan([...S.sel]);
+    const plan = rotationPlan(rot.ids);
     if (plan){
       stopViewAnim(); P.mode = 'rotate'; P.rotation = plan;
       P.turnStart = Math.atan2(q.y - plan.y, q.x - plan.x); P.turnApplied = P.turnRequested = 0;
@@ -9080,6 +9106,7 @@ function downSelect(q, e){
     }
     return;
   }
+  if (e.button === 0 && !S.crop && downCharge(q, e)) return;
   // alças da seleção atual
   const hd = handleAt(q.sx, q.sy);
   if (hd){ P.mode = 'handle'; P.handle = hd; P.orig = deep(getObj(hd.id)); return; }
@@ -9900,8 +9927,10 @@ function hoverUpdate(q){
   const prev = S.hover;
   S.hover = null;
   let cursor = '';
+  const rot = selectionRotationHandle();
   const charge = !S.crop && ['select', 'lewis'].includes(S.tool) && hitChargeLabel(q.x, q.y, 0);
   if (S.spaceDown || S.tool === 'hand') cursor = 'grab';
+  else if (rot && Math.hypot(q.x - rot.x, q.y - rot.y) <= tolW(13)) cursor = 'grab';
   else if (charge) cursor = isLocked(charge.atom) ? 'not-allowed' : 'grab';
   else if (S.tool === 'lewis'){
     const hit = lewisHit(q.x, q.y);
@@ -9918,9 +9947,8 @@ function hoverUpdate(q){
       else if (hit.type === 'bond'){ S.hover = {type: 'bond', bond: hit.bond}; cursor = 'pointer'; }
     } else cursor = 'crosshair';
   } else if (S.tool === 'select'){
-    const hd = handleAt(q.sx, q.sy), rot = selectionRotationHandle();
-    if (rot && Math.hypot(q.x - rot.x, q.y - rot.y) <= tolW(13)) cursor = 'grab';
-    else if (hd) cursor = hd.k === 'cp' || hd.k === 'p1' || hd.k === 'p2' ? 'move' : ({nw: 'nwse-resize', se: 'nwse-resize', ne: 'nesw-resize', sw: 'nesw-resize', n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize'}[hd.k]);
+    const hd = handleAt(q.sx, q.sy);
+    if (hd) cursor = hd.k === 'cp' || hd.k === 'p1' || hd.k === 'p2' ? 'move' : ({nw: 'nwse-resize', se: 'nwse-resize', ne: 'nesw-resize', sw: 'nesw-resize', n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize'}[hd.k]);
     else {
       const hit = hitTest(q.x, q.y);
       cursor = !S.shiftDown && hitLonePair(hit, q) ? 'grab' : hit && hit.type !== 'zone' ? 'move' : 'default';
@@ -10613,10 +10641,11 @@ function renderOptBar(){
           add(chip('Elementos da tabela…', 'Editar destaques e separar elementos da tabela', () => ptabElementsDialog(first), false, 'table'), sep());
         }
         if (ids.some(id => ['atom', 'bond'].includes(getObj(id)?.t))) add(...hydrogenChips(), sep());
-        if (!S.crop && ids.some(id => TURN_TYPES.has(getObj(id)?.t))){
-          add(chip('−90°', 'Girar −90°', () => rotateSelection(ids, -90)),
-            chip('+90°', 'Girar 90°', () => rotateSelection(ids, 90)),
-            chip('Girar…', 'Arraste a alça circular para girar. Shift usa passos de 15°.', () => rotationDialog(ids), false, 'rotate'), sep());
+        const rotationIds = () => selectionRotationIds(ids);
+        if (!S.crop && rotationIds().length){
+          add(chip('−90°', 'Girar −90°', () => rotateSelection(rotationIds(), -90)),
+            chip('+90°', 'Girar 90°', () => rotateSelection(rotationIds(), 90)),
+            chip('Girar…', 'Arraste a alça circular para girar. Shift usa passos de 15°.', () => rotationDialog(rotationIds()), false, 'rotate'), sep());
         }
         if (!onlyMedia) add(swatchRow(first && first.c, c => applyColorToSelection(c)), sep());
         add(chip('Destacar', 'Brilho pulsante para chamar atenção', toggleGlow, first && !!first.glow, 'glow'));
