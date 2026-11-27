@@ -10139,6 +10139,10 @@ function renderOptBar(){
         // só imagens, vídeos e links: sem cores nem "Otimizar" (não se aplicam), sobra espaço para as ações de imagem
         const onlyMedia = Array.from(S.sel).every(id => { const o = getObj(id); return o && (isMedia(o) || o.t === 'link'); });
         const ids = [...S.sel];
+        if (S.crop){
+          add(chip('Aplicar recorte', 'Enter', () => endCrop(true), true, 'check'),
+            chip('Cancelar', 'Esc', () => endCrop(false), false), sep());
+        }
         if (ids.length === 1 && first?.t === 'ptab'){
           add(chip('Elementos da tabela…', 'Editar destaques e separar elementos da tabela', () => ptabElementsDialog(first), false, 'table'), sep());
         }
@@ -10165,8 +10169,7 @@ function renderOptBar(){
           if (selAtoms().some(hasAtomOrbitals)) add(chip('', 'Remover os orbitais dos átomos selecionados', () => atomOrbAction('clear', selAtoms()), false, 'eye'));
         }
         const med = mediaSel();
-        if (S.crop) add(sep(), chip('Aplicar recorte', 'Enter', () => endCrop(true), true, 'check'), chip('Cancelar', 'Esc', () => endCrop(false), false));
-        else if (med.length){
+        if (!S.crop && med.length){
           add(sep(), chip('Recortar', 'Recortar (duplo clique na imagem)', () => startCrop(med[0]), false, 'crop'));
           if (med.some(o => o.t === 'img')){
             const imgs = med.filter(o => o.t === 'img');
@@ -10929,6 +10932,9 @@ function initKeyboard(){
     if (tgt && tgt.closest && tgt.closest('#calcPanel')) return;
     if ($('#modalBack')){ if (e.key === 'Escape') closeModal(); return; }
     const k = e.key, mod = e.ctrlKey || e.metaKey;
+    if (k === 'Escape' && closeToolbarOverflow(true)){ e.preventDefault(); return; }
+    const toolbar = tgt?.closest?.('#topbar, .toolbar-overflow');
+    if (toolbar && (k === 'Tab' || k === ' ' || k === 'Enter')) return;
     if (S.crop && (k === 'Enter' || k === 'Escape')){ e.preventDefault(); endCrop(k === 'Enter'); return; }
     if (k === ' '){ if (!S.spaceDown){ S.spaceDown = true; canvas.style.cursor = 'grab'; } e.preventDefault(); return; }
     if (mod){
@@ -10950,7 +10956,6 @@ function initKeyboard(){
       return;
     }
     if (k === 'Escape'){
-      if (closeToolbarOverflow(true)) return;
       closeMenus();
       if (P) cancelGesture();
       else if (S.tool === 'mo' && MO.sel){ MO.sel = null; renderOptBar(); S.dirty = true; }
@@ -10960,10 +10965,7 @@ function initKeyboard(){
       else if (S.uiHidden) toggleUI();
       return;
     }
-    if (k === 'Tab'){
-      if (tgt?.closest?.('#topbar, .toolbar-overflow')) return;
-      e.preventDefault(); togglePTable(); return;
-    }
+    if (k === 'Tab'){ e.preventDefault(); togglePTable(); return; }
     if (k === 'Delete' || k === 'Backspace'){ if (S.tool === 'mo' && MO.sel){ e.preventDefault(); moDeleteSel(); return; } if (S.sel.size){ e.preventDefault(); removeIds(Array.from(S.sel)); } return; }
     if (k === 'PageDown'){ e.preventDefault(); if (!stepStop(1)) gotoPageStep(S.doc.cur + 1, 1); return; }
     if (k === 'PageUp'){ e.preventDefault(); if (!stepStop(-1)) gotoPageStep(S.doc.cur - 1, -1); return; }
