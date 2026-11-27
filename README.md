@@ -46,7 +46,13 @@ Press **W** to open **Atomic orbitals**. Change the quantum numbers and compare 
 
 Press **Y**, click open space to start a diagram, and choose degeneracy and type under **Next level**. Click a column to place the level. To change a level already on the board, double-click it or select it and choose **Edit level**.
 
-The level, column, gap, and axis labels accept inline math such as `$\frac{\Delta_o}{2}$` alongside text. The label editor previews the result and has buttons for bold, italic, underline, fractions, and roots. For a regular board annotation, type the same math syntax with the **Text** tool or right-click the annotation and choose **Format text**.
+The level, column, gap, and axis labels accept inline math such as `$\frac{\Delta_o}{2}$` alongside text. The label editor previews the result and has buttons for bold, italic, underline, fractions, and roots.
+
+## Write and format board text
+
+Press **T** and click where the text should go. The editor previews multiline text, chemistry notation such as H₂O, and inline LaTeX such as `$\frac{\Delta E}{RT}$`. Select a passage to apply bold, italic, underline, or scripts. Choose **Equation mode** to write an entire block in math notation.
+
+Use **Apply** or **Ctrl/⌘ + Enter** to keep your edit. Clicking the board also applies it. Press **Esc** or choose **Cancel** to discard the edit.
 
 ## Teaching examples
 

@@ -225,7 +225,25 @@ body.dropping #dropHint{ display: grid; }
 .lecture h3{ margin: 0 0 4px; font-size: 16px; }
 .lecture p{ margin: 0; font-size: 13px; color: var(--ui-muted); line-height: 1.45; }
 .lecture .btn{ flex: none; margin-top: 2px; }
-.textedit{ position: fixed; z-index: 50; background: transparent; border: 1.5px dashed var(--accent); border-radius: 4px; outline: none; resize: none; padding: 0 2px; margin: -2px 0 0 -3px; overflow: hidden; white-space: pre; min-width: 120px; }
+.celledit.textedit{ position: fixed; z-index: 50; background: transparent; border: 1.5px dashed var(--accent); border-radius: 4px; outline: none; resize: none; padding: 0 2px; margin: -2px 0 0 -3px; overflow: hidden; white-space: pre; min-width: 120px; }
+
+.board-text-editor{ position: fixed; z-index: 50; width: min(430px, calc(100vw - 16px)); display: grid; gap: 8px;
+  padding: 10px; overflow: auto; overscroll-behavior: contain; border: 1px solid var(--ui-line); border-radius: 13px;
+  background: var(--ui-solid); box-shadow: var(--shadow); color: var(--ui-fg); }
+.board-text-tools, .board-text-options, .board-text-actions{ display: flex; align-items: center; flex-wrap: wrap; gap: 4px; min-width: 0; }
+.board-text-editor .chip{ justify-content: center; min-width: 32px; height: 32px; padding: 0 7px; border: 1px solid var(--ui-line); border-radius: 7px; }
+.board-text-editor .chip[aria-pressed="true"]{ background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.board-text-editor :is(button, input, textarea):focus-visible{ outline: 2px solid var(--accent); outline-offset: -2px; }
+.board-text-editor textarea{ display: block; width: 100%; min-height: 58px; max-height: min(154px, 28dvh); field-sizing: content;
+  resize: vertical; padding: 7px 8px; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-hover);
+  color: var(--ui-fg); font: 500 16px/1.4 var(--font); overflow-wrap: anywhere; }
+.board-text-options label{ display: inline-flex; align-items: center; gap: 5px; padding: 0 4px; font-size: 13px; }
+.board-text-options .tinput{ width: 64px; height: 32px; padding: 0 5px; }
+.board-text-preview{ display: block; width: 100%; height: clamp(44px, 10dvh, 76px); border-radius: 8px; border: 1px solid var(--ui-line); }
+.board-text-editor .board-text-preview[hidden]{ display: none; }
+.board-text-actions{ justify-content: flex-end; }
+.board-text-actions .btn{ height: 32px; }
+@media (pointer: coarse){ .board-text-editor .chip, .board-text-actions .btn{ min-width: 38px; height: 38px; } }
 
 /* painéis */
 .panel{ position: fixed; z-index: 20; display: none; background: var(--ui-solid); color: var(--ui-fg); border: 1px solid var(--ui-line); border-radius: 16px; box-shadow: 0 18px 50px rgba(0,0,0,.25); }
@@ -4925,6 +4943,10 @@ const EN = {
   'Rótulo da cota': 'Gap label', 'Formatar texto…': 'Format text…',
   'Equação em linha': 'Inline equation', 'Itálico': 'Italic', 'Sublinhado': 'Underline', 'Fração': 'Fraction', 'Raiz quadrada': 'Square root',
   'Tipo de nível': 'Level type', 'Prévia': 'Preview',
+  'Escreva no quadro': 'Write on the board', 'Tamanho do texto': 'Text size', 'Modo equação': 'Equation mode',
+  'Formatação química automática': 'Automatic chemistry formatting', 'Aplicar texto': 'Apply text',
+  'Selecione um trecho de texto ou de uma única equação.': 'Select a text passage or part of a single equation.',
+  'Clique no quadro para escrever. Use a barra de formatação e veja a prévia. Ctrl+Enter aplica; Esc cancela.': 'Click the board to write. Use the formatting toolbar and check the preview. Ctrl+Enter applies; Esc cancels.',
   'Use $...$ ou \\( ... \\) para matemática em linha.': 'Use $...$ or \\( ... \\) for inline math.',
   'Exemplos: \\frac{a}{b}, \\sqrt{x}, \\sigma^*_{2p}.': 'Examples: \\frac{a}{b}, \\sqrt{x}, \\sigma^*_{2p}.',
   'Texto com misturas de matemática e formatação': 'Text with inline math and formatting',
@@ -5580,6 +5602,7 @@ function popUndoIfUnchanged(){
   if (st && st.length && st[st.length - 1] === snapshot()) st.pop();
 }
 function undo(){
+  if (P?.mode === 'erase') cancelGesture();
   if (S.crop) S.crop = null;
   const id = page().id, st = S.undo[id];
   if (!st || !st.length){ toast('Nada para desfazer'); return; }
@@ -5588,6 +5611,7 @@ function undo(){
   afterChange();
 }
 function redo(){
+  if (P?.mode === 'erase') cancelGesture();
   const id = page().id, st = S.redo[id];
   if (!st || !st.length){ toast('Nada para refazer'); return; }
   (S.undo[id] = S.undo[id] || []).push(snapshot());
@@ -5612,7 +5636,7 @@ function addObj(o, opts = {}){
   if (!opts.silent) scheduleSave();
   return o;
 }
-function removeIds(ids){
+function removeIds(ids, beforeRemove){
   const list = objs();
   const requested = new Set(ids);
   const set = new Set([...requested].filter(id => {
@@ -5633,6 +5657,7 @@ function removeIds(ids){
     if (ids.length) flashHint('Destrave o objeto antes de editar.');
     return 0;
   }
+  beforeRemove?.();
   // remover átomo remove ligações, colchetes e orbitais presos a ele
   for (const o of objs()){
     if (o.t === 'bond' && (set.has(o.a) || set.has(o.b))) set.add(o.id);
@@ -5712,15 +5737,7 @@ async function idbDel(key){
 // mudanças só de vista (zoom/pan) esperam mais e usam o tempo ocioso do navegador
 const PENDING_DOC_KEY = 'lousaQ.pendingDoc';
 let _saveTimer = null, _saveIdle = null, _saveInFlight = 0, _saveKind = 'view', _recoveredDoc = null;
-function serializeDoc(){
-  const editing = S.editing && S.editing.o;
-  if (!editing || !editing.id) return JSON.stringify(S.doc);
-  return JSON.stringify(S.doc, (key, value) => {
-    if (value !== editing) return value;
-    const {_backup, _hidden, ...obj} = value;
-    return {...obj, s: _backup};
-  });
-}
+function serializeDoc(){ return JSON.stringify(S.doc); }
 async function persistDoc(){
   _saveIdle = null; _saveKind = 'view';
   const json = serializeDoc();
@@ -7507,6 +7524,7 @@ function frame(t){
   const tn = now();
   const dt = PERF.lastFrame ? tn - PERF.lastFrame : 16; PERF.lastFrame = tn;
   stepViewAnim(tn);
+  if (P && P.mode === 'erase') flushErase(P);
   animTick(tn);
   const sceneAnim = S.anims.length > 0 || S._glowing || animSceneActive();
   const ovAnim = (S.laser && S.laser.length) || S.tool === 'spot' || mediaOverlayActive() || liveAnimating();
@@ -8075,6 +8093,7 @@ function initPointer(){
   canvas.addEventListener('pointermove', onMove);
   canvas.addEventListener('pointerup', onUp);
   canvas.addEventListener('pointercancel', onCancel);
+  canvas.addEventListener('lostpointercapture', onCancel);
   canvas.addEventListener('pointerleave', () => { S.hover = null; S.moHover = null; S.mouseIn = false; S.ovDirty = true; animHoverClear(); });
   // Safari (macOS): a pinça do trackpad chega como gesture*, não como roda com Ctrl
   let gs = 1;
@@ -8137,15 +8156,18 @@ function onDown(e){
     canvas.style.cursor = 'grabbing';
     return;
   }
-  // borracha da caneta (botão traseiro)
-  if (e.button === 5 || (e.buttons & 32)){ P.mode = 'erase'; eraseAt(q.x, q.y); return; }
   const tool = S.tool;
+  // Borracha da barra ou botão traseiro da caneta.
+  if (tool === 'eraser' || e.button === 5 || (e.buttons & 32)){
+    stopViewAnim();
+    P.mode = 'erase'; P.erasePage = page(); S.mouse = q;
+    queueErase(e, P); return;
+  }
   if (tool === 'select') downSelect(q, e);
   else if (tool === 'lewis') downLewis(q, e);
   else if (tool === 'pen' || tool === 'hl') { P.mode = 'ink'; armHold(); }
-  else if (tool === 'eraser'){ P.mode = 'erase'; eraseAt(q.x, q.y); }
   else if (tool === 'shape' || tool === 'arrow'){ P.mode = 'shape'; }
-  else if (tool === 'text') downText(q);
+  else if (tool === 'text'){ e.preventDefault(); downText(q); }
   else if (tool === 'laser'){ P.mode = 'laser'; }
   else if (tool === 'ring'){ P.mode = 'ring'; }
   else if (tool === 'mo'){ moDown(q, e); }
@@ -8173,6 +8195,9 @@ function onMove(e){
   if (!P || P.id !== e.pointerId){ hoverUpdate(q); return; }
   const dpx = Math.hypot(q.sx - P.sx, q.sy - P.sy);
   if (!P.moved && dpx > (e.pointerType === 'touch' ? 8 : 4)){ P.moved = true; clearHold(); }
+  if (P.mode === 'erase'){
+    P.x = q.x; P.y = q.y; queueErase(e, P); return;
+  }
   const lastPt = P.pts[P.pts.length - 1];
   if (Math.hypot(q.x - lastPt[0], q.y - lastPt[1]) > tolW(1.2)){
     P.pts.push([q.x, q.y]); if (P.pr) P.pr.push(q.p ?? 0.5);
@@ -8188,7 +8213,6 @@ function onMove(e){
       P.vel.push([now(), q.sx, q.sy]); if (P.vel.length > 6) P.vel.shift();
       return;
     }
-    case 'erase': eraseAt(q.x, q.y); return;
     case 'ink': S.preview = {kind: 'ink', pts: P.pts, pr: P.pr}; if (P.shape) P.shape = recognizeShape(P.pts) || P.shape; break;
     case 'shape': S.preview = S.tool === 'arrow' && S.settings.tools.arrow.free ? {kind: 'ink', pts: P.pts} : {kind: 'shape', obj: buildShapeFromDrag(P.x0, P.y0, q.x, q.y, e.shiftKey)}; break;
     case 'laser': animHoverCursor(q); break;      // o laser também lê os gráficos enquanto é arrastado (telas de toque)
@@ -8220,7 +8244,10 @@ function onUp(e){
         if (p.middle && !p.moved && typeof togglePTable === 'function') togglePTable();
         if (p.type === 'touch' || p.type === 'pen') flingFrom(p.vel);
         break;
-      case 'erase': if (p.undoPushed) afterChange(); break;
+      case 'erase':
+        queueErase(e, p); flushErase(p, Infinity);
+        if (p.eraseNeedsSave && p.erasePage === page()) afterChange();
+        break;
       case 'ink': finishInk(p, e); break;
       case 'shape': finishShape(p, q, e); break;
       case 'marquee': finishMarquee(p, q, e); break;
@@ -8234,7 +8261,9 @@ function onUp(e){
       default: if (S.tool === 'lewis') upLewis(p, q, e); else if (S.tool === 'mo') moUp(p, q, e);
     }
   } finally {
-    P = null; S.preview = null; S.dirty = true;
+    P = null; S.preview = null;
+    if (p.mode === 'erase') S.ovDirty = true;
+    else S.dirty = true;
     hoverUpdate(q);
   }
 }
@@ -8245,9 +8274,13 @@ function onCancel(e){
 }
 function cancelGesture(){
   const gesture = P;
+  if (gesture && gesture.mode === 'erase') flushErase(gesture, Infinity);
   clearHold(); P = null; S.preview = null; S.moPreview = null; S.guides = []; S.dragHide = null;
   canvas.style.cursor = '';
-  if (gesture && gesture.undoPushed) afterChange();
+  if (gesture?.mode === 'erase'){
+    if (gesture.eraseNeedsSave && gesture.erasePage === page()) afterChange();
+    S.ovDirty = true;
+  } else if (gesture?.undoPushed) afterChange();
   else S.dirty = true;
 }
 
@@ -8816,31 +8849,92 @@ function finishShape(p, q, e){
 }
 
 /* ---------- borracha ---------- */
-function eraseAt(x, y){
-  const r = tolW(S.settings.tools.eraser.w);
+// O quadro processa os pontos em lotes e completa o traço ao soltar ou cancelar.
+function queueErase(e, p){
+  const queue = p.eraseQueue || (p.eraseQueue = []);
+  const samples = e.getCoalescedEvents?.() || [];
+  const r = tolW(clamp(+S.settings.tools.eraser.w || 18, 1, 80));
+  const append = ev => {
+    const [x, y] = toWorld(ev.clientX, ev.clientY);
+    const last = queue.length ? queue[queue.length - 1] : p.eraseLast;
+    if (!last || x !== last[0] || y !== last[1] || r !== last[2]) queue.push([x, y, r]);
+  };
+  for (const ev of samples) append(ev);
+  append(e); // O evento principal nem sempre vem na lista de amostras.
+  S.ovDirty = true;
+}
+function flushErase(p, limit = 64){
+  const queue = p.eraseQueue;
+  if (!queue?.length || p.erasePage !== page()) return;
+  const points = [];
+  let head = p.eraseHead || 0;
+  while (head < queue.length && points.length < limit){
+    const next = queue[head], last = p.eraseLast;
+    if (!last){ points.push(next); p.eraseLast = next; head++; continue; }
+    const dx = next[0] - last[0], dy = next[1] - last[1], d = Math.hypot(dx, dy);
+    // Preenche lacunas entre eventos, preservando os pontos originais.
+    const step = Math.max(1e-9, Math.min(last[2], next[2]) * 0.5);
+    if (d <= step){ points.push(next); p.eraseLast = next; head++; }
+    else {
+      const t = step / d;
+      const q = [last[0] + dx * t, last[1] + dy * t, last[2] + (next[2] - last[2]) * t];
+      points.push(q); p.eraseLast = q;
+    }
+  }
+  if (head === queue.length){ queue.length = 0; p.eraseHead = 0; }
+  else if (head > 256){ queue.splice(0, head); p.eraseHead = 0; }
+  else p.eraseHead = head;
+  eraseBatch(points, p);
+}
+function eraseBatch(points, p){
+  if (!points.length) return;
   const kill = new Set();
   let changed = false;
+  const bounds = {x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity};
+  for (const [x, y, r] of points){
+    bounds.x1 = Math.min(bounds.x1, x - r * 1.5); bounds.y1 = Math.min(bounds.y1, y - r * 1.5);
+    bounds.x2 = Math.max(bounds.x2, x + r * 1.5); bounds.y2 = Math.max(bounds.y2, y + r * 1.5);
+  }
+  const overlaps = b => !b || !(b.x2 < bounds.x1 || b.x1 > bounds.x2 || b.y2 < bounds.y1 || b.y1 > bounds.y2);
+  const recordUndo = () => { if (!p.undoPushed){ pushUndo(); p.undoPushed = true; } };
+  // A forma de um traço de tinta fica estável durante o gesto de apagar.
+  const inkBounds = p.inkBounds || (p.inkBounds = new WeakMap());
   for (const o of objs()){
     if (isLocked(o)) continue;
     if (o.t === 'atom'){
-      const G = atomGeom(o);
-      for (let k = (o.e || []).length - 1; k >= 0; k--){
-        const grp = o.e[k];
-        const ex = o.x + G.rxE * Math.cos(grp.a), ey = o.y + G.ryE * Math.sin(grp.a);
-        if (Math.hypot(x - ex, y - ey) < r){ if (!P.undoPushed){ pushUndo(); P.undoPushed = true; } o.e.splice(k, 1); changed = true; }
+      const G = atomGeom(o), rx = Math.max(G.rxT, G.rxE), ry = Math.max(G.ryT, G.ryE);
+      if (!overlaps({x1: o.x - rx, y1: o.y - ry, x2: o.x + rx, y2: o.y + ry})) continue;
+      for (const [x, y, r] of points){
+        for (let k = (o.e || []).length - 1; k >= 0; k--){
+          const grp = o.e[k];
+          const ex = o.x + G.rxE * Math.cos(grp.a), ey = o.y + G.ryE * Math.sin(grp.a);
+          if (Math.hypot(x - ex, y - ey) < r){ recordUndo(); o.e.splice(k, 1); changed = true; }
+        }
+        if (Math.hypot((x - o.x) / (G.rxT + r), (y - o.y) / (G.ryT + r)) < 1) kill.add(o.id);
       }
-      if (Math.hypot((x - o.x) / (G.rxT + r), (y - o.y) / (G.ryT + r)) < 1) kill.add(o.id);
     } else if (o.t === 'bond'){
       const a = getObj(o.a), b = getObj(o.b);
-      if (a && b){ const E = bondEnds(a, b); if (distToSeg(x, y, E.x1, E.y1, E.x2, E.y2) < r) kill.add(o.id); }
-    } else if (objHit(o, x, y, r)) kill.add(o.id);
+      if (a && b){
+        const E = bondEnds(a, b);
+        if (overlaps({x1: Math.min(E.x1, E.x2), y1: Math.min(E.y1, E.y2), x2: Math.max(E.x1, E.x2), y2: Math.max(E.y1, E.y2)}) &&
+            points.some(([x, y, r]) => distToSeg(x, y, E.x1, E.y1, E.x2, E.y2) < r)) kill.add(o.id);
+      }
+    } else {
+      // Formas e orbitais podem ter uma área clicável maior que os seus limites visuais.
+      let b = null;
+      if (o.t === 'ink'){
+        b = inkBounds.get(o);
+        if (!b){ b = inkBBox(o); inkBounds.set(o, b); }
+      } else if (o.t !== 'orb' && o.t !== 'shape') b = objBBox(o);
+      if (!overlaps(b)) continue;
+      if (points.some(([x, y, r]) => {
+        if (b && (x < b.x1 - r * 1.5 || x > b.x2 + r * 1.5 || y < b.y1 - r * 1.5 || y > b.y2 + r * 1.5)) return false;
+        return objHit(o, x, y, r);
+      })) kill.add(o.id);
+    }
   }
-  if (kill.size){
-    if (!P.undoPushed){ pushUndo(); P.undoPushed = true; }
-    removeIds(Array.from(kill));
-    changed = true;
-  }
-  if (changed) S.dirty = true;
+  if (changed){ p.eraseNeedsSave = true; S.dirty = true; }
+  if (kill.size && removeIds(Array.from(kill), recordUndo)) p.eraseNeedsSave = false;
 }
 
 /* ---------- texto ---------- */
@@ -8876,8 +8970,9 @@ function hoverUpdate(q){
     else { const hit = hitTest(q.x, q.y); cursor = hit && hit.type !== 'zone' ? 'move' : 'default'; }
   } else if (S.tool === 'ring'){ ringHover(q); cursor = 'crosshair'; }
   else if (S.tool === 'mo'){ cursor = moHover(q) || 'default'; }
-  else if (S.tool === 'eraser') cursor = 'none';
-  else if (S.tool === 'text') cursor = 'text';
+  else if (S.tool === 'eraser'){
+    animHoverClear(); canvas.style.cursor = 'none'; S.ovDirty = true; return;
+  } else if (S.tool === 'text') cursor = 'text';
   else if (S.tool === 'laser' || S.tool === 'spot') cursor = 'none';
   else cursor = 'crosshair';
   // controles de vídeo, botão "abrir" dos links, alças do recorte
@@ -8888,7 +8983,7 @@ function hoverUpdate(q){
   if (S.crop) cursor = 'default';
   if (S.tool === 'select' && lockedAt(q.x, q.y)) S.ovDirty = true;
   if (canvas.style.cursor !== cursor) canvas.style.cursor = cursor;
-  if (S.tool === 'eraser' || S.hover || prev) S.ovDirty = true;
+  if (S.hover || prev) S.ovDirty = true;
 }
 
 /* ---------- sobreposições ---------- */
@@ -9057,7 +9152,7 @@ function drawOverlaysScreen(c){
     c.restore();
   }
   // borracha
-  if (S.tool === 'eraser' && S.mouseIn){
+  if ((S.tool === 'eraser' || P?.mode === 'erase') && S.mouseIn){
     c.save(); c.strokeStyle = fam() === 'light' ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.7)'; c.lineWidth = 1.5;
     c.fillStyle = fam() === 'light' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.25)';
     c.beginPath(); c.arc(m.sx, m.sy, S.settings.tools.eraser.w, 0, TAU); c.fill(); c.stroke(); c.restore();
@@ -9297,6 +9392,7 @@ function initUI(){
 }
 
 function setTool(t){
+  if (t !== S.tool && P?.mode === 'erase') cancelGesture();
   if (S.editing) commitTextEdit();
   if (S.crop && t !== 'select') endCrop(true);
   S.tool = t;
@@ -9811,7 +9907,10 @@ function updatePageBar(){
 }
 function gotoPage(i){
   if (i < 0 || i >= S.doc.pages.length) return;
-  if (i !== S.doc.cur){ stopViewAnim(); MO.sel = null; S.moHover = null; S.moPreview = null; }
+  if (i !== S.doc.cur){
+    if (P?.mode === 'erase') cancelGesture();
+    stopViewAnim(); MO.sel = null; S.moHover = null; S.moPreview = null;
+  }
   if (S.editing) commitTextEdit();
   if (S.crop) endCrop(true);
   S.doc.cur = i; S.sel.clear(); reindex(); updatePageBar(); updateZoomLabel(); S.dirty = true; scheduleSave();
@@ -9914,6 +10013,7 @@ function openHelp(){
       ['<kbd>Y</kbd>', 'diagramas de orbitais moleculares: níveis, degenerescência, correlações, elétrons, cotas Δ, rótulos com letras gregas e escala numérica de energia (botão direito no diagrama)'],
     ]),
     sec('Inserir e aulas (botão +)', [
+      ['Texto', 'Clique no quadro para escrever. Use a barra de formatação e veja a prévia. Ctrl+Enter aplica; Esc cancela.'],
       ['Equação', 'texto com frações, índices e letras gregas, escrito como no LaTeX: <kbd>E_p \\propto -\\frac{\\mu_1 \\mu_2}{r^3}</kbd>; duplo clique edita'],
       ['Tabela', 'duplo clique numa célula edita; <kbd>Tab</kbd> vai para a próxima; botão direito: linhas, colunas, cabeçalho, destaque'],
       ['Gráfico', 'pontos (x y rótulo) e funções de x, como <kbd>-1/x^6</kbd>; duplo clique abre os dados'],
@@ -9974,41 +10074,179 @@ function formatChemText(s){
     return coef + rest + charge + trail;
   }).join('');
 }
+function formatBoardSource(src, o){
+  return !o.math && (o.chem ?? S.settings.tools.text.chem) ? formatPlainParts(src) : src;
+}
+function insertTextMarkup(inp, before, after, inline, caretOffset){
+  const a = inp.selectionStart, b = inp.selectionEnd, selected = inp.value.slice(a, b);
+  const equation = before === '\\(';
+  if (selected.includes('\n')){
+    // Os delimitadores em linha pertencem a uma única linha.
+    if (!inline || !/^\\(?:textbf|textit|underline)\{$/.test(before) || usesInlineMath(selected)){
+      toast('Selecione um trecho de texto ou de uma única equação.'); return false;
+    }
+    const marked = selected.split('\n').map(line => line.trim() ? '\\(' + before + line + after + '\\)' : line).join('\n');
+    inp.setRangeText(marked, a, b, 'select');
+    inp.focus({preventScroll: true});
+    return true;
+  }
+  const matches = inline || equation ? [...inp.value.matchAll(INLINE_MATH)] : [];
+  const inMath = matches.some(m => {
+    const delim = m[1] === undefined ? 2 : 1;
+    return a >= m.index + delim && b <= m.index + m[0].length - delim;
+  });
+  if (equation && inMath){ inp.focus({preventScroll: true}); return false; }
+  if (!inMath && matches.some(m => a < m.index + m[0].length && b > m.index)){
+    toast('Selecione um trecho de texto ou de uma única equação.'); return false;
+  }
+  if (selected && /^\\(?:textbf|textit|underline)\{$/.test(before) && inp.value.slice(a - before.length, a) === before && inp.value[b] === '}'){
+    let from = a - before.length, to = b + 1;
+    const alone = matches.find(m => {
+      const delim = m[1] === undefined ? 2 : 1;
+      return from === m.index + delim && to === m.index + m[0].length - delim;
+    });
+    if (alone){ from = alone.index; to = from + alone[0].length; }
+    inp.setRangeText(selected, from, to, 'select');
+    inp.focus({preventScroll: true});
+    return true;
+  }
+  if (inline && !equation && !inMath){ before = '\\(' + before; after += '\\)'; }
+  inp.setRangeText(before + selected + after, a, b);
+  inp.focus({preventScroll: true});
+  const start = a + before.length, end = start + selected.length;
+  if (caretOffset && selected) inp.setSelectionRange(end + caretOffset, end + caretOffset);
+  else inp.setSelectionRange(start, end);
+  return true;
+}
+
 function startTextEdit(o){
   if (S.editing) commitTextEdit();
-  const v = view();
-  const ta = h('textarea', {class: 'textedit', spellcheck: 'false', 'aria-label': 'Texto'});
+  if (o.id && isLocked(o)) return;
+  if (S.cellEdit) tableCommitEdit();
+  const draft = {...o};
+  const lifecycle = new AbortController(), signal = lifecycle.signal;
+  const ta = h('textarea', {class: 'textedit', rows: 2, spellcheck: 'false', dir: 'auto',
+    'aria-label': 'Texto', placeholder: 'Escreva no quadro'});
   ta.value = o.s || '';
-  const [sx, sy] = toScreen(o.x, o.y);
-  Object.assign(ta.style, {left: sx + 'px', top: sy + 'px', font: textFont({...o, fs: o.fs * v.s}), color: resolveColor(o.c), lineHeight: '1.25'});
-  document.body.appendChild(ta);
-  const fit = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; ta.style.width = Math.max(120, textW(ta.value.split('\n').reduce((a, b) => a.length > b.length ? a : b, '') + 'MM', ta.style.font)) + 'px'; };
-  ta.addEventListener('input', fit);
-  ta.addEventListener('keydown', e => {
-    e.stopPropagation();
-    if (e.key === 'Escape' || (e.key === 'Enter' && (e.ctrlKey || e.metaKey))){ e.preventDefault(); commitTextEdit(); }
+  const preview = h('canvas', {class: 'board-text-preview', 'aria-label': 'Prévia'});
+  const previewCtx = preview.getContext('2d');
+  let frame = 0;
+  const update = () => { if (!frame) frame = requestAnimationFrame(render); };
+  const format = (before, after, offset) => {
+    if (insertTextMarkup(ta, before, after, !draft.math, offset)) update();
+  };
+  const styles = {b: ['\\textbf{', '}'], i: ['\\textit{', '}'], u: ['\\underline{', '}']};
+  const button = (glyph, title, action) => h('button', {class: 'chip', type: 'button', title, 'aria-label': title,
+    onmousedown: e => e.preventDefault(), onclick: action}, glyph);
+  const mark = (glyph, title, before, after, offset) => button(glyph, title, () => format(before, after, offset));
+  const mathInsert = mark('∑', 'Equação em linha', '\\(', '\\)');
+  const chemistry = button('H₂O', 'Formatação química automática', () => {
+    draft.chem = !(draft.chem ?? S.settings.tools.text.chem); syncOptions(); update();
   });
-  S.editing = {o, ta, hidden: o.id ? true : false};
-  if (o.id) o._hidden = true;
-  if (o.id){ o._backup = o.s; o.s = ''; }
-  S.dirty = true;
-  setTimeout(() => { ta.focus(); fit(); ta.setSelectionRange(ta.value.length, ta.value.length); }, 0);
-}
-function commitTextEdit(){
-  const ed = S.editing; if (!ed) return;
-  S.editing = null;
-  let txt = ed.ta.value.replace(/\s+$/, '');
-  ed.ta.remove();
-  const o = ed.o;
-  if (!o.math && o.chem !== false && S.settings.tools.text.chem) txt = formatPlainParts(txt);
-  if (o.id){
-    o.s = o._backup; delete o._backup; delete o._hidden;
-    if (!txt){ removeIds([o.id]); return; }
-    if (txt !== o.s){ pushUndo(); o.s = txt; afterChange(); }
-  } else if (txt){
-    pushUndo(); addObj({...o, id: undefined, s: txt}); afterChange();
+  const equation = button('ƒ(x)', 'Modo equação', () => {
+    draft.math = !draft.math; syncOptions(); update();
+  });
+  const syncOptions = () => {
+    chemistry.setAttribute('aria-pressed', String(!!(draft.chem ?? S.settings.tools.text.chem)));
+    chemistry.disabled = !!draft.math;
+    equation.setAttribute('aria-pressed', String(!!draft.math));
+    mathInsert.disabled = !!draft.math;
+  };
+  syncOptions();
+  const size = h('input', {class: 'tinput', type: 'number', min: 8, max: 512, step: 'any', value: draft.fs,
+    'aria-label': 'Tamanho do texto', oninput: e => {
+      const n = e.target.valueAsNumber;
+      if (Number.isFinite(n)) { draft.fs = clamp(n, 8, 512); update(); }
+    }, onblur: e => { e.target.value = draft.fs; }});
+  const panel = h('section', {class: 'board-text-editor', 'aria-label': 'Editar texto'},
+    h('div', {class: 'board-text-tools'},
+      mark(h('b', {}, 'B'), 'Negrito', ...styles.b), mark(h('i', {}, 'I'), 'Itálico', ...styles.i),
+      mark(h('u', {}, 'U'), 'Sublinhado', ...styles.u),
+      mark('xⁿ', 'Sobrescrito', '^{', '}'), mark('xₙ', 'Subscrito', '_{', '}'),
+      mark('a/b', 'Fração', '\\frac{', '}{}', 2), mark('√', 'Raiz quadrada', '\\sqrt{', '}'), mathInsert),
+    ta, preview,
+    h('div', {class: 'board-text-options'},
+      h('label', {}, 'Tamanho', size), chemistry, equation),
+    h('div', {class: 'board-text-actions'},
+      h('button', {class: 'btn ghost', type: 'button', onclick: () => commitTextEdit(true)}, 'Cancelar'),
+      h('button', {class: 'btn', type: 'button', title: 'Aplicar texto', onclick: () => commitTextEdit()}, 'Aplicar')));
+  const viewport = window.visualViewport;
+  const [sx, sy] = toScreen(o.x, o.y);
+  function render(){
+    frame = 0;
+    const left = (viewport?.offsetLeft ?? 0) + 8, top = (viewport?.offsetTop ?? 0) + 8;
+    const w = (viewport?.width ?? innerWidth) - 16, height = (viewport?.height ?? innerHeight) - 16;
+    panel.style.maxWidth = Math.max(1, w) + 'px';
+    panel.style.maxHeight = Math.max(1, height) + 'px';
+    const sample = {...draft, s: formatBoardSource(ta.value, draft), x: 0, y: 0};
+    preview.hidden = !sample.s.trim();
+    if (!preview.hidden && previewCtx){
+      const W = preview.clientWidth, H = preview.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
+      const box = textBBox(sample);
+      const k = Math.min(1, (W - 20) / Math.max(1, box.x2), (H - 12) / Math.max(1, box.y2));
+      preview.width = Math.max(1, Math.round(W * dpr)); preview.height = Math.max(1, Math.round(H * dpr));
+      previewCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      previewCtx.fillStyle = theme().bg;
+      previewCtx.fillRect(0, 0, W, H);
+      if (k > 0){
+        previewCtx.translate(10, (H - box.y2 * k) / 2);
+        previewCtx.scale(k, k);
+        drawText(previewCtx, sample);
+      }
+    }
+    const below = sy + clamp(o.fs * view().s * 1.25, 12, 60) + 8, above = sy - panel.offsetHeight - 8;
+    const y = below + panel.offsetHeight <= top + height || above < top ? below : above;
+    panel.style.left = clamp(sx, left, Math.max(left, left + w - panel.offsetWidth)) + 'px';
+    panel.style.top = clamp(y, top, Math.max(top, top + height - panel.offsetHeight)) + 'px';
   }
-  S.dirty = true;
+  const refocus = () => canvas.focus({preventScroll: true});
+  panel.addEventListener('keydown', e => {
+    e.stopPropagation();
+    if (e.isComposing) return;
+    const mod = e.ctrlKey || e.metaKey;
+    if (e.key === 'Escape' || (e.key === 'Enter' && mod)){
+      e.preventDefault(); commitTextEdit(e.key === 'Escape');
+    } else if (mod && e.target === ta){
+      const style = styles[e.key.toLowerCase()];
+      if (style){ e.preventDefault(); format(...style); }
+    }
+  });
+  ta.addEventListener('input', update);
+  document.addEventListener('pointerdown', e => {
+    if (!panel.contains(e.target)) commitTextEdit();
+  }, {capture: true, signal});
+  window.addEventListener('resize', update, {signal});
+  viewport?.addEventListener('resize', update, {signal});
+  viewport?.addEventListener('scroll', update, {signal});
+  document.body.appendChild(panel);
+  S.editing = {o, ta, draft, close: () => {
+    const hadFocus = panel.contains(document.activeElement);
+    lifecycle.abort(); cancelAnimationFrame(frame); panel.remove();
+    if (hadFocus) refocus();
+  }};
+  render();
+  ta.focus({preventScroll: true});
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+}
+function commitTextEdit(cancel = false){
+  const ed = S.editing; if (!ed) return;
+  const {o, draft, ta} = ed;
+  S.editing = null;
+  ed.close();
+  if (cancel || (o.id && (getObj(o.id) !== o || isLocked(o)))) return;
+  const s = formatBoardSource(ta.value.trimEnd(), draft);
+  if (o.id){
+    const {fs, chem, math} = draft;
+    if (s === o.s && fs === o.fs && chem === o.chem && math === o.math) return;
+    pushUndo();
+    if (!s.trim()){ removeIds([o.id]); return; }
+    Object.assign(o, {s, fs, chem, math});
+    afterChange();
+  } else if (s.trim()){
+    pushUndo();
+    addObj({...draft, id: undefined, s});
+    afterChange();
+  }
 }
 
 /* ---------- teclado ---------- */
@@ -10384,6 +10622,7 @@ function openBoardFile(text, mode){
     h('button', {class: 'btn', onclick: () => { closeModal(); load(true); }}, 'Adicionar ao quadro atual')]);
 }
 function loadBoardDoc(doc, assets, append){
+  if (P?.mode === 'erase') cancelGesture();
   normalizeBoardDoc(doc, true);
   return prepareDocAssets(doc, assets).then(() => {
     if (S.editing) commitTextEdit();
@@ -15749,7 +15988,7 @@ function moEditText(title, value, onSave, quick, energy, options = {}){
     c.fillStyle = resolveColor(board ? board.c : 'p0');
     c.textAlign = 'left'; c.textBaseline = 'alphabetic';
     if (board){
-      const L = mathTextLayout({...board, s: inp.value, fs: 28});
+      const L = mathTextLayout({...board, s: formatBoardSource(inp.value, board), fs: 28});
       const k = Math.min(1, (W - 28) / Math.max(1, L.w), (H - 18) / Math.max(1, L.h));
       c.translate((W - L.w * k) / 2, (H - L.h * k) / 2); c.scale(k, k);
       for (const ln of L.lines) ln.b.draw(c, 0, ln.base);
@@ -15760,20 +15999,12 @@ function moEditText(title, value, onSave, quick, energy, options = {}){
       b.draw(c, 0, (b.a - b.d) / 2);
     }
   };
-  function put(before, after = '', math = false){
-    const a = inp.selectionStart, b = inp.selectionEnd, selected = inp.value.slice(a, b);
-    const inMath = board?.math || [...inp.value.matchAll(INLINE_MATH)].some(m => {
-      const delim = m[1] === undefined ? 2 : 1;
-      return a >= m.index + delim && b <= m.index + m[0].length - delim;
-    });
-    if (math && !inMath){ before = '\\(' + before; after += '\\)'; }
-    inp.setRangeText(before + selected + after, a, b);
-    inp.focus();
-    inp.setSelectionRange(a + before.length, a + before.length + selected.length);
-    draw();
-  }
+  const put = (before, after, math) => {
+    if (insertTextMarkup(inp, before, after, math && !board?.math)) draw();
+  };
   const format = (label, title, before, after, math = true) =>
-    h('button', {class: 'chip', title, 'aria-label': title, onclick: () => put(before, after, math)}, label);
+    h('button', {class: 'chip', title, 'aria-label': title, onmousedown: e => e.preventDefault(),
+      onclick: () => put(before, after, math)}, label);
   const greek = ['σ', 'π', 'δ', 'φ', 'Δ', 'ψ', 'Ψ', 'α', 'β', 'γ', 'λ', 'ν'];
   const quickL = quick || ['\\sigma_{1s}', '\\sigma^*_{1s}', '\\sigma_{2s}', '\\sigma^*_{2s}', '\\sigma_{2p}', '\\sigma^*_{2p}', '\\pi_{2p}', '\\pi^*_{2p}', 'a_{1g}', 't_{1u}', 'e_g', 't_{2g}', 'e_g^*', 'n'];
   const einp = energy ? h('input', {class: 'tinput mono moein', value: energy.value, spellcheck: 'false', autocomplete: 'off', inputmode: 'decimal'}) : null;
@@ -15847,11 +16078,10 @@ function moEditText(title, value, onSave, quick, energy, options = {}){
     });
     previewResize.observe(prev);
   }
-  requestAnimationFrame(() => {
-    if (!inp.isConnected) return;
-    const f = energy?.focus ? einp : inp;
-    f.focus(); f.select(); draw();
-  });
+  const focus = energy?.focus ? einp : inp;
+  focus.focus({preventScroll: true});
+  focus.select();
+  requestAnimationFrame(() => { if (inp.isConnected) draw(); });
 }
 function moEditLabel(d, lv, focusEnergy){
   const en = d.scale ? {value: moFmtLevel(d, lv), unit: moUnit(d.scale.u)[1], focus: !!focusEnergy} : null;
@@ -15869,7 +16099,7 @@ function moEditLabel(d, lv, focusEnergy){
 }
 function formatBoardText(o){
   moEditText('Formatar texto…', o.s, value => {
-    const s = o.math || o.chem === false || !S.settings.tools.text.chem ? value : formatPlainParts(value);
+    const s = formatBoardSource(value, o);
     if (s === o.s) return;
     pushUndo();
     if (s.trim()){ o.s = s; afterChange(); }
@@ -17927,7 +18157,7 @@ function mathParse(src){
     if (s[i] === '\\'){ const m = /^\\[A-Za-z]+/.exec(s.slice(i)); if (m){ i += m[0].length; const sym = symOf(m[0].slice(1)); return chars(sym || m[0], [], !sym); } }
     const ch = s[i++]; return ch ? chars(ch, []) : [];
   }
-  function rawArg(){
+  function rawArg(keepEscapes = false){
     skip();
     if (s[i] !== '{') return s[i++] || '';
     const start = ++i;
@@ -17936,7 +18166,10 @@ function mathParse(src){
       const ch = s[i++];
       if (ch === '\\' && /[{}\\]/.test(s[i] || '')){ i++; continue; }
       if (ch === '{') depth++;
-      if (ch === '}' && --depth === 0) return s.slice(start, i - 1).replace(/\\([{}\\])/g, '$1');
+      if (ch === '}' && --depth === 0){
+        const raw = s.slice(start, i - 1);
+        return keepEscapes ? raw : raw.replace(/\\([{}\\])/g, '$1');
+      }
     }
     return s.slice(start);
   }
@@ -17975,7 +18208,9 @@ function mathParse(src){
         if (name === 'frac' || name === 'dfrac' || name === 'tfrac'){ const a = arg(), b = arg(); out.push({k: 'frac', num: a, den: b}); }
         else if (name === 'sqrt') out.push({k: 'sqrt', body: arg()});
         else if (['text', 'mathrm', 'rm', 'textbf', 'textit', 'texttt', 'underline'].includes(name)){
-          out.push({k: 'text', s: rawArg(), style: name});
+          const styled = name === 'textbf' || name === 'textit' || name === 'underline';
+          const raw = rawArg(styled);
+          out.push(styled ? {k: 'text', body: parseTextStyles(raw), style: name} : {k: 'text', s: raw, style: name});
         } else if (name === 'mathbf' || name === 'mathit'){
           out.push({k: 'grp', body: arg(), style: name});
         }
@@ -18001,6 +18236,32 @@ function mathParse(src){
 function mathFont(fs, italic, bold, fam){ return `${italic ? 'italic ' : ''}${bold ? 700 : 500} ${+fs.toFixed(2)}px ${FONT_STACKS[fam] || FONT_STACKS.serif}`; }
 function mathRun(str, font, fs){
   return {w: str ? textW(str, font) : 0, a: fs * 0.72, d: fs * 0.22, draw(c, x, y){ if (!str) return; c.font = font; c.fillText(str, x, y); }};
+}
+// Comandos de estilo aninhados preservam espaços e a pontuação literal.
+function parseTextStyles(raw){
+  const stack = [{nodes: [], braces: 0, text: ''}];
+  const pushText = part => {
+    if (part.text){ part.nodes.push({k: 'text', s: part.text}); part.text = ''; }
+  };
+  const tokens = /\\(textbf|textit|underline)\{|\\([{}\\])|[{}]|[^\\{}]+|\\/g;
+  for (const m of raw.matchAll(tokens)){
+    const part = stack[stack.length - 1];
+    if (m[1] && stack.length < 24){
+      pushText(part);
+      const child = {nodes: [], braces: 0, text: ''};
+      part.nodes.push({k: 'text', style: m[1], body: child.nodes});
+      stack.push(child);
+    } else if (m[2]) part.text += m[2];
+    else if (m[0] === '}' && !part.braces && stack.length > 1){
+      pushText(part); stack.pop();
+    } else {
+      if (m[0].endsWith('{')) part.braces++;
+      else if (m[0] === '}' && part.braces) part.braces--;
+      part.text += m[0];
+    }
+  }
+  for (const part of stack) pushText(part);
+  return stack[0].nodes;
 }
 const mathClass = n => (n.k === 'rel' || n.k === 'bin' || n.k === 'open' || n.k === 'close' || n.k === 'punct') ? n.k : (n.k === 'frac' || n.k === 'lr' || n.k === 'sqrt') ? 'inner' : 'ord';
 function mathLay(nodes, fs, st){
@@ -18038,7 +18299,9 @@ function mathBoxOf(node, fs, st){
     case 'text': {
       const style = node.style;
       const fam = style === 'texttt' ? 'mono' : style === 'mathrm' || style === 'rm' ? 'serif' : 'sans';
-      base = mathRun(node.s, mathFont(fs, style === 'textit', st.bold || style === 'textbf', fam), fs);
+      const bold = st.bold || style === 'textbf', textItalic = st.textItalic || style === 'textit';
+      base = node.body ? mathLay(node.body, fs, {...st, bold, textItalic})
+        : mathRun(node.s, mathFont(fs, textItalic, bold, fam), fs);
       if (style === 'underline'){
         const text = base;
         base = {...text, draw(c, x, y){ text.draw(c, x, y); c.fillRect(x, y + fs * 0.12, text.w, Math.max(1, fs * 0.052)); }};
