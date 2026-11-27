@@ -15786,6 +15786,13 @@ function moEditText(title, value, onSave, quick, energy, options = {}){
     h('p', {class: 'muted mohelp'}, board?.math ? 'Exemplos: \\frac{a}{b}, \\sqrt{x}, \\sigma^*_{2p}.'
       : 'Use $...$ ou \\( ... \\) para matemática em linha.'));
   modal(title, body, [h('button', {class: 'btn ghost', onclick: closeModal}, 'Cancelar'), h('button', {class: 'btn', onclick: ok}, 'Salvar')], 'wide');
+  if (typeof ResizeObserver !== 'undefined'){
+    const previewResize = new ResizeObserver(() => {
+      if (prev.isConnected) draw();
+      else previewResize.disconnect();
+    });
+    previewResize.observe(prev);
+  }
   requestAnimationFrame(() => {
     if (!inp.isConnected) return;
     const f = energy?.focus ? einp : inp;
