@@ -37,6 +37,15 @@ With **Select** or the **Lewis pen**, drag a formal or partial charge label to r
 
 Drag a lone pair with **Select** to move it around its atom. With the **Lewis pen**, hold **Shift** before you start dragging the pair to move it without a chemistry action. Use **Undo** to reverse the placement.
 
+## Show how bonds form
+
+<picture>
+  <source media="(prefers-reduced-motion: reduce)" srcset="docs/media/bond-formation-poster.png">
+  <img src="docs/media/bond-formation.gif" alt="Three ChemBoard animations show hydrogen atoms sharing an electron pair, sodium transferring an electron to chlorine, and delocalized electrons moving among sodium cations.">
+</picture>
+
+*H₂ shows a shared electron pair. Electron transfer produces Na⁺ and Cl⁻, which attract each other. In solid sodium, valence electrons are delocalized among the cations.*
+
 ## Draw carbon chains and add hydrogens
 
 - Press **Z** and drag on the board. The zigzag preview shows the carbon count before you release. Hold **Shift** to snap the direction in 15° steps. Drag from a carbon with an available valence to extend the structure, or choose **Insert by count…** for a chain of 2–80 carbons. New chains use skeletal notation by default.

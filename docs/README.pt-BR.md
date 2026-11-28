@@ -30,6 +30,15 @@ Com **Selecionar e mover** ou a **Caneta química**, arraste o rótulo de uma ca
 
 Com **Selecionar e mover**, arraste um par isolado ao redor de seu átomo. Na **Caneta química**, segure **Shift** antes de começar a arrastar o par para apenas reposicioná-lo. Use **Desfazer** para reverter o ajuste.
 
+## Formação de ligações
+
+<picture>
+  <source media="(prefers-reduced-motion: reduce)" srcset="media/bond-formation-poster.png">
+  <img src="media/bond-formation.gif" alt="Três animações do ChemBoard mostram dois hidrogênios compartilhando um par de elétrons, o sódio transferindo um elétron ao cloro e elétrons deslocalizados em movimento entre cátions de sódio.">
+</picture>
+
+*No H₂, dois átomos compartilham um par de elétrons. A transferência de um elétron produz Na⁺ e Cl⁻, que se atraem. No sódio sólido, os elétrons de valência ficam deslocalizados entre os cátions.*
+
 ## Desenhe cadeias carbônicas e adicione hidrogênios
 
 - Pressione **Z** e arraste no quadro. A prévia mostra o zigue-zague e a contagem de carbonos antes de soltar. Segure **Shift** para orientar a cadeia em passos de 15°. Arraste a partir de um carbono com valência livre para estender a estrutura ou use **Inserir por número…** para montar uma cadeia de 2 a 80 carbonos. As novas cadeias começam em fórmula de esqueleto.
