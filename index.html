@@ -258,6 +258,9 @@ body.dropping #dropHint{ display: grid; }
 .lecture h3{ margin: 0 0 4px; font-size: 16px; }
 .lecture p{ margin: 0; font-size: 13px; color: var(--ui-muted); line-height: 1.45; }
 .lecture .btn{ flex: none; margin-top: 2px; }
+.lecture-activities{ margin-top: 8px; font-size: 13px; }
+.lecture-activities summary{ width: fit-content; cursor: pointer; }
+.lecture-activity{ display: grid; justify-items: start; gap: 4px; margin: 8px 0 0 12px; }
 .celledit.textedit{ position: fixed; z-index: 50; background: transparent; border: 1.5px dashed var(--accent); border-radius: 4px; outline: none; resize: none; padding: 0 2px; margin: -2px 0 0 -3px; overflow: hidden; white-space: pre; min-width: 120px; }
 
 .board-text-editor{ position: fixed; z-index: 50; width: min(430px, calc(100vw - 16px)); display: grid; gap: 8px;
@@ -22489,16 +22492,16 @@ const LECTURES = [
   {id: 'solid-state-lattices', title: "Estado sólido · redes, células unitárias e as 14 redes de Bravais", pages: 15, startOnInsert: true,
     source: () => SOLID_LESSON, board: 'examples/ic677-estado-solido.json',
     desc: "Do padrão que se repete à rede de Bravais: rede e motivo, simetria de translação, escolha da célula unitária, as cinco redes planas e os sete sistemas cristalinos com a célula se deformando na tela; centragens P, C, I e F, por que são só 14 redes, contagem de átomos por célula, fração de empacotamento, camadas ABAB e ABCABC, buracos octaédricos e tetraédricos e as estruturas do NaCl, do CsCl e da blenda de zinco."},
-  {id: 'ic677-water-symmetry', title: 'IC677 · Água, simetria e matrizes', pages: 5, startOnInsert: true,
+  {id: 'ic677-water-symmetry', parent: 'symmetry-character-tables', title: 'IC677 · Água, simetria e matrizes', pages: 5, startOnInsert: true,
     source: () => IC677_WATER_SCENES,
     desc: 'Gire a molécula, compare cada plano de reflexão e calcule uma entrada da matriz por vez. Depois, teste a composição com o giro de 180° e compare a inversão na água e no SF₆.'},
-  {id: 'ic677-cubic-cells', title: 'IC677 · Três células cúbicas', pages: 4, startOnInsert: true,
+  {id: 'ic677-cubic-cells', parent: 'solid-state-lattices', title: 'IC677 · Três células cúbicas', pages: 4, startOnInsert: true,
     source: () => IC677_CUBIC_SCENES,
     desc: 'Gire as células, encontre o vértice compartilhado e observe o centro do corpo e a face em comum por meio de cortes. Compare os três centramentos lado a lado.'},
   {id: 'bohr-rydberg-pencil', title: 'O risco a lápis · Bohr–Rydberg', pages: 7, startOnInsert: true,
     build: () => insertScriptLecture(BOHR_RYDBERG_SCENES),
     desc: 'Marque 550 nm no espectro do hidrogênio e siga esse risco até os níveis de Bohr. Um paquímetro mede a energia dos fótons enquanto a turma testa a equação de Rydberg.'},
-  {id: 'hydrogen-steps', title: 'De Bohr a Rydberg · exercícios ao vivo', pages: 4, startOnInsert: true, build: () => {
+  {id: 'hydrogen-steps', parent: 'bohr-rydberg-pencil', title: 'De Bohr a Rydberg · exercícios ao vivo', pages: 4, startOnInsert: true, build: () => {
     const pages = buildLectureHydrogenSteps();
     S.doc.pages.splice(S.doc.cur + 1, 0, ...pages);
     return pages;
@@ -22511,6 +22514,11 @@ const LECTURES = [
   {id: 'cenas', title: 'Cenas: exemplos', pages: 5, startOnInsert: true, build: () => buildLectureScenes(),
    desc: 'Páginas que fazem o papel de slides: equações que se escrevem e se transformam (Arrhenius vira uma reta), moléculas e figuras que se desenham (ácido e base de Lewis), números que acompanham um gráfico que responde ao roteiro e à mão no controle deslizante (Maxwell–Boltzmann) e a câmera indo até um detalhe. Cada página guarda o roteiro que a montou: abra Roteiro da página… para ver e mudar.'},
 ];
+function lectureCatalog(){
+  return LECTURES.filter(lec => !lec.parent).map(lec => ({
+    lec, activities: LECTURES.filter(activity => activity.parent === lec.id),
+  }));
+}
 function fitLecturePage(){
   const t = viewForRect(0, 0, LEC_W, LEC_H), v = view();
   v.s = t.s; v.ox = t.ox; v.oy = t.oy; STOPAT.set(page().id, 0);
@@ -22686,11 +22694,20 @@ function openIC677SymmetryChapters(){
 }
 function openLectures(){
   const list = h('div', {});
-  for (const lec of LECTURES){
+  for (const {lec, activities} of lectureCatalog()){
+    const related = activities.length ? h('details', {class: 'lecture-activities'},
+      h('summary', {}, LANG === 'en' ? 'Related activities' : 'Atividades complementares'),
+      ...activities.map(activity => h('div', {class: 'lecture-activity'},
+        h('strong', {}, activity.title + ' · ' + activity.pages + ' ' + tt('páginas')),
+        h('p', {}, activity.desc),
+        h('button', {class: 'btn ghost', onclick: () => {
+          closeModal(); insertLectureUI(activity.id);
+        }}, LANG === 'en' ? 'Insert activity' : 'Inserir atividade')))) : null;
     list.appendChild(h('div', {class: 'lecture'},
       h('div', {style: {flex: '1'}}, h('h3', {}, lec.title), h('p', {}, lec.desc),
         h('p', {}, lec.pages + ' ' + tt('páginas') + (LANG === 'en' ? ', content in Portuguese' : '')),
-        lec.board ? h('a', {href:lec.board, download:''}, LANG === 'en' ? 'Download board (JSON)' : 'Baixar quadro (JSON)') : null),
+        lec.board ? h('a', {href:lec.board, download:''}, LANG === 'en' ? 'Download board (JSON)' : 'Baixar quadro (JSON)') : null,
+        related),
       h('button', {class: 'btn', onclick: () => { closeModal(); insertLectureUI(lec.id); }}, 'Inserir no quadro')));
   }
   list.appendChild(h('p', {class: 'chhelp'}, 'A aula entra em páginas novas depois da página ou da sequência de cenas atual.'));
@@ -27313,10 +27330,13 @@ function apiPresentation(){
       ...(o.stPlay ? {animate: o.stPlay.slice()} : {}), ...(o.stDim ? {dim: o.stDim.slice()} : {})}))};
 }
 function defineAnimTools(){
-  defTool('list_lectures', 'List the bundled ready-made lectures, their Portuguese content, and pages already inserted in this board. Read-only.', {}, () => ({
-    lectures: LECTURES.map(l => ({id: l.id, title: l.title, description: l.desc, pages: l.pages, language: 'pt',
-      inserted_pages: S.doc.pages.flatMap((p, index) => p.lec === l.id ? [{index, id: p.id, name: p.name}] : [])}))
-  }), {mutates: false});
+  defTool('list_lectures', 'List the bundled ready-made lectures with their related activities and pages already inserted in this board. Read-only.', {}, () => {
+    const describe = l => ({id: l.id, title: l.title, description: l.desc, pages: l.pages, language: 'pt',
+      inserted_pages: S.doc.pages.flatMap((p, index) => p.lec === l.id ? [{index, id: p.id, name: p.name}] : [])});
+    return {lectures: lectureCatalog().map(({lec, activities}) => ({
+      ...describe(lec), ...(activities.length ? {activities: activities.map(describe)} : {}),
+    }))};
+  }, {mutates: false});
   defTool('insert_lecture', 'Insert a bundled lecture as editable new pages after the current page or scene sequence. Existing board content is kept. If the current edition of the lecture is already present, go to its first page instead; set another_copy: true to insert an additional copy. Page insertion follows the page UI and is not covered by object undo.',
     {id: str('Bundled lecture id; use list_lectures', {enum: LECTURES.map(l => l.id)}), another_copy: bool('Explicitly insert an additional copy when the lecture is already present (default false)')}, async a => {
       const lec = LECTURES.find(l => l.id === a.id);

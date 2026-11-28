@@ -94,14 +94,13 @@ Press **J** to open the assistant. The local companion works with ChatGPT throug
 
 ## Teaching examples
 
-Open **Menu → Ready-made lectures** (**Aulas prontas**) and insert a lecture after the current page. Each lecture is editable and its teaching material is in Portuguese.
+Open **Menu → Ready-made lectures** (**Aulas prontas**) and insert a lecture after the current page. Expand **Related activities** within a lecture to insert a shorter activity or a set of exercises. All teaching material is editable and in Portuguese.
 
 | Lecture | A place to start | Editable board |
 | --- | --- | --- |
 | **Animations: examples** · 8 pages | Open the reaction page, double-click the methane combustion panel with the Hand tool, then press **→** to begin. Advance through the reactants and products. Later pages build MO diagrams and animate orbital overlap and curved-arrow mechanisms. | [Download JSON](https://henriquecsj.github.io/chemboard/examples/animation-examples.json) · [Reaction page overview](docs/images/reaction-lesson.png) |
 | **Intermolecular interactions** · 9 pages | Start with the moving solid, liquid, and gas models. Advance to compare ion–dipole, dipole–dipole, induced-dipole, London dispersion, and hydrogen-bonding examples. | [Download JSON](https://henriquecsj.github.io/chemboard/examples/intermolecular-interactions.json) |
-| **From Bohr to Rydberg** · 4 pages | Advance the derivation one equation at a time. On the Balmer page, drag the marker to choose the initial level. The other pages work through the photon energy and copper deposition. | Insert from **Ready-made lectures** |
-| **O risco a lápis · Bohr–Rydberg** · 7 scenes | Ask why 550 nm sits between two Balmer lines. The spectrum, the pencil mark, and an energy caliper carry across scenes as the class derives Rydberg’s formula and tests that wavelength. | [Scene source](examples/bohr-rydberg.chemboard) · **Ready-made lectures** |
+| **O risco a lápis · Bohr–Rydberg** · 7 scenes | Ask why 550 nm sits between two Balmer lines. The spectrum, pencil mark, and energy caliper carry across scenes. The related activity adds a draggable Balmer graph and worked problems on photon energy and copper deposition. | [Scene source](examples/bohr-rydberg.chemboard) · **Ready-made lectures** |
 | **Cenas: exemplos** · 5 pages | Watch Arrhenius equations transform, trace a Lewis acid–base reaction, and vary a Maxwell–Boltzmann graph whose labels update live. | [Download JSON](examples/scene-examples.json) · **Ready-made lectures** |
 
 ![The first page of the intermolecular interactions lecture, with moving particle models above a comparison table.](docs/images/intermolecular-lesson.png)
@@ -114,10 +113,8 @@ Open **Menu → Ready-made lectures** to insert an editable copy. When presentin
 
 | Lecture | What it covers | Files |
 | --- | --- | --- |
-| **Molecular symmetry** · 48 scenes, 225 cues | Start with symmetry elements and point groups, then move through matrices and character tables to spectroscopy and vibrational modes. Five passages carry models, matrices or equations across scenes. | [Board JSON](https://henriquecsj.github.io/chemboard/examples/ic677-simetria-molecular.json) · [Scene source](examples/ic677-simetria-molecular.chemboard) |
-| **Solid state** · 15 scenes, 71 cues | Build unit cells from repeating patterns, compare the Bravais lattices, and explore packing, voids and crystal structures. | [Board JSON](https://henriquecsj.github.io/chemboard/examples/ic677-estado-solido.json) · [Scene source](examples/ic677-estado-solido.chemboard) |
-| **Water and symmetry matrices** · 5 scenes | Follow the molecular operations and their matrix representations. | [Scene source](examples/ic677-simetria-agua.chemboard) |
-| **Cubic cells** · 4 scenes | Compare primitive, body-centred and face-centred cubic cells. | [Scene source](examples/ic677-celulas-cubicas.chemboard) |
+| **Molecular symmetry** · 48 scenes, 225 cues | Start with symmetry elements and point groups, then move through matrices and character tables to spectroscopy and vibrational modes. The related activity works through the symmetry matrices for water. | [Board JSON](https://henriquecsj.github.io/chemboard/examples/ic677-simetria-molecular.json) · [Scene source](examples/ic677-simetria-molecular.chemboard) · [Water activity source](examples/ic677-simetria-agua.chemboard) |
+| **Solid state** · 15 scenes, 71 cues | Build unit cells from repeating patterns, compare the Bravais lattices, and explore packing, voids and crystal structures. The related activity compares the three cubic cells side by side. | [Board JSON](https://henriquecsj.github.io/chemboard/examples/ic677-estado-solido.json) · [Scene source](examples/ic677-estado-solido.chemboard) · [Cubic cells activity source](examples/ic677-celulas-cubicas.chemboard) |
 
 Open a board JSON in **Menu → Open board…**. To read or edit a standalone `.chemboard` file, choose **Menu → Animation script… → Open file…**.
 

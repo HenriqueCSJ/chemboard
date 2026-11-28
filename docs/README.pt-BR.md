@@ -84,12 +84,14 @@ Pressione **J** para abrir o assistente. O conector local serve ao ChatGPT via S
 
 ## Aulas de exemplo
 
-Abra **Menu → Aulas prontas** e escolha uma aula. As páginas entram depois da página atual e ficam editáveis.
+Abra **Menu → Aulas prontas** e escolha uma aula. As páginas entram depois da página atual e ficam editáveis. Na ficha de uma aula, abra **Atividades complementares** para inserir uma demonstração curta ou uma sequência de exercícios.
 
 | Aula | Experimente | Quadro editável |
 | --- | --- | --- |
 | **Animações: exemplos** · 8 páginas | Vá à página de reações e, com a ferramenta Mão, dê um duplo clique no painel de combustão do metano. Pressione **→** para começar e avance dos reagentes aos produtos. | [Baixar JSON](https://henriquecsj.github.io/chemboard/examples/animation-examples.json) · [Vista geral da página de reações](images/reaction-lesson.png) |
 | **Interações intermoleculares** · 9 páginas | Compare os modelos de sólido, líquido e gás e avance para os exemplos de cada interação. | [Baixar JSON](https://henriquecsj.github.io/chemboard/examples/intermolecular-interactions.json) |
+| **O risco a lápis · Bohr–Rydberg** · 7 cenas | Investigue por que a marca de 550 nm cai entre duas linhas de Balmer. A atividade complementar inclui um gráfico interativo da série e problemas resolvidos de energia do fóton e deposição de cobre. | [Roteiro](../examples/bohr-rydberg.chemboard) · **Aulas prontas** |
+| **Cenas: exemplos** · 5 páginas | Acompanhe a transformação da equação de Arrhenius, o traçado de uma reação ácido–base de Lewis e um gráfico de Maxwell–Boltzmann cujos valores respondem ao controle deslizante. | [Baixar JSON](../examples/scene-examples.json) |
 
 ![Página de interações intermoleculares com três modelos de partículas e uma tabela comparando os estados físicos.](images/intermolecular-lesson.png)
 
@@ -101,10 +103,8 @@ Abra **Menu → Aulas prontas** para inserir uma cópia editável. Ao apresentar
 
 | Aula | O que explorar | Arquivos |
 | --- | --- | --- |
-| **Simetria molecular** · 48 cenas e 225 passos | Identifique elementos e grupos pontuais, depois passe por matrizes e tabelas de caracteres até chegar a espectroscopia e modos vibracionais. Cinco passagens mantêm modelos, matrizes ou equações na transição entre cenas. | [Quadro JSON](https://henriquecsj.github.io/chemboard/examples/ic677-simetria-molecular.json) · [Roteiro](../examples/ic677-simetria-molecular.chemboard) |
-| **Estado sólido** · 15 cenas e 71 passos | Construa células unitárias a partir de padrões que se repetem, compare as redes de Bravais e explore empacotamento, interstícios e estruturas cristalinas. | [Quadro JSON](https://henriquecsj.github.io/chemboard/examples/ic677-estado-solido.json) · [Roteiro](../examples/ic677-estado-solido.chemboard) |
-| **Água e matrizes de simetria** · 5 cenas | Acompanhe as operações da molécula e suas representações matriciais. | [Roteiro](../examples/ic677-simetria-agua.chemboard) |
-| **Células cúbicas** · 4 cenas | Compare células cúbicas primitivas, de corpo centrado e de faces centradas. | [Roteiro](../examples/ic677-celulas-cubicas.chemboard) |
+| **Simetria molecular** · 48 cenas e 225 passos | Identifique elementos e grupos pontuais, depois passe por matrizes e tabelas de caracteres até chegar a espectroscopia e modos vibracionais. A atividade complementar detalha as operações de simetria da água e suas matrizes. | [Quadro JSON](https://henriquecsj.github.io/chemboard/examples/ic677-simetria-molecular.json) · [Roteiro](../examples/ic677-simetria-molecular.chemboard) · [Roteiro da atividade com água](../examples/ic677-simetria-agua.chemboard) |
+| **Estado sólido** · 15 cenas e 71 passos | Construa células unitárias a partir de padrões que se repetem, compare as redes de Bravais e explore empacotamento, interstícios e estruturas cristalinas. A atividade complementar compara as três células cúbicas lado a lado. | [Quadro JSON](https://henriquecsj.github.io/chemboard/examples/ic677-estado-solido.json) · [Roteiro](../examples/ic677-estado-solido.chemboard) · [Roteiro da atividade com células cúbicas](../examples/ic677-celulas-cubicas.chemboard) |
 
 Abra um quadro JSON em **Menu → Abrir quadro…**. Para ler ou editar um arquivo `.chemboard`, use **Menu → Roteiro de animação… → Abrir arquivo…**.
 
@@ -118,17 +118,11 @@ Abra um quadro JSON em **Menu → Abrir quadro…**. Para ler ou editar um arqui
 
 Para mover uma fórmula ou forma durante a aula, selecione a posição inicial e depois a final. Clique com o botão direito em um dos objetos e escolha **Mover entre passos…**. Em duas fórmulas, clique no termo de origem e no correspondente de destino nas prévias. Na apresentação, **→** ou **PgDn** aciona o movimento no passo escolhido.
 
-Em **Aulas prontas → De Bohr a Rydberg · exercícios ao vivo**, avance cada etapa da dedução com o teclado. Na página de Balmer, arraste o marcador do gráfico para mudar o nível inicial durante a exposição.
-
-Abra **Aulas prontas → Cenas: exemplos** para explorar cinco páginas com fórmulas que se transformam, traçado de moléculas e figuras, contagem e um gráfico de Maxwell–Boltzmann com valores que acompanham o controle deslizante. [Quadro editável](../examples/scene-examples.json)
-
 ### Roteiro da página
 
 Use **Menu → Roteiro da página…** para escrever efeitos em português ou inglês. Você pode nomear um desenho no menu de contexto, posicionar objetos uns em relação aos outros, transformar formas, animar números e vinculá-los a gráficos. **Aplicar** registra uma edição que pode ser desfeita com **Ctrl+Z**, incluindo os objetos, o roteiro e o enquadramento. Durante a apresentação, a caneta e o marca-texto anotam apenas o passo atual. Use a barra de passos para limpar essas anotações durante a sessão. [Referência de comandos](scenes.md)
 
 ### Roteiro de animação
-
-Abra **Aulas prontas → O risco a lápis · Bohr–Rydberg** e peça à turma que teste um palpite para a série de Balmer. O lápis marca 550 nm entre duas linhas do espectro. A faixa e o paquímetro de energia passam de uma cena à próxima enquanto a turma deduz a expressão de Rydberg e descobre onde teria de estar o estado inicial.
 
 Abra **Menu → Roteiro de animação…** para criar uma aula do zero. Cada `cena` define uma página de 2400 × 1350 unidades, com origem no canto superior esquerdo. Declare o fundo, os textos, as fórmulas e o diagrama antes do primeiro `passo`. Cada passo espera **→** ou **PgDn**. Use **←** ou **PgUp** para voltar. As ações começam juntas, exceto quando uma usa `depois` para aguardar alguns milissegundos.
 

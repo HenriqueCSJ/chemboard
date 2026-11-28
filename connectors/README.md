@@ -86,7 +86,7 @@ Start with `get_board` for object IDs, the current selection, lock owners, and d
 | Compare elements on the board | `add_periodic_table` carries property labels with `color_by`. Use `update_periodic_table` to switch properties, emphasize one cell, or extract a movable tile. |
 | Rotate or lock objects | `rotate_objects` takes a signed angle in degrees. `set_object_lock` reports the owner of an inherited lock. |
 | Change Pen and Shapes defaults | `set_board` takes `pen_smoothing`, `shape_recognition`, and `constrain_shapes`. Use `add_ink` options to control a single tool-generated stroke. |
-| Open a sample lecture | `list_lectures`, `insert_lecture`. Insertion reuses an existing copy unless `another_copy` is true. |
+| Open a sample lecture | `list_lectures` groups related examples in the parent lecture's `activities` array. Pass the lecture or activity ID to `insert_lecture`. Insertion reuses an existing copy unless `another_copy` is true. |
 | Inspect or navigate a presentation | `get_presentation`, `add_camera_stop`, `go_to_camera_stop`. Stop indices are zero-based. |
 | Read or edit a page script | `get_page_script` returns the script, object names, and syntax reference. `name_objects` names existing objects. `set_page_script` applies a complete script and reports syntax errors by line. |
 
