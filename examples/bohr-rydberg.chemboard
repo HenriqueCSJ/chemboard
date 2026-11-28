@@ -1,0 +1,430 @@
+// ChemBoard · Bohr e Rydberg · O risco a lápis
+// Hidrogênio-1. Modelo coulombiano não relativístico com massa reduzida elétron–próton.
+// R_H = R∞/(1 + m_e/m_p) = 10 967 758,3403 m⁻¹. hcR_H = 13,598287 eV.
+// Posições das linhas calculadas no vácuo; cada retângulo é uma janela linear em λ.
+// O espectro idealizado representa as posições. Todas as marcas de emissão têm altura igual.
+// Energia linear e crescente para cima. O paquímetro mede uma diferença de energia.
+// O deslocamento é de um instrumento gráfico. Emissões são entre estados discretos.
+// A ponteira de lápis marca um teste em 550 nm e permanece do lado de fora do espectro.
+// No último ato, a anotação no papel marca o limite da série. Abaixo de 400 nm usam-se traços esquemáticos.
+// Os perfis senoidais representam três períodos em uma escala espacial comum para a comparação 3→2 / 4→2.
+// Fontes: NIST, https://physics.nist.gov/Pubs/AtSpec/node01.html
+// CODATA 2022, https://physics.nist.gov/cuu/pdf/RevModPhys.97.025002.pdf
+// Tabela de comparação observacional no ar, https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable2.htm
+
+cena "O risco a lápis" fundo #F3EFE4
+texto origem 145 67 42 #485D5B "Luz do hidrogênio  ·  série de Balmer"
+texto pergunta 140 145 100 #172F32 "Cabe outra linha entre estas duas?" negrito
+retangulo filme 150 504 2100 335 1 #162E34 cheio
+linha alfa 1884.34 822 1884.34 521 16 #FF8378
+linha beta 454.7 822 454.7 521 16 #69D5D8
+caminho lapis 6.55 #172F32 "990,501 1001.3,449.02 1078.14,333.76 1105.26,351.84 1029.55,467.1 990,501" oculto
+caminho chanfro 4.29 #172F32 "1001.3,449.02 1013.73,453.54 1017.12,456.93 1029.55,467.1" oculto
+caminho grafite 6.78 #172F32 "990,501 994.52,481.79 1004.69,488.57 990,501" oculto
+texto alvo 1120.91 346.19 49.72 #172F32 "550 nm" negrito oculto
+linha t450 150 842 150 860 3.6 #485D5B
+texto v450 150 871 38 #485D5B "450" centro
+linha t500 570 842 570 860 3.6 #485D5B
+texto v500 570 871 38 #485D5B "500" centro
+linha t600 1410 842 1410 860 3.6 #485D5B
+texto v600 1410 871 38 #485D5B "600" centro
+linha t650 1830 842 1830 860 3.6 #485D5B
+texto v650 1830 871 38 #485D5B "650" centro
+linha t700 2250 842 2250 860 3.6 #485D5B
+texto v700 2250 871 38 #485D5B "700" centro
+linha t550 990 842 990 860 3.6 #485D5B
+texto unid 2175 952 38 #485D5B "λ no vácuo / nm" centro
+texto desafio 145 1085 63 #172F32 "Quais dois estados produziriam luz de 550 nm?" negrito oculto
+texto recorte 145 1215 35 #485D5B "Linhas idealizadas entre 450 e 700 nm."
+passo "Marque a lápis uma possível linha verde de 550 nm"
+traçar lapis 950
+traçar chanfro 450 depois 600
+traçar grafite 450 depois 620
+mostrar alvo
+mostrar desafio
+
+cena "O que os bicos medem" fundo #F3EFE4
+retangulo filme 1250 814 975 165 1 #162E34 cheio
+linha alfa 2055.23 964.98 2055.23 828.02 9.9 #FF8378
+linha beta 1391.47 964.98 1391.47 828.02 9.9 #69D5D8
+caminho lapis 4 #172F32 "1640,811 1645.8,784.32 1685.24,725.16 1699.16,734.44 1660.3,793.6 1640,811"
+caminho chanfro 3 #172F32 "1645.8,784.32 1652.18,786.64 1653.92,788.38 1660.3,793.6"
+caminho grafite 4 #172F32 "1640,811 1642.32,801.14 1647.54,804.62 1640,811"
+texto alvo 1712.06 731.54 32 #172F32 "550 nm" negrito
+linha nivel0 355 325 863 325 3.6 #788986
+texto rot0 142 295.52 41 #485D5B "0 eV"
+linha nivel4 355 478.83 863 478.83 4.8 #172F32
+texto rot4 142 448.91 44 #172F32 "n = 4"
+texto valor4 370 420.83 35 #485D5B "−0,850 eV"
+linha nivel3 355 598.48 863 598.48 4.8 #172F32
+texto rot3 142 568.56 44 #172F32 "n = 3"
+texto valor3 370 540.48 35 #485D5B "−1,511 eV"
+linha nivel2 355 940.32 863 940.32 5.5 #172F32
+texto rot2 142 910.4 44 #172F32 "n = 2"
+texto valor2 370 882.32 35 #485D5B "−3,400 eV"
+linha trilho 1040 312.52 1040 976.72 4.5 #788986
+caminho bicoFixo 6.03 #975416 "859,940.32 894.36,952.8 1053.52,952.8 1053.52,927.84 1025.44,927.84 1025.44,940.32 859,940.32"
+linha abertura 1040 938.24 1040 940.32 10.4 #975416
+caminho bicoMovel 6.03 #975416 "859,940.32 894.36,927.84 1053.52,927.84 1053.52,952.8 1025.44,952.8 1025.44,940.32 859,940.32"
+circulo parafuso 1040 940.32 8.84 2 #975416 cheio
+linha aberturaTres 1040 596.4 1040 940.32 10.4 #975416 oculto
+caminho bicoMovelTres 6.03 #975416 "859,598.48 894.36,586 1053.52,586 1053.52,610.96 1025.44,610.96 1025.44,598.48 859,598.48" oculto
+circulo parafusoTres 1040 598.48 8.84 2 #975416 cheio oculto
+texto titulo 137 72 80 #172F32 "Quanta energia sai do átomo?" negrito
+texto legenda0 355 239 34 #485D5B "Elétron e próton separados"
+texto janela 143 1012 34 #485D5B "O nível n = 1 fica abaixo, em −13,598 eV."
+formula lei 1715 223 64 #172F32 "\\term{en}{E_n}=-\\frac{\\term{hc}{hc}\\,\\term{RH}{R_H}}{\\term{nivel}{n^2}}" centro
+texto leiNome 1250 163 38 #485D5B "Níveis de Bohr para o hidrogênio"
+texto inteiros 1250 409 41 #172F32 "n só assume valores inteiros positivos."
+texto constantes 1250 468 33 #485D5B "h é a constante de Planck. c é a velocidade da luz."
+texto rydDef 1250 521 33 #485D5B "$R_H$ é a constante de Rydberg do hidrogênio-1."
+formula conta 1715 457 69 #172F32 "\\term{luz}{E_\\gamma}=\\term{ini}{E_3}-\\term{fim}{E_2}" centro oculto
+formula contaGap 1715 457 62 #A83A36 "\\term{luz}{E_\\gamma}=\\term{ini}{E_3}-\\term{fim}{E_2}=1{,}889\\;\\mathrm{eV}" centro oculto
+texto cmd1 144 1137 51 #172F32 "Segure o bico de baixo em n = 2. Abra o outro até n = 3."
+texto cmd2 144 1137 51 #172F32 "Leia as duas energias. Quanto o átomo perde ao passar de 3 para 2?" oculto
+texto cmd3 144 1137 51 #172F32 "O fóton leva os 1,889 eV que o átomo perdeu." oculto
+transicao 1750 filme alfa beta lapis chanfro grafite alvo
+passo "Prenda um bico em n = 2 e abra o outro até n = 3"
+transformar bicoMovel bicoMovelTres 1450
+transformar abertura aberturaTres 1450
+transformar parafuso parafusoTres 1450
+mostrar conta
+ocultar constantes
+ocultar rydDef
+ocultar cmd1
+mostrar cmd2
+passo "Subtraia energia final da inicial para obter a energia do fóton"
+transformar conta contaGap 1250
+ocultar cmd2
+mostrar cmd3
+
+cena "Uma abertura, duas leituras" fundo #F3EFE4
+retangulo filme 155 1070 2090 92 1 #162E34 cheio
+linha alfa 1881.09 1154.18 1881.09 1077.82 7 #FF8378
+linha beta 458.25 1154.18 458.25 1077.82 7 #69D5D8
+caminho lapis 4 #172F32 "991,1067 995.8,1044.92 1028.44,995.96 1039.96,1003.64 1007.8,1052.6 991,1067"
+caminho chanfro 3 #172F32 "995.8,1044.92 1001.08,1046.84 1002.52,1048.28 1007.8,1052.6"
+caminho grafite 4 #172F32 "991,1067 992.92,1058.84 997.24,1061.72 991,1067"
+texto alvo 1052.36 1001.24 32 #172F32 "550 nm" negrito
+linha nivel0 282 382 602 382 3.6 #788986
+texto rot0 137 357.88 33 #485D5B "0 eV"
+linha nivel4 282 490.79 602 490.79 4.8 #172F32
+texto rot4 137 466.31 36 #172F32 "n = 4"
+linha nivel3 282 575.4 602 575.4 4.8 #172F32
+texto rot3 137 550.92 36 #172F32 "n = 3"
+linha nivel2 282 817.15 602 817.15 5.5 #172F32
+texto rot2 137 792.67 36 #172F32 "n = 2"
+linha trilho 722 372.4 722 845.15 4.5 #788986
+caminho bicoFixo 4.64 #975416 "598,817.15 625.2,826.75 732.4,826.75 732.4,807.55 710.8,807.55 710.8,817.15 598,817.15"
+linha abertura 722 573.8 722 817.15 8 #975416
+caminho bicoMovel 4.64 #975416 "598,575.4 625.2,565.8 732.4,565.8 732.4,585 710.8,585 710.8,575.4 598,575.4"
+circulo parafuso 722 575.4 6.8 2 #975416 cheio
+texto titulo 137 72 82 #172F32 "Como se lê a mesma abertura na luz?" negrito
+texto caso 140 259 38 #485D5B "Uma emissão de 3 para 2"
+formula lei 1540 732 53 #485D5B "\\term{en}{E_n}=-\\frac{\\term{hc}{hc}\\,\\term{RH}{R_H}}{\\term{nivel}{n^2}}" centro
+formula conta 1540 352 90 #172F32 "\\term{luz}{E_\\gamma}=\\term{ini}{E_i}-\\term{fim}{E_f}" centro
+formula bohr 1540 320 76 #172F32 "\\term{luz}{E_\\gamma}=-\\frac{\\term{hci}{hc}\\,\\term{RHi}{R_H}}{\\term{ni}{n_i^2}}+\\frac{\\term{hc}{hc}\\,\\term{RH}{R_H}}{\\term{nf}{n_f^2}}" centro oculto
+formula fisica 1540 316 74 #172F32 "\\frac{\\term{hcrad}{hc}}{\\term{lambda}{\\lambda}}=\\term{hc}{hc}\\,\\term{RH}{R_H}\\left(\\frac{1}{\\term{nf}{n_f^2}}-\\frac{1}{\\term{ni}{n_i^2}}\\right)" centro oculto
+formula rydberg 1540 320 87 #172F32 "\\frac{1}{\\term{lambda}{\\lambda}}=\\term{RH}{R_H}\\left(\\frac{1}{\\term{nf}{n_f^2}}-\\frac{1}{\\term{ni}{n_i^2}}\\right)" centro oculto
+texto alfa0 1540 595 44 #172F32 "i indica o nível inicial. f indica o final." centro
+texto alfa1 1540 595 43 #172F32 "Subtrair uma energia negativa dá o termo positivo." centro oculto
+texto alfa2 1540 595 42 #172F32 "A luz de comprimento de onda λ leva energia hc/λ." centro oculto
+texto alfa3 1540 595 48 #172F32 "Ao cancelar hc, resta a equação de Rydberg." centro oculto
+texto constR 1540 782 39 #485D5B "$R_H$ = 1,096775834 × 10⁷ m⁻¹" centro oculto
+transicao 1750 filme alfa beta lapis chanfro grafite alvo nivel0 nivel2 nivel3 nivel4 rot0 rot2 rot3 rot4 trilho bicoFixo abertura bicoMovel parafuso conta lei
+passo "Escreva as duas energias do modelo de Bohr"
+transformar conta bohr 1550
+ocultar alfa0
+mostrar alfa1
+passo "Iguale a energia liberada a hc sobre o comprimento de onda"
+transformar conta fisica 1650
+ocultar alfa1
+mostrar alfa2
+ocultar lei
+passo "Cancele hc para obter a equação de Rydberg"
+transformar conta rydberg 1550
+ocultar alfa2
+mostrar alfa3
+mostrar constR
+
+cena "Reconhecer o vermelho" fundo #F3EFE4
+retangulo filme 150 365 2100 187 1 #162E34 cheio
+linha alfa 1884.34 536.11 1884.34 380.89 11.22 #FF8378
+linha beta 454.7 536.11 454.7 380.89 11.22 #69D5D8
+caminho lapis 4.35 #172F32 "990,362 997.5,327.5 1048.5,251 1066.5,263 1016.25,339.5 990,362"
+caminho chanfro 3 #172F32 "997.5,327.5 1005.75,330.5 1008,332.75 1016.25,339.5"
+caminho grafite 4.5 #172F32 "990,362 993,349.25 999.75,353.75 990,362"
+texto alvo 1080.25 259.25 33 #172F32 "550 nm" negrito
+texto nomeAlfa 1884.34 567 39 #A83A36 "Hα  ·  656,47 nm" centro negrito oculto
+linha nivel0 284 710 594 710 3.6 #788986
+texto rot0 140 686.55 32 #485D5B "0 eV"
+linha nivel4 284 793.29 594 793.29 4.8 #172F32
+texto rot4 140 769.49 35 #172F32 "n = 4"
+linha nivel3 284 858.07 594 858.07 4.8 #172F32
+texto rot3 140 834.27 35 #172F32 "n = 3"
+linha nivel2 284 1043.16 594 1043.16 5.5 #172F32
+texto rot2 140 1019.36 35 #172F32 "n = 2"
+linha trilho 718 700.64 718 1070.46 4.5 #788986
+caminho bicoFixo 4.52 #975416 "590,1043.16 616.52,1052.52 728.14,1052.52 728.14,1033.8 707.08,1033.8 707.08,1043.16 590,1043.16"
+linha abertura 718 856.51 718 1043.16 7.8 #975416
+caminho bicoMovel 4.52 #975416 "590,858.07 616.52,848.71 728.14,848.71 728.14,867.43 707.08,867.43 707.08,858.07 590,858.07"
+circulo parafuso 718 858.07 6.63 2 #975416 cheio
+texto titulo 140 68 79 #172F32 "Onde cai a luz de 3 para 2?" negrito
+formula conta 1525 647 83 #172F32 "\\frac{1}{\\term{lambda}{\\lambda}}=\\term{RH}{R_H}\\left(\\frac{1}{\\term{nf}{2^2}}-\\frac{1}{\\term{ni}{3^2}}\\right)" centro
+formula fracao 1525 650 76 #172F32 "\\frac{1}{\\term{lambda}{\\lambda}}=\\frac{5\\,\\term{RH}{R_H}}{36}=1{,}52330\\times 10^6\\;\\mathrm{m}^{-1}" centro oculto
+formula vermelho 1525 651 85 #A83A36 "\\term{lambda}{\\lambda}=\\frac{36}{5\\,\\term{RH}{R_H}}=\\term{vermelho}{656{,}47}\\;\\mathrm{nm}" centro oculto
+texto constR 1525 914 39 #485D5B "$R_H$ = 1,096775834 × 10⁷ m⁻¹" centro
+texto inverta 1525 875 41 #172F32 "A unidade é m⁻¹. Inverta para obter um comprimento." centro oculto
+texto rede 1525 875 45 #A83A36 "A linha vermelha é Hα." centro negrito oculto
+linha eixoOnda 1070 1060 2180 1060 3.8 #788986 oculto
+caminho onda 8 #A83A36 "1145,1023 1156.5,1024.26 1168,1027.96 1179.5,1033.84 1191,1041.5 1202.5,1050.42 1214,1060 1225.5,1069.58 1237,1078.5 1248.5,1086.16 1260,1092.04 1271.5,1095.74 1283,1097 1294.5,1095.74 1306,1092.04 1317.5,1086.16 1329,1078.5 1340.5,1069.58 1352,1060 1363.5,1050.42 1375,1041.5 1386.5,1033.84 1398,1027.96 1409.5,1024.26 1421,1023 1432.5,1024.26 1444,1027.96 1455.5,1033.84 1467,1041.5 1478.5,1050.42 1490,1060 1501.5,1069.58 1513,1078.5 1524.5,1086.16 1536,1092.04 1547.5,1095.74 1559,1097 1570.5,1095.74 1582,1092.04 1593.5,1086.16 1605,1078.5 1616.5,1069.58 1628,1060 1639.5,1050.42 1651,1041.5 1662.5,1033.84 1674,1027.96 1685.5,1024.26 1697,1023 1708.5,1024.26 1720,1027.96 1731.5,1033.84 1743,1041.5 1754.5,1050.42 1766,1060 1777.5,1069.58 1789,1078.5 1800.5,1086.16 1812,1092.04 1823.5,1095.74 1835,1097 1846.5,1095.74 1858,1092.04 1869.5,1086.16 1881,1078.5 1892.5,1069.58 1904,1060 1915.5,1050.42 1927,1041.5 1938.5,1033.84 1950,1027.96 1961.5,1024.26 1973,1023" oculto
+caminho periodo 5 #A83A36 "1145,1117 1145,1132 1421,1132 1421,1117" oculto
+transicao 1750 filme alfa beta lapis chanfro grafite alvo nivel0 nivel2 nivel3 nivel4 rot0 rot2 rot3 rot4 trilho bicoFixo abertura bicoMovel parafuso conta constR
+passo "Calcule um quarto menos um nono e leia a unidade do resultado"
+transformar conta fracao 1500
+ocultar constR
+mostrar inverta
+passo "Inverta o número de onda e encontre Hα"
+transformar conta vermelho 1450
+ocultar inverta
+mostrar rede
+mostrar nomeAlfa
+mostrar eixoOnda
+traçar onda 1080 depois 260
+traçar periodo 700 depois 610
+
+cena "Uma partida mais alta" fundo #F3EFE4
+retangulo filme 1220 879 1010 132 1 #162E34 cheio
+linha alfa 2054.14 999.78 2054.14 890.22 7.92 #FF8378
+linha beta 1366.55 999.78 1366.55 890.22 7.92 #69D5D8
+caminho lapis 4 #172F32 "1624,876 1629,853 1663,802 1675,810 1641.5,861 1624,876"
+caminho chanfro 3 #172F32 "1629,853 1634.5,855 1636,856.5 1641.5,861"
+caminho grafite 4 #172F32 "1624,876 1626,867.5 1630.5,870.5 1624,876"
+texto alvo 1687.5 807.5 32 #172F32 "550 nm" negrito
+texto nomeAlfa 2054.14 1028 33 #A83A36 "Hα  ·  656,47 nm" centro negrito
+texto nomeBeta 1366.55 1028 33 #086875 "Hβ  ·  486,27 nm" centro negrito oculto
+linha nivel0 304 306 754 306 3.6 #788986
+texto rot0 139 278.53 38 #485D5B "0 eV"
+linha nivel4 304 451.33 754 451.33 4.8 #172F32
+texto rot4 139 423.45 41 #172F32 "n = 4"
+linha nivel3 304 564.37 754 564.37 4.8 #172F32
+texto rot3 139 536.49 41 #172F32 "n = 3"
+linha nivel2 304 887.33 754 887.33 5.5 #172F32
+texto rot2 139 859.45 41 #172F32 "n = 2"
+linha trilho 920 294.48 920 920.93 4.5 #788986
+caminho bicoFixo 5.57 #975416 "750,887.33 782.64,898.85 932.48,898.85 932.48,875.81 906.56,875.81 906.56,887.33 750,887.33"
+linha abertura 920 562.45 920 887.33 9.6 #975416
+caminho bicoMovel 5.57 #975416 "750,564.37 782.64,552.85 932.48,552.85 932.48,575.89 906.56,575.89 906.56,564.37 750,564.37"
+circulo parafuso 920 564.37 8.16 2 #975416 cheio
+linha aberturaQuatro 920 449.41 920 887.33 9.6 #975416 oculto
+caminho bicoMovelQuatro 5.57 #975416 "750,451.33 782.64,439.81 932.48,439.81 932.48,462.85 906.56,462.85 906.56,451.33 750,451.33" oculto
+circulo parafusoQuatro 920 451.33 8.16 2 #975416 cheio oculto
+texto titulo 138 67 87 #172F32 "A onda estica ou encolhe?" negrito
+texto pergunta 140 185 45 #172F32 "Mantenha a chegada em n = 2. Mude a partida para n = 4."
+linha eixoOnda 1150 402 2210 402 4 #788986
+caminho onda 8 #A83A36 "1190,347 1202.62,348.87 1215.25,354.37 1227.88,363.11 1240.5,374.5 1253.12,387.76 1265.75,402 1278.38,416.24 1291,429.5 1303.62,440.89 1316.25,449.63 1328.88,455.13 1341.5,457 1354.12,455.13 1366.75,449.63 1379.38,440.89 1392,429.5 1404.62,416.24 1417.25,402 1429.88,387.76 1442.5,374.5 1455.12,363.11 1467.75,354.37 1480.38,348.87 1493,347 1505.62,348.87 1518.25,354.37 1530.88,363.11 1543.5,374.5 1556.12,387.76 1568.75,402 1581.38,416.24 1594,429.5 1606.62,440.89 1619.25,449.63 1631.88,455.13 1644.5,457 1657.12,455.13 1669.75,449.63 1682.38,440.89 1695,429.5 1707.62,416.24 1720.25,402 1732.88,387.76 1745.5,374.5 1758.12,363.11 1770.75,354.37 1783.38,348.87 1796,347 1808.62,348.87 1821.25,354.37 1833.88,363.11 1846.5,374.5 1859.12,387.76 1871.75,402 1884.38,416.24 1897,429.5 1909.62,440.89 1922.25,449.63 1934.88,455.13 1947.5,457 1960.12,455.13 1972.75,449.63 1985.38,440.89 1998,429.5 2010.62,416.24 2023.25,402 2035.88,387.76 2048.5,374.5 2061.12,363.11 2073.75,354.37 2086.38,348.87 2099,347"
+caminho periodo 5 #A83A36 "1190,489 1190,504 1493,504 1493,489"
+caminho ondaQuatro 8 #086875 "1190,347 1199.35,348.87 1208.7,354.37 1218.06,363.11 1227.41,374.5 1236.76,387.76 1246.11,402 1255.46,416.24 1264.81,429.5 1274.17,440.89 1283.52,449.63 1292.87,455.13 1302.22,457 1311.57,455.13 1320.93,449.63 1330.28,440.89 1339.63,429.5 1348.98,416.24 1358.33,402 1367.69,387.76 1377.04,374.5 1386.39,363.11 1395.74,354.37 1405.09,348.87 1414.44,347 1423.8,348.87 1433.15,354.37 1442.5,363.11 1451.85,374.5 1461.2,387.76 1470.56,402 1479.91,416.24 1489.26,429.5 1498.61,440.89 1507.96,449.63 1517.31,455.13 1526.67,457 1536.02,455.13 1545.37,449.63 1554.72,440.89 1564.07,429.5 1573.43,416.24 1582.78,402 1592.13,387.76 1601.48,374.5 1610.83,363.11 1620.19,354.37 1629.54,348.87 1638.89,347 1648.24,348.87 1657.59,354.37 1666.94,363.11 1676.3,374.5 1685.65,387.76 1695,402 1704.35,416.24 1713.7,429.5 1723.06,440.89 1732.41,449.63 1741.76,455.13 1751.11,457 1760.46,455.13 1769.81,449.63 1779.17,440.89 1788.52,429.5 1797.87,416.24 1807.22,402 1816.57,387.76 1825.93,374.5 1835.28,363.11 1844.63,354.37 1853.98,348.87 1863.33,347" oculto
+caminho periodoQuatro 5 #086875 "1190,489 1190,504 1414.44,504 1414.44,489" oculto
+texto posicao 2210 462 33 #485D5B "posição" centro
+formula conta 1685 574 68 #A83A36 "\\term{lambda}{\\lambda}=\\term{vermelho}{656{,}47}\\;\\mathrm{nm}" centro
+formula fracao 1685 557 60 #172F32 "\\frac{1}{\\term{lambda}{\\lambda}}=\\term{RH}{R_H}\\left(\\frac14-\\frac1{16}\\right)=\\frac{3\\,R_H}{16}" centro oculto
+formula azul 1685 570 70 #086875 "\\term{lambda}{\\lambda}=\\frac{16}{3\\,\\term{RH}{R_H}}=\\term{azul}{486{,}27}\\;\\mathrm{nm}" centro oculto
+texto gapA 140 969 42 #A83A36 "3 → 2 libera 1,889 eV."
+texto gapB 140 1032 42 #086875 "4 → 2 libera 2,550 eV." oculto
+texto voto1 140 1162 46 #172F32 "Faça a previsão antes de mover o bico." negrito
+texto voto2 140 1162 46 #172F32 "O segundo fóton leva mais energia. E a distância entre as cristas?" negrito oculto
+texto voto3 140 1162 46 #172F32 "Cada período ocupa menos espaço na mesma escala." oculto
+texto voto4 140 1162 46 #172F32 "E a marca a lápis entre o vermelho e o azul?" negrito oculto
+transicao 1750 filme alfa beta lapis chanfro grafite alvo nivel0 nivel2 nivel3 nivel4 rot0 rot2 rot3 rot4 trilho bicoFixo abertura bicoMovel parafuso conta nomeAlfa eixoOnda onda periodo
+passo "Abra apenas o bico superior e dê tempo para a previsão"
+transformar bicoMovel bicoMovelQuatro 1310
+transformar abertura aberturaQuatro 1310
+transformar parafuso parafusoQuatro 1310
+mostrar gapB
+ocultar voto1
+mostrar voto2
+passo "Comprima três períodos sobre o mesmo eixo de posição"
+transformar onda ondaQuatro 1550
+transformar periodo periodoQuatro 1550
+transformar conta fracao 1500
+ocultar voto2
+mostrar voto3
+passo "Encontre Hβ e retome a aposta dos 550 nm"
+transformar conta azul 1420
+mostrar nomeBeta
+ocultar voto3
+mostrar voto4
+
+cena "O bico que encontra o vazio" fundo #F3EFE4
+retangulo filme 1130 490 1120 170 1 #162E34 cheio
+linha alfa 2054.98 645.55 2054.98 504.45 10.2 #FF8378
+linha beta 1292.51 645.55 1292.51 504.45 10.2 #69D5D8
+caminho lapis 4.64 #172F32 "1578,487 1586,450.2 1640.4,368.6 1659.6,381.4 1606,463 1578,487"
+caminho chanfro 3.04 #172F32 "1586,450.2 1594.8,453.4 1597.2,455.8 1606,463"
+caminho grafite 4.8 #172F32 "1578,487 1581.2,473.4 1588.4,478.2 1578,487"
+texto alvo 1673.6 377.4 35.2 #172F32 "550 nm" negrito
+texto nomeAlfa 2054.98 678 36 #A83A36 "Hα  ·  656,47 nm" centro negrito
+texto nomeBeta 1292.51 678 36 #086875 "Hβ  ·  486,27 nm" centro negrito
+linha nivel0 323 266 828 266 3.6 #788986
+texto rot0 141 236.52 41 #485D5B "0 eV"
+linha nivel4 323 451.28 828 451.28 4.8 #172F32
+texto rot4 141 421.36 44 #172F32 "n = 4"
+linha nivel3 323 595.38 828 595.38 4.8 #172F32
+texto rot3 141 565.46 44 #172F32 "n = 3"
+linha nivel2 323 1007.11 828 1007.11 5.5 #172F32
+texto rot2 141 977.19 44 #172F32 "n = 2"
+linha trilho 985 253.64 985 1043.16 4.5 #788986
+caminho bicoFixo 5.97 #975416 "824,1007.11 859.02,1019.47 998.39,1019.47 998.39,994.75 970.58,994.75 970.58,1007.11 824,1007.11"
+linha abertura 985 449.22 985 1007.11 10.3 #975416
+caminho bicoMovel 5.97 #975416 "824,451.28 859.02,438.92 998.39,438.92 998.39,463.64 970.58,463.64 970.58,451.28 824,451.28"
+circulo parafuso 985 451.28 8.76 2 #975416 cheio
+linha aberturaLapis 985 513.62 985 1007.11 10.3 #975416 oculto
+caminho bicoMovelLapis 5.97 #975416 "824,515.68 859.02,503.32 998.39,503.32 998.39,528.04 970.58,528.04 970.58,515.68 824,515.68" oculto
+circulo parafusoLapis 985 515.68 8.76 2 #975416 cheio oculto
+circulo nenhum 824 515.68 24 5 #975416 oculto
+texto titulo 140 70 85 #172F32 "E a marca de 550 nm?" negrito
+texto bancada 1130 258 44 #172F32 "Volte à sua marca no escuro."
+formula conta 1670 795 71 #975416 "\\term{lambda}{\\lambda}=550\\;\\mathrm{nm}" centro
+formula energia 1670 784 68 #975416 "\\term{luz}{E_\\gamma}=\\frac{hc}{550\\;\\mathrm{nm}}=2{,}254\\;\\mathrm{eV}" centro oculto
+formula frac 1670 789 86 #975416 "\\term{ni}{n_i}\\approx 3{,}45" centro oculto
+texto convite 140 1145 48 #172F32 "Se o fóton tivesse 550 nm, em que nível o bico encostaria?" negrito
+texto espaco 140 1145 53 #172F32 "Que nível existe exatamente ali?" negrito oculto
+texto resposta 140 1145 49 #172F32 "Entre 3 e 4 não há outro n inteiro. A série de Balmer deixa 550 nm no escuro." negrito oculto
+transicao 1750 filme alfa beta lapis chanfro grafite alvo nivel0 nivel2 nivel3 nivel4 rot0 rot2 rot3 rot4 trilho bicoFixo abertura bicoMovel parafuso conta nomeAlfa nomeBeta
+passo "Teste a energia que 550 nm exigiria e pare entre os níveis"
+transformar bicoMovel bicoMovelLapis 1420
+transformar abertura aberturaLapis 1420
+transformar parafuso parafusoLapis 1420
+traçar nenhum 700 depois 850
+transformar conta energia 1350
+ocultar convite
+mostrar espaco
+passo "Leia o número quântico que seria necessário"
+transformar conta frac 1440
+ocultar espaco
+mostrar resposta
+
+cena "O limite que as linhas desenham" fundo #F3EFE4
+retangulo filme 150 758 2100 213 1 #162E34 cheio
+linha alfa 1988.82 954 1988.82 775 12.78 #FF8378
+linha beta 967.64 954 967.64 775 12.78 #69D5D8
+caminho lapis 4.64 #172F32 "1350,755 1358,718.2 1412.4,636.6 1431.6,649.4 1378,731 1350,755"
+caminho chanfro 3.04 #172F32 "1358,718.2 1366.8,721.4 1369.2,723.8 1378,731"
+caminho grafite 4.8 #172F32 "1350,755 1353.2,741.4 1360.4,746.2 1350,755"
+texto alvo 1445.6 645.4 35.2 #172F32 "550 nm" negrito
+linha t350 150 974 150 992 3.6 #485D5B
+texto v350 150 1003 36 #485D5B "350" centro
+linha t400 450 974 450 992 3.6 #485D5B
+texto v400 450 1003 36 #485D5B "400" centro
+linha t500 1050 974 1050 992 3.6 #485D5B
+texto v500 1050 1003 36 #485D5B "500" centro
+linha t600 1650 974 1650 992 3.6 #485D5B
+texto v600 1650 1003 36 #485D5B "600" centro
+linha t700 2250 974 2250 992 3.6 #485D5B
+texto v700 2250 1003 36 #485D5B "700" centro
+texto nomeAlfa 1988.82 701 35 #A83A36 "Hα  ·  656,47 nm" centro negrito
+texto nomeBeta 967.64 701 35 #086875 "Hβ  ·  486,27 nm" centro negrito
+linha marca5 655.04 954 655.04 775 7.5 #BEAEFF oculto
+linha marca6 511.76 954 511.76 775 6.5 #CCBCFF oculto
+linha marca7 432.74 954 432.74 775 5.2 #E0D7F7 oculto
+linha marca8 384.11 954 384.11 775 4.6 #D4E0DD oculto
+linha marca9 351.91 954 351.91 775 4.5 #D4E0DD oculto
+linha marca10 329.41 954 329.41 775 4.1 #D4E0DD oculto
+linha marca11 313.04 954 313.04 775 4.1 #D4E0DD oculto
+linha marca12 300.75 954 300.75 775 4 #D4E0DD oculto
+linha marca13 291.28 954 291.28 775 3.7 #D4E0DD oculto
+linha marca14 283.82 954 283.82 775 3.5 #D4E0DD oculto
+linha marca15 277.84 954 277.84 775 3.3 #D4E0DD oculto
+linha marca16 272.97 954 272.97 775 3.3 #D4E0DD oculto
+linha marca18 265.58 954 265.58 775 3 #D4E0DD oculto
+linha marca20 260.34 954 260.34 775 3 #D4E0DD oculto
+linha marca24 253.53 954 253.53 775 2.8 #D4E0DD oculto
+caminho borda 5 #975416 "184.23,699 238.23,699 238.23,748" oculto
+texto uv 222.23 638 36 #975416 "limite UV" centro negrito oculto
+texto unid 2175 1068 36 #485D5B "λ no vácuo / nm" centro
+linha nivel0 281 244 599 244 3.6 #788986
+texto rot0 140 221.22 31 #485D5B "0 eV"
+linha nivel4 281 329.84 599 329.84 4.8 #172F32
+texto rot4 140 306.72 34 #172F32 "n = 4"
+linha nivel3 281 396.6 599 396.6 4.8 #172F32
+texto rot3 140 373.48 34 #172F32 "n = 3"
+linha nivel2 281 587.36 599 587.36 5.5 #172F32
+texto rot2 140 564.24 34 #172F32 "n = 2"
+linha trilho 719 234.76 719 614.31 4.5 #788986
+caminho bicoFixo 4.47 #975416 "595,587.36 621.18,596.6 729.01,596.6 729.01,578.12 708.22,578.12 708.22,587.36 595,587.36"
+linha abertura 719 328.3 719 587.36 7.7 #975416
+caminho bicoMovel 4.47 #975416 "595,329.84 621.18,320.6 729.01,320.6 729.01,339.08 708.22,339.08 708.22,329.84 595,329.84"
+circulo parafuso 719 329.84 6.54 2 #975416 cheio
+linha aberturaCinco 719 297.4 719 587.36 7.7 #975416 oculto
+caminho bicoMovelCinco 4.47 #975416 "595,298.94 621.18,289.7 729.01,289.7 729.01,308.18 708.22,308.18 708.22,298.94 595,298.94" oculto
+circulo parafusoCinco 719 298.94 6.54 2 #975416 cheio oculto
+linha aberturaZero 719 242.46 719 587.36 7.7 #975416 oculto
+caminho bicoMovelZero 4.47 #975416 "595,244 621.18,234.76 729.01,234.76 729.01,253.24 708.22,253.24 708.22,244 595,244" oculto
+circulo parafusoZero 719 244 6.54 2 #975416 cheio oculto
+linha alto5 490 298.94 599 298.94 3.5 #788986 oculto
+linha alto6 490 282.15 599 282.15 3.5 #788986 oculto
+linha alto7 490 272.03 599 272.03 3.5 #788986 oculto
+linha alto8 490 265.46 599 265.46 2.5 #788986 oculto
+linha alto10 490 257.73 599 257.73 2.5 #788986 oculto
+linha alto12 490 253.54 599 253.54 2.5 #788986 oculto
+linha alto16 490 249.36 599 249.36 2.5 #788986 oculto
+texto titulo 139 64 80 #172F32 "Até onde as linhas conseguem ir?" negrito
+formula conta 1625 241 73 #172F32 "\\frac{1}{\\term{lambda}{\\lambda}}=\\term{RH}{R_H}\\left(\\frac14-\\frac{1}{\\term{ni}{n_i^2}}\\right)" centro
+formula cinco 1625 256 68 #172F32 "\\term{ni}{n_i}=5\\quad\\Rightarrow\\quad\\term{lambda}{\\lambda}=434{,}17\\;\\mathrm{nm}" centro oculto
+formula teto 1625 247 63 #172F32 "\\term{ni}{n_i}\\to\\infty\\quad\\Rightarrow\\quad\\frac{1}{\\term{lambda}{\\lambda}}\\to\\frac{\\term{RH}{R_H}}4" centro oculto
+formula limite 1625 247 77 #975416 "\\term{lambda}{\\lambda}_{\\mathrm{lim}}=\\frac4{\\term{RH}{R_H}}=364{,}71\\;\\mathrm{nm}" centro oculto
+texto frase 1625 494 41 #172F32 "O bico de baixo continua em n = 2." centro
+texto frase5 1625 494 41 #172F32 "A nova linha aparece à esquerda de Hβ." centro oculto
+texto fraseN 1625 494 41 #172F32 "Os níveis iniciais se acumulam junto de 0 eV." centro oculto
+texto fraseF 1625 494 41 #172F32 "Nenhum n inicial finito alcança esse limite." centro oculto
+texto convite 140 1164 49 #172F32 "Ao abrir o bico até 5, de que lado de Hβ aparece a próxima linha?" negrito
+texto crescendo 140 1164 49 #172F32 "Continue subindo. O que acontece com a distância entre as linhas?" negrito oculto
+texto vazio 140 1164 47 #172F32 "A mesma sequência de níveis explica o vazio em 550 nm e o acúmulo no ultravioleta." negrito oculto
+transicao 1750 filme alfa beta lapis chanfro grafite alvo nivel0 nivel2 nivel3 nivel4 rot0 rot2 rot3 rot4 trilho bicoFixo abertura bicoMovel parafuso conta nomeAlfa nomeBeta
+passo "Passe de n = 4 a n = 5 e registre a linha de 434,17 nm"
+transformar bicoMovel bicoMovelCinco 1120
+transformar abertura aberturaCinco 1120
+transformar parafuso parafusoCinco 1120
+traçar alto5 640
+traçar marca5 800 depois 500
+transformar conta cinco 1300
+ocultar frase
+mostrar frase5
+ocultar convite
+mostrar crescendo
+passo "Aproxime o bico do limite e registre amostras das próximas linhas"
+transformar bicoMovel bicoMovelZero 2500 depois 100
+transformar abertura aberturaZero 2500 depois 100
+transformar parafuso parafusoZero 2500 depois 100
+traçar alto6 500 depois 100
+traçar alto7 500 depois 360
+traçar alto8 500 depois 590
+traçar alto10 500 depois 890
+traçar alto12 500 depois 1130
+traçar alto16 500 depois 1370
+traçar marca6 550 depois 100
+traçar marca7 550 depois 370
+traçar marca8 550 depois 600
+traçar marca9 550 depois 820
+traçar marca10 550 depois 1020
+traçar marca11 550 depois 1180
+traçar marca12 550 depois 1310
+traçar marca13 550 depois 1420
+traçar marca14 550 depois 1520
+traçar marca15 550 depois 1610
+traçar marca16 550 depois 1700
+traçar marca18 550 depois 1800
+traçar marca20 550 depois 1880
+traçar marca24 550 depois 1960
+transformar conta teto 1750
+ocultar frase5
+mostrar fraseN
+passo "Marque o limite da série no ultravioleta"
+transformar conta limite 1550
+traçar borda 900 depois 400
+mostrar uv
+ocultar fraseN
+mostrar fraseF
+ocultar crescendo
+mostrar vazio

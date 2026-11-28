@@ -88,6 +88,9 @@ Open **Menu → Ready-made lectures** (**Aulas prontas**) and insert a lecture a
 | --- | --- | --- |
 | **Animations: examples** · 8 pages | Open the reaction page, double-click the methane combustion panel with the Hand tool, then press **→** to begin. Advance through the reactants and products. Later pages build MO diagrams and animate orbital overlap and curved-arrow mechanisms. | [Download JSON](https://henriquecsj.github.io/chemboard/examples/animation-examples.json) · [Reaction page overview](docs/images/reaction-lesson.png) |
 | **Intermolecular interactions** · 9 pages | Start with the moving solid, liquid, and gas models. Advance to compare ion–dipole, dipole–dipole, induced-dipole, London dispersion, and hydrogen-bonding examples. | [Download JSON](https://henriquecsj.github.io/chemboard/examples/intermolecular-interactions.json) |
+| **From Bohr to Rydberg** · 4 pages | Advance the derivation one equation at a time. On the Balmer page, drag the marker to choose the initial level. The other pages work through the photon energy and copper deposition. | Insert from **Ready-made lectures** |
+| **O risco a lápis · Bohr–Rydberg** · 7 scenes | Ask why 550 nm sits between two Balmer lines. The spectrum, the pencil mark, and an energy caliper carry across scenes as the class derives Rydberg’s formula and tests that wavelength. | [Scene source](examples/bohr-rydberg.chemboard) · **Ready-made lectures** |
+| **Cenas: exemplos** · 5 pages | Watch Arrhenius equations transform, trace a Lewis acid–base reaction, and vary a Maxwell–Boltzmann graph whose labels update live. | [Download JSON](examples/scene-examples.json) · **Ready-made lectures** |
 
 ![The first page of the intermolecular interactions lecture, with moving particle models above a comparison table.](docs/images/intermolecular-lesson.png)
 
@@ -102,6 +105,37 @@ To use a downloaded copy, save the JSON locally and choose **Menu → Open board
 | Direct attention | Press **F** for full screen, **U** to hide the controls, **X** for the laser pointer, or **O** for the spotlight. |
 | Protect a finished drawing | Right-click an object and choose **Lock**, or use the lock icon on a selection. Right-click a locked object and choose **Unlock** when you need to edit it. |
 | Share the lesson | **Save board (.json)** keeps an editable multi-page copy. **Export image (PNG)** creates an image of the current page for a handout or slide. |
+
+To animate a formula or a shape in a teaching step, select its initial and final poses in that order. Right-click either object and choose **Move between steps…**. For formulas, click the starting term and its corresponding term in the two previews. Press **→** or **Page Down** to advance to the chosen step while presenting.
+
+While presenting, use Pen or Highlighter to annotate the current cue. The marks stay with that cue for the session. The step toolbar clears them, and **Ctrl+Z** undoes the last annotation on the current cue.
+
+### Write a page script
+
+Open **Menu → Page script…** to author a single page in English or Portuguese. Name an existing drawing from its context menu to animate it in the script. You can place objects relative to one another, trace or morph shapes and equations, count numbers, and bind displayed values to live chart sliders. **Apply** edits the page and **Undo** restores its script, objects, and frame. [Page script reference](docs/scenes.md)
+
+### Write a scene
+
+Open **Menu → Animation script…** on any board. A Portuguese-language script can define the entire lesson, including the background, text, editable LaTeX, and diagrams. Each `cena` creates a 2400 × 1350 page, with (0, 0) at the top left. Declare its objects first. Each `passo` waits for **→** or **Page Down**. Use **←** or **Page Up** to go back. Commands within a step run together, and `depois` delays a single animation in milliseconds.
+
+```text
+cena "Photon energy" fundo #101c30
+texto title 140 140 88 #f5f7fc "Photon energy" negrito
+formula energy 140 420 110 #f5f7fc "E=h\\nu" oculto
+linha underline 140 650 950 650 8 #ff847d oculto
+
+passo "Show the relation"
+  mostrar energy
+  traçar underline 950
+```
+
+Use `linha`, `seta`, `retangulo`, `circulo`, or `caminho` to draw diagrams. Quote text and LaTeX as JSON strings, doubling each LaTeX backslash. The optional `oculto` flag starts an object hidden. `mostrar` and `ocultar` control visibility. `traçar` draws a stroke over time. `mover`, `girar`, and `transformar` animate compatible objects. Paths with the same point count can morph point by point and change stroke color. In formula poses, matching `\\term{id}{…}` groups carry their identity between expressions.
+
+To carry an object between pages, give it the same name in both scenes and add `transicao 1600 axis marker` to the destination scene before its first `passo`. Each named object needs a visible closing pose in the preceding scene and a visible opening pose in the destination. The next click moves those poses over 1600 ms. The previous key reverses the handoff. Use compatible shapes, matching point counts for paths, identical labels for plain text, or matched LaTeX formulas.
+
+Add `roteiro pagina` immediately after a `cena` line to use English or Portuguese page-script effects within that scene. A cue can morph a circle and count a value in parallel, and the following scene can carry the transformed shape to a new location. [Combined example](docs/scenes.md#combine-page-scripts-and-scene-transitions)
+
+**Open file…** loads a script and **Compile into new pages** inserts an editable rehearsal copy after the current page. **Save script** saves the text as a `.chemboard` file. Open [the Bohr–Rydberg source](examples/bohr-rydberg.chemboard) for a multi-scene example. To script shapes already on the board, select a shape before opening the editor.
 
 ## Run locally
 

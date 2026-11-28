@@ -76,7 +76,7 @@ Run the companion yourself, pair the board, and configure your client for **Stre
 
 ## Board capabilities
 
-Start with `get_board` for object IDs, the current selection, lock owners, and drawing defaults. The paired board advertises 78 tools through MCP. The in-board assistant uses the same catalog for drawing and reading text.
+Start with `get_board` for object IDs, the current selection, lock owners, and drawing defaults. The paired board advertises 81 tools through MCP. The in-board assistant uses the same catalog for drawing and reading text.
 
 | Task | Tools |
 | --- | --- |
@@ -88,6 +88,7 @@ Start with `get_board` for object IDs, the current selection, lock owners, and d
 | Change Pen and Shapes defaults | `set_board` takes `pen_smoothing`, `shape_recognition`, and `constrain_shapes`. Use `add_ink` options to control a single tool-generated stroke. |
 | Open a sample lecture | `list_lectures`, `insert_lecture`. Insertion reuses an existing copy unless `another_copy` is true. |
 | Inspect or navigate a presentation | `get_presentation`, `add_camera_stop`, `go_to_camera_stop`. Stop indices are zero-based. |
+| Read or edit a page script | `get_page_script` returns the script, object names, and syntax reference. `name_objects` names existing objects. `set_page_script` applies a complete script and reports syntax errors by line. |
 
 Object edits such as drawing, rotation, or locking support **Undo**. Inserting lecture pages and saving camera stops use the page controls and their separate persistence.
 

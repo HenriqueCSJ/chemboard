@@ -94,6 +94,41 @@ Para importar um JSON, salve o arquivo e escolha **Menu → Abrir quadro**. Se j
 - Clique com o botão direito e escolha **Travar** para proteger um objeto. Use **Destravar** quando quiser editá-lo de novo.
 - Use **Salvar quadro (.json)** para guardar uma cópia editável ou **Exportar imagem (PNG)** para usar a página em outro material.
 
+Para mover uma fórmula ou forma durante a aula, selecione a posição inicial e depois a final. Clique com o botão direito em um dos objetos e escolha **Mover entre passos…**. Em duas fórmulas, clique no termo de origem e no correspondente de destino nas prévias. Na apresentação, **→** ou **PgDn** aciona o movimento no passo escolhido.
+
+Em **Aulas prontas → De Bohr a Rydberg · exercícios ao vivo**, avance cada etapa da dedução com o teclado. Na página de Balmer, arraste o marcador do gráfico para mudar o nível inicial durante a exposição.
+
+Abra **Aulas prontas → Cenas: exemplos** para explorar cinco páginas com fórmulas que se transformam, traçado de moléculas e figuras, contagem e um gráfico de Maxwell–Boltzmann com valores que acompanham o controle deslizante. [Quadro editável](../examples/scene-examples.json)
+
+### Roteiro da página
+
+Use **Menu → Roteiro da página…** para escrever efeitos em português ou inglês. Você pode nomear um desenho no menu de contexto, posicionar objetos uns em relação aos outros, transformar formas, animar números e vinculá-los a gráficos. **Aplicar** registra uma edição que pode ser desfeita com **Ctrl+Z**, incluindo os objetos, o roteiro e o enquadramento. Durante a apresentação, a caneta e o marca-texto anotam apenas o passo atual. Use a barra de passos para limpar essas anotações durante a sessão. [Referência de comandos](scenes.md)
+
+### Roteiro de animação
+
+Abra **Aulas prontas → O risco a lápis · Bohr–Rydberg** e peça à turma que teste um palpite para a série de Balmer. O lápis marca 550 nm entre duas linhas do espectro. A faixa e o paquímetro de energia passam de uma cena à próxima enquanto a turma deduz a expressão de Rydberg e descobre onde teria de estar o estado inicial.
+
+Abra **Menu → Roteiro de animação…** para criar uma aula do zero. Cada `cena` define uma página de 2400 × 1350 unidades, com origem no canto superior esquerdo. Declare o fundo, os textos, as fórmulas e o diagrama antes do primeiro `passo`. Cada passo espera **→** ou **PgDn**. Use **←** ou **PgUp** para voltar. As ações começam juntas, exceto quando uma usa `depois` para aguardar alguns milissegundos.
+
+```text
+cena "Energia do fóton" fundo #101c30
+texto titulo 140 140 88 #f5f7fc "Energia do fóton" negrito
+formula energia 140 420 110 #f5f7fc "E=h\\nu" oculto
+linha marca 140 650 950 650 8 #ff847d oculto
+
+passo "Apresentar a relação"
+  mostrar energia
+  traçar marca 950
+```
+
+Desenhe com `linha`, `seta`, `retangulo`, `circulo` ou `caminho`. Escreva textos e LaTeX entre aspas no formato JSON, duplicando cada barra invertida do LaTeX. Use `oculto` para que um objeto comece invisível. `mostrar` e `ocultar` controlam a visibilidade. `traçar` desenha progressivamente. `mover`, `girar` e `transformar` animam objetos compatíveis. Em fórmulas, use o mesmo identificador em `\\term{id}{…}` para acompanhar um termo entre expressões.
+
+Para levar um objeto à página seguinte, use o mesmo nome nas duas cenas e inclua `transicao 1600 eixo marcador` na cena de destino, antes do primeiro `passo`. Cada objeto listado deve estar visível no fim da cena anterior e na abertura da próxima. O avanço anima a passagem em 1600 ms. A tecla de retorno refaz o caminho ao contrário. Use formas compatíveis, caminhos com a mesma contagem de pontos, rótulos de texto iguais ou fórmulas LaTeX com termos associados.
+
+Acrescente `roteiro pagina` logo após `cena` para usar os efeitos do roteiro de página dentro de uma aula com transições entre cenas. [Exemplo combinado](scenes.md#combine-page-scripts-and-scene-transitions)
+
+**Abrir arquivo…** carrega um roteiro. **Compilar em novas páginas** insere uma cópia editável após a página atual. **Salvar roteiro** exporta um arquivo `.chemboard`. Consulte o [roteiro completo de Bohr–Rydberg](../examples/bohr-rydberg.chemboard) para ver várias cenas em sequência. Para animar uma forma que já está no quadro, selecione-a antes de abrir o editor.
+
 ## Uso local e licença
 
 Abra [`index.html`](../index.html) em um navegador de computador. A caneta e as aulas embutidas funcionam a partir do HTML local. A busca online de moléculas, as mídias remotas e as fontes web usam a internet. Os visualizadores 3D precisam de WebGL. O navegador salva o quadro no endereço usado para abri-lo. Exporte JSON para fazer backup ou trocar de computador.

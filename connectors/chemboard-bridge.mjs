@@ -15,14 +15,15 @@ const MAX_BODY = 16 * 1024 * 1024;
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{24,128}$/;
 const TOOL_TIMEOUT = 60_000;
 const ASSIST_TIMEOUT = 300_000;
-const MCP_INSTRUCTIONS = 'ChemBoard controls the currently paired board. Call get_board first to inspect the current page and free space; use object and page IDs or indexes returned by tools. Discover supported creation, editing, movement, styling, page and presentation operations through tools/list and their schemas. Inspect the result after edits. Delete objects, clear a page or delete a page only when explicitly requested. An empty tools/list means no board is paired or the paired board advertises no tools: pair the board, then request tools/list again (or reconnect/refresh tool discovery if your client caches the list).';
+const MCP_INSTRUCTIONS = 'ChemBoard controls the currently paired board. Call get_board first to inspect the current page and free space; use object and page IDs or indexes returned by tools. Discover supported creation, editing, movement, styling, page and presentation operations through tools/list and their schemas. For an animated slide (equations that write themselves and transform, molecules that are traced, numbers that count), read get_page_script and send the whole page with set_page_script. Inspect the result after edits. Delete objects, clear a page or delete a page only when explicitly requested. An empty tools/list means no board is paired or the paired board advertises no tools: pair the board, then request tools/list again (or reconnect/refresh tool discovery if your client caches the list).';
 const HOME = ['../index.html', 'text/html; charset=utf-8'];
 const STATIC_FILES = new Map([
   ['/', HOME],
   ['/index.html', HOME],
   ['/favicon.png', ['../favicon.png', 'image/png']],
   ['/examples/animation-examples.json', ['../examples/animation-examples.json', 'application/json; charset=utf-8']],
-  ['/examples/intermolecular-interactions.json', ['../examples/intermolecular-interactions.json', 'application/json; charset=utf-8']]
+  ['/examples/intermolecular-interactions.json', ['../examples/intermolecular-interactions.json', 'application/json; charset=utf-8']],
+  ['/examples/scene-examples.json', ['../examples/scene-examples.json', 'application/json; charset=utf-8']]
 ]);
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
 const sameSecret = (a, b) => typeof a === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b));

@@ -1,0 +1,126 @@
+// IC677 · Rede de pontos cúbica. Células convencionais P, I e F.
+// As coordenadas do roteiro são relativas ao centro da primeira célula, de lado 1.
+// https://dictionary.iucr.org/Centred_lattice
+
+cena "Células cúbicas · um vértice, oito células" fundo #15242C
+roteiro pagina
+texto curso "Estado sólido" em 128 84 tamanho 38 cor #9ECBC2 simples
+texto titulo "Quantas células chegam a este ponto?" em 125 152 tamanho 82 negrito cor #FCF5E8 simples
+linha traço de 128 275 até 2265 275 espessura 2 cor #4C6A71
+cristal cubo centro 744 733 tamanho 1230 900 escala 448 tipo primitiva cor #B5D3D2
+vista -39 28
+vertice cor #E6D8BA
+corpo cor #69CBB3
+faces cor #C6B1F0
+observa cubo 0.5 0.5 0.5
+texto marcador "Vértice marcado" centro 1810 440 tamanho 56 negrito cor #F1C882 simples
+texto n "1" centro 1810 647 tamanho 155 negrito cor #FCF5E8 simples
+texto ndescr "Células que chegam ao ponto" centro 1810 808 tamanho 39 cor #CBDBDA simples
+equacao soma "8\,\times\,\frac{1}{8}=1" centro 1810 1010 tamanho 94 cor #F1C882
+
+passo "Primeira direção: o ponto já pertence a duas células"
+replica cubo 2 1 1 em 1.28s
+junto conta n até 2 em 0.8s atraso 0.42
+
+passo "Segunda direção: quatro células se encontram ali"
+replica cubo 2 2 1 em 1.28s
+junto conta n até 4 em 0.8s atraso 0.42
+
+passo "Terceira direção: as oito células aparecem"
+replica cubo 2 2 2 em 1.45s
+junto vista cubo -48 34 em 1.45s
+junto conta n até 8 em 0.8s atraso 0.6
+
+passo "Cada vértice fornece um oitavo"
+escreve soma em 0.9s
+
+cena "Células cúbicas · o ponto do corpo" fundo #15242C
+roteiro pagina
+transicao 1400 cubo curso traço
+texto curso "Estado sólido" em 128 84 tamanho 38 cor #9ECBC2 simples
+texto titulo "O ponto está dentro ou sobre a face?" em 125 152 tamanho 82 negrito cor #FCF5E8 simples
+linha traço de 128 275 até 2265 275 espessura 2 cor #4C6A71
+cristal cubo centro 744 733 tamanho 1230 900 escala 465 tipo primitiva cor #B5D3D2
+vista 0 0
+vertice cor #E6D8BA
+corpo cor #69CBB3
+faces cor #C6B1F0
+texto pergunta "De frente, falta uma coordenada." em 1390 414 tamanho 55 largura 840 negrito cor #FCF5E8 simples
+texto corpo "Centro do corpo" em 1390 414 tamanho 58 negrito cor #83E0C7 simples
+texto explicacao "O sítio fica à mesma distância das seis faces." em 1390 514 tamanho 47 largura 760 cor #CBDBDA simples
+equacao soma "8\,\times\,\frac{1}{8}+1=2" em 1390 842 tamanho 81 cor #83E0C7
+
+passo "De frente, o sítio do corpo parece estar na face"
+centra cubo corpo em 1.1s
+junto observa cubo 0 0 0 em 1.0s
+
+passo "Mude o ponto de vista para enxergar a profundidade"
+vista cubo -37 26 em 1.45s
+junto some pergunta em 0.38s
+junto camada cubo z 0 em 1.45s atraso 0.18
+junto aparece corpo, explicacao em 0.6s atraso 0.8
+
+passo "O sítio interior pertence a uma única célula"
+camada cubo limpa em 0.7s
+junto escreve soma em 0.9s atraso 0.32
+
+cena "Células cúbicas · a face compartilhada" fundo #15242C
+roteiro pagina
+transicao 1350 cubo curso traço
+texto curso "Estado sólido" em 128 84 tamanho 38 cor #9ECBC2 simples
+texto titulo "Por que um sítio de face vale meio?" em 125 152 tamanho 82 negrito cor #FCF5E8 simples
+linha traço de 128 275 até 2265 275 espessura 2 cor #4C6A71
+cristal cubo centro 744 733 tamanho 1230 900 escala 455 tipo faces cor #B5D3D2
+vista -37 31
+vertice cor #E6D8BA
+corpo cor #69CBB3
+faces cor #C6B1F0
+camada cubo z 0.5
+observa cubo 0 0 0.5
+texto aFace "Uma face em comum" em 1390 424 tamanho 57 negrito cor #D3BEFF simples
+texto vizinha "A célula de cima usa o mesmo sítio da célula de baixo." em 1390 539 tamanho 47 largura 780 cor #CBDBDA simples
+equacao parte "\frac{1}{2}+\frac{1}{2}=1" em 1390 776 tamanho 83 cor #D3BEFF
+equacao soma "8\,\times\,\frac{1}{8}+6\,\times\,\frac{1}{2}=4" em 1390 1050 tamanho 75 cor #FCF5E8
+texto atrib "Agora conte as seis faces de uma célula." em 1390 941 tamanho 41 largura 810 cor #CBDBDA simples
+
+passo "Coloque outra célula do outro lado da face"
+replica cubo 1 1 2 em 1.42s
+junto aparece vizinha em 0.62s atraso 0.65
+junto escreve parte em 0.8s atraso 0.75
+
+passo "Isole uma célula e conte seus seis sítios de face"
+replica cubo 1 1 1 em 1.35s
+junto camada cubo limpa em 1.35s
+junto observa cubo limpa em 0.85s
+junto aparece atrib em 0.6s atraso 0.7
+junto escreve soma em 0.9s atraso 0.85
+
+cena "Células cúbicas · três centramentos" fundo #15242C
+roteiro pagina
+transicao 1260 cubo curso traço
+texto curso "Estado sólido" em 128 84 tamanho 38 cor #9ECBC2 simples
+texto titulo "A mesma caixa, três centramentos" em 125 152 tamanho 85 negrito cor #FCF5E8 simples
+linha traço de 128 275 até 2265 275 espessura 2 cor #4C6A71
+texto nomeP "Primitiva" centro 448 371 tamanho 56 negrito cor #E6D8BA simples
+texto nomeI "Corpo centrado" centro 1200 371 tamanho 56 negrito cor #83E0C7 simples
+texto nomeF "Faces centradas" centro 1952 371 tamanho 56 negrito cor #D3BEFF simples
+cristal prim centro 448 705 tamanho 680 600 escala 300 tipo primitiva cor #B5D3D2
+vista -24 20
+vertice cor #E6D8BA
+cristal corpoC centro 1200 705 tamanho 680 600 escala 300 tipo corpo cor #B5D3D2
+vista -24 20
+vertice cor #E6D8BA
+corpo cor #69CBB3
+cristal cubo centro 1952 705 tamanho 680 600 escala 300 tipo faces cor #B5D3D2
+vista -24 20
+vertice cor #E6D8BA
+faces cor #C6B1F0
+texto um "1" centro 448 1040 tamanho 90 negrito cor #E6D8BA simples
+texto dois "2" centro 1200 1040 tamanho 90 negrito cor #83E0C7 simples
+texto quatro "4" centro 1952 1040 tamanho 90 negrito cor #D3BEFF simples
+texto legenda "Sítios por célula convencional" centro 1200 1218 tamanho 43 cor #CBDBDA simples
+
+passo "Gire cada modelo e compare onde aparecem os sítios adicionais"
+vista prim -20 26 em 1.05s
+junto vista corpoC -20 26 em 1.05s
+junto vista cubo -20 26 em 1.05s

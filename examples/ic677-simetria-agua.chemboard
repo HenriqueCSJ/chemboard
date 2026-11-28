@@ -1,0 +1,249 @@
+// IC677. H₂O idealizada no plano xz. O é a origem e +z é a bissetriz do ângulo H–O–H.
+// O–H é a unidade: a = sen(52,25°), b = cos(52,25°); Hₐ = (+a,0,b), Hᵦ = (−a,0,b).
+// Matrizes atuam à esquerda sobre vetores-coluna de uma base cartesiana fixa.
+// A luz identifica Hₐ. Os traços de reflexão e inversão indicam a correspondência com a imagem.
+// https://www.iucr.org/what-we-do/education/pamphlets/matrices-mappings-and-crystallographic-symmetry
+
+cena "Água · o espelho entre os hidrogênios" fundo #14262C
+roteiro pagina
+texto tema "H₂O  ·  Reflexão" em 140 72 tamanho 38 cor #ACD0C6 simples
+texto titulo "Onde aparece a imagem de Hₐ?" em 138 133 tamanho 84 negrito cor #F8F4E9 simples
+linha regra de 143 280 ate 2250 280 espessura 2 cor #567271
+linha divisor de 1080 342 ate 1080 1184 espessura 2 cor #405C5D
+espacial agua centro 605 789 tamanho 920 854 escala 370
+sitio O 0 0 0 "O" cor #CB675F raio 75
+sitio Ha 0.791 0 0.612 "Hₐ" cor #E8E8DF raio 54
+sitio Hb -0.791 0 0.612 "" cor #E8E8DF raio 54
+aresta O Ha
+aresta O Hb
+vista -29 11
+observa agua Ha em 0.3s
+eixos agua oculta em 0.15s
+equacao rotuloYZ "\sigma_{yz}" centro 1680 413 tamanho 64 cor #F1D9A0
+matriz reflexaoYZ centro 1680 660 tamanho 515 400 letra 78 cor #F5DEAA vazia
+fila 0 0 0
+fila 0 0 0
+fila 0 0 0
+equacao inicial "H_a=(+a,\,0,\,b)" centro 1680 932 tamanho 78 cor #F1D9A0
+texto planoYZ "O plano yz divide o ângulo H–O–H ao meio." centro 1680 1090 tamanho 47 largura 1020 cor #DCE8E2 simples
+equacao imagem "H_a=(+a,\,0,\,b)\;↦\;H_{a}^{\prime}=(-a,\,0,\,b)" centro 1680 932 tamanho 57 cor #F1D9A0
+texto resultado "A imagem coincide com o outro H. Só x muda de sinal." centro 1680 1090 tamanho 47 largura 1020 cor #F8F4E9 simples
+
+passo "Mostre o plano yz antes de prever a imagem"
+guia agua plano yz em 0.65s
+junto aparece planoYZ em 0.45s
+
+passo "Localize a imagem de Hₐ do outro lado do plano"
+some planoYZ, inicial em 0.28s
+aplica agua plano yz matriz reflexaoYZ em 1.2s
+junto realca reflexaoYZ célula 1 1 cor #F1D9A0 em 0.52s atraso 0.42
+junto aparece imagem, resultado em 0.45s atraso 0.63
+
+cena "Água · o espelho da própria molécula" fundo #14262C
+roteiro pagina
+transicao 1050 agua regra tema divisor
+texto tema "H₂O  ·  Reflexão" em 140 72 tamanho 38 cor #ACD0C6 simples
+texto titulo "E se o espelho contiver a água?" em 138 133 tamanho 84 negrito cor #F8F4E9 simples
+linha regra de 143 280 ate 2250 280 espessura 2 cor #567271
+linha divisor de 1080 342 ate 1080 1184 espessura 2 cor #405C5D
+espacial agua centro 605 789 tamanho 920 854 escala 370
+sitio O 0 0 0 "O" cor #CB675F raio 75
+sitio Ha 0.791 0 0.612 "Hₐ" cor #E8E8DF raio 54
+sitio Hb -0.791 0 0.612 "" cor #E8E8DF raio 54
+aresta O Ha
+aresta O Hb
+vista -29 11
+observa agua Ha em 0.3s
+eixos agua oculta em 0.15s
+equacao rotuloXZ "\sigma_{xz}" centro 1680 413 tamanho 64 cor #D0C6F2
+matriz reflexaoXZ centro 1680 660 tamanho 515 400 letra 78 cor #E1D8F6 vazia
+fila 0 0 0
+fila 0 0 0
+fila 0 0 0
+equacao coordenada "y_O=y_{H_a}=y_{H_b}=0" centro 1680 932 tamanho 68 cor #F8F4E9
+texto previsao "Algum núcleo sai do seu sítio?" centro 1680 1090 tamanho 47 largura 1020 cor #F1D9A0 simples
+texto fixos "Os três núcleos ficam em seus sítios." centro 1680 1090 tamanho 47 largura 1020 cor #F8F4E9 simples
+texto ponto "P está fora do plano molecular." centro 1680 1090 tamanho 47 largura 1020 cor #DCE8E2 simples
+equacao teste "P=(0,+1,0)\;↦\;P^{\prime}=(0,-1,0)" centro 1680 932 tamanho 60 cor #D0C6F2
+texto leiXZ "A entrada central da matriz troca o sinal de y." centro 1680 1090 tamanho 47 largura 1020 cor #DCE8E2 simples
+
+passo "Incline a vista para enxergar o plano molecular"
+vista agua -18 32 em 0.95s
+junto guia agua plano xz em 0.55s
+junto aparece previsao em 0.38s
+
+passo "Reflita os três núcleos no plano xz"
+some previsao em 0.23s
+aplica agua plano xz matriz reflexaoXZ em 0.8s
+junto aparece fixos em 0.42s atraso 0.35
+
+passo "Teste a mesma reflexão em um ponto com y positivo"
+some coordenada, fixos em 0.25s
+observa agua ponto 0 1 0 em 0.65s
+junto aparece ponto, teste em 0.48s atraso 0.20
+
+passo "Converta o sinal de y na entrada central da matriz"
+some ponto em 0.25s
+realca reflexaoXZ célula 2 2 cor #D0C6F2 em 0.55s
+junto aparece leiXZ em 0.45s
+
+cena "Álgebra · multiplique duas reflexões" fundo #14262C
+roteiro pagina
+transicao 1175 agua regra divisor reflexaoXZ rotuloXZ
+texto tema "H₂O  ·  Matrizes de simetria" em 140 72 tamanho 38 cor #ACD0C6 simples
+texto titulo "Como combinar as duas reflexões?" em 138 133 tamanho 83 negrito cor #F8F4E9 simples
+linha regra de 143 280 ate 2250 280 espessura 2 cor #567271
+linha divisor de 921 342 ate 921 1230 espessura 2 cor #405C5D
+espacial agua centro 523 781 tamanho 760 795 escala 320
+sitio O 0 0 0 "O" cor #CB675F raio 75
+sitio Ha 0.791 0 0.612 "Hₐ" cor #E8E8DF raio 54
+sitio Hb -0.791 0 0.612 "" cor #E8E8DF raio 54
+aresta O Ha
+aresta O Hb
+vista -18 32
+observa agua Ha em 0.3s
+junto eixos agua oculta em 0.2s
+equacao referencia "H_a=(a,\,0,\,b)" centro 523 1095 tamanho 57 cor #F1D9A0
+texto leitura "A matriz da direita age primeiro." centro 1625 359 tamanho 47 cor #DCE8E2 simples
+equacao rotuloXZ "\sigma_{xz}" centro 1170 468 tamanho 63 cor #D0C6F2
+equacao rotuloYZ "\sigma_{yz}" centro 1625 468 tamanho 63 cor #F1D9A0
+equacao rotuloP "P" centro 2080 468 tamanho 63 cor #ACD0C6
+matriz reflexaoXZ centro 1170 692 tamanho 354 350 letra 69 cor #E1D8F6
+fila 1 0 0
+fila 0 -1 0
+fila 0 0 1
+matriz reflexaoYZ centro 1625 692 tamanho 354 350 letra 69 cor #F5DEAA
+fila -1 0 0
+fila 0 1 0
+fila 0 0 1
+matriz produtoAgua centro 2080 692 tamanho 354 350 letra 69 cor #F8F4E9 vazia
+fila 0 0 0
+fila 0 0 0
+fila 0 0 0
+texto vezes "×" centro 1398 666 tamanho 69 cor #DCE8E2 simples
+texto igual "=" centro 1853 666 tamanho 69 cor #DCE8E2 simples
+texto fecho "Fora da diagonal, cada par contém pelo menos um zero. A soma vale zero." centro 1625 1030 tamanho 48 largura 1110 cor #DCE8E2 simples
+
+passo "Escolha a primeira linha e a primeira coluna"
+produto reflexaoXZ reflexaoYZ em produtoAgua célula 1 1 escolha leitura 1625 1060 1260 70 em 0.45s
+
+passo "Calcule P₁₁ e conserve o resultado na matriz"
+produto reflexaoXZ reflexaoYZ em produtoAgua célula 1 1 leitura 1625 1060 1260 70 em 0.65s
+
+passo "Mantenha a linha e escolha a segunda coluna"
+produto reflexaoXZ reflexaoYZ em produtoAgua célula 1 2 escolha leitura 1625 1060 1260 70 em 0.45s
+
+passo "Calcule P₁₂"
+produto reflexaoXZ reflexaoYZ em produtoAgua célula 1 2 leitura 1625 1060 1260 70 em 0.65s
+
+passo "Calcule a segunda entrada diagonal"
+produto reflexaoXZ reflexaoYZ em produtoAgua célula 2 2 leitura 1625 1060 1260 70 em 0.65s
+
+passo "Calcule a última entrada diagonal"
+produto reflexaoXZ reflexaoYZ em produtoAgua célula 3 3 leitura 1625 1060 1260 70 em 0.65s
+
+passo "Complete as entradas fora da diagonal"
+produto reflexaoXZ reflexaoYZ em produtoAgua em 0.45s
+junto aparece fecho em 0.42s
+
+cena "Água · verifique o produto no espaço" fundo #14262C
+roteiro pagina
+transicao 1100 agua produtoAgua regra divisor
+texto tema "H₂O  ·  Rotação" em 140 72 tamanho 38 cor #ACD0C6 simples
+texto titulo "Qual giro tem essa mesma matriz?" em 138 133 tamanho 83 negrito cor #F8F4E9 simples
+linha regra de 143 280 ate 2250 280 espessura 2 cor #567271
+linha divisor de 1080 342 ate 1080 1184 espessura 2 cor #405C5D
+espacial agua centro 605 789 tamanho 920 854 escala 370
+sitio O 0 0 0 "O" cor #CB675F raio 75
+sitio Ha 0.791 0 0.612 "Hₐ" cor #E8E8DF raio 54
+sitio Hb -0.791 0 0.612 "" cor #E8E8DF raio 54
+aresta O Ha
+aresta O Hb
+vista -28 31
+observa agua Ha em 0.3s
+equacao rotuloP "P=\sigma_{xz}\sigma_{yz}" centro 1680 413 tamanho 64 cor #ACD0C6
+matriz produtoAgua centro 1680 660 tamanho 515 400 letra 78 cor #F8F4E9
+fila -1 0 0
+fila 0 -1 0
+fila 0 0 1
+equacao mapa "(x,y,z)\;↦\;(-x,-y,z)" centro 1680 932 tamanho 72 cor #ACD0C6
+texto eixoZ "Qual coordenada a operação conserva?" centro 1680 1090 tamanho 47 largura 1020 cor #DCE8E2 simples
+texto nomeC "Meia-volta em torno de z" centro 1680 1067 tamanho 51 negrito cor #F8F4E9 simples
+equacao rotuloC "P=C_{2z}" centro 1680 1173 tamanho 65 cor #ACD0C6
+
+passo "Identifique o eixo cuja coordenada se conserva"
+eixos agua mostra z em 0.65s
+junto realca produtoAgua célula 3 3 cor #ACD0C6 em 0.55s
+
+passo "Acompanhe o H marcado em uma meia-volta"
+some eixoZ em 0.23s
+aplica agua eixo z 180 matriz produtoAgua em 1.65s
+junto aparece nomeC, rotuloC em 0.52s atraso 1.04
+
+passo "Retome a posição de referência e oculte o eixo"
+aplica agua identidade em 1.1s
+junto eixos agua oculta em 0.8s
+
+cena "Inversão · água e hexafluoreto de enxofre" fundo #14262C
+roteiro pagina
+transicao 1100 agua regra
+texto tema "H₂O e SF₆  ·  Inversão" em 140 72 tamanho 38 cor #ACD0C6 simples
+texto titulo "Quem ocupa o sítio oposto?" em 138 133 tamanho 83 negrito cor #F8F4E9 simples
+linha regra de 143 280 ate 2250 280 espessura 2 cor #567271
+equacao opInv "(x,y,z)\;↦\;(-x,-y,-z)" centro 1200 389 tamanho 62 cor #F1D9A0
+texto nomeAgua "H₂O" centro 530 519 tamanho 55 negrito cor #F8F4E9 simples
+texto nomeSF "SF₆" centro 1870 519 tamanho 55 negrito cor #F8F4E9 simples
+espacial agua centro 530 836 tamanho 763 652 escala 258
+sitio O 0 0 0 "O" cor #CB675F raio 75
+sitio Ha 0.791 0 0.612 "Hₐ" cor #E8E8DF raio 54
+sitio Hb -0.791 0 0.612 "" cor #E8E8DF raio 54
+aresta O Ha
+aresta O Hb
+vista -26 13
+espacial enxofre centro 1870 836 tamanho 763 652 escala 225
+sitio S 0 0 0 "S" cor #E3C777 raio 56
+sitio fx 1 0 0 "F" cor #A1CBBB raio 42
+sitio fy 0 1 0 "" cor #A1CBBB raio 42
+sitio fz 0 0 1 "" cor #A1CBBB raio 42
+sitio fxM -1 0 0 "" cor #A1CBBB raio 42
+sitio fyM 0 -1 0 "" cor #A1CBBB raio 42
+sitio fzM 0 0 -1 "" cor #A1CBBB raio 42
+aresta S fx
+aresta S fy
+aresta S fz
+aresta S fxM
+aresta S fyM
+aresta S fzM
+vista -32 24
+equacao rotuloI "M_i=-I_3" centro 1200 613 tamanho 60 cor #D0C6F2
+matriz inversaoM centro 1200 854 tamanho 435 356 letra 69 cor #E1D8F6
+fila -1 0 0
+fila 0 -1 0
+fila 0 0 -1
+texto perguntaAgua "Há H do outro lado de O?" centro 530 1205 tamanho 43 largura 785 cor #DCE8E2 simples
+texto respostaAgua "O sítio oposto a Hₐ está vazio. H₂O não tem centro de inversão." centro 530 1205 tamanho 43 largura 785 cor #F2C4A9 simples
+texto perguntaSF "Cada F tem outro F do lado oposto?" centro 1870 1205 tamanho 43 largura 785 cor #DCE8E2 simples
+texto parSF "O F de +x coincide com o F de −x após a inversão." centro 1870 1205 tamanho 43 largura 785 cor #ACD0C6 simples
+texto respostaSF "Os três pares coincidem. S é o centro de inversão." centro 1870 1205 tamanho 43 largura 785 cor #ACD0C6 simples
+guia agua inversao em 0.45s
+junto observa agua Ha em 0.35s
+
+passo "Aplique a inversão com origem no oxigênio"
+aplica agua inversao matriz inversaoM em 1.2s
+junto some perguntaAgua em 0.25s
+junto aparece respostaAgua em 0.48s atraso 0.72
+
+passo "Transfira o teste para o centro do octaedro"
+aparece nomeSF, enxofre, perguntaSF em 0.5s
+guia enxofre inversao em 0.45s
+junto observa enxofre fx em 0.35s
+
+passo "Localize o F oposto ao átomo marcado"
+aplica enxofre inversao matriz inversaoM em 1.35s
+junto some perguntaSF em 0.25s
+junto aparece parSF em 0.48s atraso 0.85
+
+passo "Confira os três pares opostos no SF₆"
+some parSF em 0.22s
+observa enxofre limpa em 0.75s
+junto aparece respostaSF em 0.48s atraso 0.26
