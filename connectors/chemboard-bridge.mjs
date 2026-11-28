@@ -23,7 +23,11 @@ const STATIC_FILES = new Map([
   ['/favicon.png', ['../favicon.png', 'image/png']],
   ['/examples/animation-examples.json', ['../examples/animation-examples.json', 'application/json; charset=utf-8']],
   ['/examples/intermolecular-interactions.json', ['../examples/intermolecular-interactions.json', 'application/json; charset=utf-8']],
-  ['/examples/scene-examples.json', ['../examples/scene-examples.json', 'application/json; charset=utf-8']]
+  ['/examples/scene-examples.json', ['../examples/scene-examples.json', 'application/json; charset=utf-8']],
+  ['/examples/ic677-simetria-molecular.json', ['../examples/ic677-simetria-molecular.json', 'application/json; charset=utf-8']],
+  ['/examples/ic677-simetria-molecular.chemboard', ['../examples/ic677-simetria-molecular.chemboard', 'text/plain; charset=utf-8']],
+  ['/examples/ic677-estado-solido.json', ['../examples/ic677-estado-solido.json', 'application/json; charset=utf-8']],
+  ['/examples/ic677-estado-solido.chemboard', ['../examples/ic677-estado-solido.chemboard', 'text/plain; charset=utf-8']]
 ]);
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
 const sameSecret = (a, b) => typeof a === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b));

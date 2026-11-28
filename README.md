@@ -7,6 +7,7 @@
 <p align="center">
   <a href="https://henriquecsj.github.io/chemboard/"><strong>Open ChemBoard ↗</strong></a> ·
   <a href="#teaching-examples">Sample lectures</a> ·
+  <a href="#ic677-lectures">IC677</a> ·
   <a href="docs/README.pt-BR.md">Português</a>
 </p>
 
@@ -58,6 +59,8 @@ Right-click any cell on the board to highlight it or separate it from a crop as 
 
 Press **K** to open **Templates and Lewis generator**, choose **CH₄**, and insert it into the board. With the molecule selected, press **D** to open the 3D VSEPR model. Rotate the model, compare ball-and-stick with space filling, or use the measurement controls to examine bond angles.
 
+Select **Insert live 3D model** to place a rotatable object on the board. Drag it with the Hand tool to orbit it during class. You can name the model in a page script and apply a symmetry operation in a cue. [3D scripting examples](docs/scenes.md#spatial-drawings-and-matrices)
+
 ![ChemBoard showing a methane Lewis structure next to its rotatable tetrahedral VSEPR model.](docs/images/methane-3d.png)
 
 Press **W** to open **Atomic orbitals**. Change the quantum numbers and compare the surface, cloud, 2D cut, and radial views. The **Nodes** and **Axes** controls help orient the class before you insert a view on the board.
@@ -96,6 +99,19 @@ Open **Menu → Ready-made lectures** (**Aulas prontas**) and insert a lecture a
 
 To use a downloaded copy, save the JSON locally and choose **Menu → Open board** (**Abrir quadro**). ChemBoard asks whether to add the pages or replace the current board when it already contains work.
 
+### IC677 lectures
+
+Open **Menu → Ready-made lectures** to insert an editable copy. When presenting the full molecular symmetry course, **Menu → Lecture chapters…** jumps to a topic. Use **Page Down** and **Page Up** to step through the cues. The Hand tool lets you rotate the 3D structures and lattices.
+
+| Lecture | What it covers | Files |
+| --- | --- | --- |
+| **Molecular symmetry** · 48 scenes, 225 cues | Start with symmetry elements and point groups, then move through matrices and character tables to spectroscopy and vibrational modes. Five passages carry models, matrices or equations across scenes. | [Board JSON](https://henriquecsj.github.io/chemboard/examples/ic677-simetria-molecular.json) · [Scene source](examples/ic677-simetria-molecular.chemboard) |
+| **Solid state** · 15 scenes, 71 cues | Build unit cells from repeating patterns, compare the Bravais lattices, and explore packing, voids and crystal structures. | [Board JSON](https://henriquecsj.github.io/chemboard/examples/ic677-estado-solido.json) · [Scene source](examples/ic677-estado-solido.chemboard) |
+| **Water and symmetry matrices** · 5 scenes | Follow the molecular operations and their matrix representations. | [Scene source](examples/ic677-simetria-agua.chemboard) |
+| **Cubic cells** · 4 scenes | Compare primitive, body-centred and face-centred cubic cells. | [Scene source](examples/ic677-celulas-cubicas.chemboard) |
+
+Open a board JSON in **Menu → Open board…**. To read or edit a standalone `.chemboard` file, choose **Menu → Animation script… → Open file…**.
+
 ## Prepare a board for class
 
 | Task | In ChemBoard |
@@ -104,7 +120,7 @@ To use a downloaded copy, save the JSON locally and choose **Menu → Open board
 | Present | Use **→ / ←** to navigate saved views and reveals. Use the step toolbar to restart, pause, or change speed. Press **Esc** to return to the full board. |
 | Direct attention | Press **F** for full screen, **U** to hide the controls, **X** for the laser pointer, or **O** for the spotlight. |
 | Protect a finished drawing | Right-click an object and choose **Lock**, or use the lock icon on a selection. Right-click a locked object and choose **Unlock** when you need to edit it. |
-| Share the lesson | **Save board (.json)** keeps an editable multi-page copy. **Export image (PNG)** creates an image of the current page for a handout or slide. |
+| Share the lesson | **Save board (.json)** keeps the pages, cues, and animations in one file. **Include editable scripts** also saves the source text. **Export image (PNG)** captures the current page. |
 
 To animate a formula or a shape in a teaching step, select its initial and final poses in that order. Right-click either object and choose **Move between steps…**. For formulas, click the starting term and its corresponding term in the two previews. Press **→** or **Page Down** to advance to the chosen step while presenting.
 
@@ -147,7 +163,7 @@ cd chemboard
 python -m http.server 8000 --bind 127.0.0.1
 ```
 
-Then visit [localhost:8000](http://127.0.0.1:8000/). ChemBoard is a static HTML, CSS, and JavaScript app. Drawing and the built-in lectures work from the local HTML without a connection. Online molecule lookup, remote media, and web fonts use the network. The 3D tools require WebGL.
+Then visit [localhost:8000](http://127.0.0.1:8000/). ChemBoard is a static HTML, CSS, and JavaScript app. Drawing and the built-in lectures work from the local HTML without a connection. Online molecule lookup, remote media, and web fonts use the network. The spatial lecture renderer uses WebGL when available and provides a Canvas fallback.
 
 The current board autosaves in the browser under the address where it was opened. Use JSON to make a backup, move between computers, or switch between the hosted and local versions.
 

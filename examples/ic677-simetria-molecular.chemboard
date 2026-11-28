@@ -1,0 +1,3529 @@
+// IC677 · Química Inorgânica I · UFRRJ · Prof. Henrique C. S. Junior
+// ChemBoard · Simetria molecular (aula completa): elementos, operações, grupos pontuais, matrizes, caracteres,
+// tabelas, Mulliken, quiralidade e vibrações. Geometrias reais (Å); H₂O no plano xz (Miessler & Tarr).
+
+// H₂O(g), números de onda fundamentais: NIST Chemistry WebBook, Shimanouchi (1972).
+// https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=800#Electronic-Spec
+
+cena "Igual a si mesmo depois de um movimento" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  1/48  ·  O QUE É SIMETRIA" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Igual a si mesmo depois de um movimento" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d bz centro 500 760 tamanho 860 880
+atomo C1 C 1.39 0 0
+atomo C2 C 0.695 1.2038 0
+atomo C3 C -0.695 1.2038 0
+atomo C4 C -1.39 0 0
+atomo C5 C -0.695 -1.2038 0
+atomo C6 C 0.695 -1.2038 0
+atomo H1 H 2.48 0 0 "1"
+atomo H2 H 1.24 2.1477 0 "2"
+atomo H3 H -1.24 2.1477 0 "3"
+atomo H4 H -2.48 0 0 "4"
+atomo H5 H -1.24 -2.1477 0 "5"
+atomo H6 H 1.24 -2.1477 0 "6"
+ligacao C1 C2 ordem 1
+ligacao C1 H1
+ligacao C2 C3 ordem 1
+ligacao C2 H2
+ligacao C3 C4 ordem 1
+ligacao C3 H3
+ligacao C4 C5 ordem 1
+ligacao C4 H4
+ligacao C5 C6 ordem 1
+ligacao C5 H5
+ligacao C6 C1 ordem 1
+ligacao C6 H6
+elemento C6 eixo 0 0 1 ordem 6 "C_6" cor #F7C948
+projecao centro 1230 720 tamanho 560 "\text{vista de cima}"
+vista -90 40
+semrotulos
+texto t1 "Simetria: uma forma continua idêntica a si mesma depois de uma transformação (um giro, um reflexo, uma inversão)." em 1580 290 tamanho 42 cor #E4EAEF largura 760 simples
+texto t2 "Ela aparece sozinha na natureza: flores, flocos de neve com seis braços iguais, cristais." em 1580 516.96 tamanho 40 cor #A9BAC6 largura 760 simples
+texto t3 "Gire o benzeno 60°. Cada carbono ocupa o sítio vizinho. O mesmo traço marca as seis ligações C–C equivalentes." em 1580 734.16 tamanho 40 cor #A9BAC6 largura 760 simples
+texto t4 "Seis giros de 60° fecham a volta: o benzeno tem um eixo de ordem 6, o C₆." em 1580 902.56 tamanho 40 cor #F7C948 largura 760 simples
+texto t5 "Na química, a simetria decide quais orbitais se combinam e quais bandas aparecem no IV e no Raman." em 1580 1070.96 tamanho 38 cor #E4EAEF largura 760 simples
+aparece kick, titulo em 0.6s
+junto aparece bz em 1.2s
+junto escreve t1 em 1.8s
+passo "Na natureza"
+aparece t2
+passo "Gire 60°"
+exibe bz C6, rotulos em 0.6s
+aparece t3
+aplica bz C6 em 1.5s
+passo "Mais um giro"
+aplica bz C6 em 1.2s
+passo "Até fechar a volta"
+aplica bz C6 em 1s
+aplica bz C6 em 1s
+aplica bz C6 em 1s
+aplica bz C6 em 1s
+aparece t4
+passo "Por que isso importa"
+aparece t5
+
+cena "Fazer algo sem que ninguém perceba" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  2/48  ·  OPERAÇÃO DE SIMETRIA" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Fazer algo sem que ninguém perceba" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d nh3 centro 500 780 tamanho 880 900
+atomo N N 0 0 0.2861
+atomo H1 H 0.9373 0 -0.0954 "1"
+atomo H2 H -0.4687 0.8118 -0.0954 "2"
+atomo H3 H -0.4687 -0.8118 -0.0954 "3"
+ligacao N H1
+ligacao N H2
+ligacao N H3
+elemento C3 eixo 0 0 1 ordem 3 "C_3" cor #F7C948
+projecao centro 1240 740 tamanho 540 "\text{vista ao longo do eixo}" oculta
+vista -90 16
+semrotulos
+texto def "Uma operação de simetria leva a molécula a uma configuração indistinguível da original." em 1600 290 tamanho 46 cor #E4EAEF largura 740 negrito simples
+texto o1 "Gire a amônia 120° em torno do eixo vertical." em 1600 592.6 tamanho 40 cor #A9BAC6 largura 740 simples
+texto o2 "Alguma coisa mudou? Não dá para dizer: cada H foi parar onde estava outro H." em 1600 712.2 tamanho 38 cor #A9BAC6 largura 740 simples
+texto o3 "Numere os hidrogênios e gire de novo: só os números denunciam o giro." em 1600 873.28 tamanho 38 cor #A9BAC6 largura 740 simples
+texto o4 "O arco esmaecido guarda os giros já feitos: 120°, depois 240°." em 1600 1034.36 tamanho 38 cor #F7C948 largura 740 simples
+texto q "Quais movimentos fazem isso? Como transformar cada um em números?" em 1600 1149.08 tamanho 40 cor #E4EAEF largura 740 negrito simples
+aparece kick, titulo em 0.6s
+junto aparece nh3 em 1.2s
+junto orbita nh3 25 em 5s
+passo "A definição"
+escreve def em 1.6s
+passo "Gire 120°"
+aparece o1
+exibe nh3 C3 em 0.5s
+aplica nh3 C3 em 2s
+passo "Mudou?"
+aparece o2
+passo "Numere e gire de novo"
+exibe nh3 rotulos, projecao em 0.8s
+aparece o3
+aplica nh3 C3 em 2s
+aparece o4
+passo "A pergunta da aula"
+escreve q em 1.4s
+
+cena "O mapa da aula" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  3/48  ·  TEORIA DE GRUPOS" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "O mapa da aula" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+texto d1 "Teoria de grupos é o ramo da matemática que estuda as simetrias possíveis de um objeto e como elas se combinam. Nasceu na matemática pura; hoje descreve moléculas e sólidos em física e química." em 160 270 tamanho 42 cor #E4EAEF largura 2080 simples
+texto d2 "Em química, a simetria se analisa por operações (transformações aplicadas à molécula), definidas em relação a elementos (pontos, retas ou planos) que ficam fixos durante a operação." em 160 445.72 tamanho 40 cor #A9BAC6 largura 2080 simples
+caixa k0 centro 230 812.12 tamanho 280 250 cor #F7C948 espessura 4
+texto a0 "Elementos" centro 230 762.12 tamanho 36 cor #F7C948 largura 250 negrito simples
+texto s0 "eixos e planos" centro 230 852.12 tamanho 35 cor #B8C7D1 largura 240 simples
+caixa k1 centro 553 812.12 tamanho 280 250 cor #58C4DD espessura 4
+texto a1 "Operações" centro 553 762.12 tamanho 36 cor #58C4DD largura 250 negrito simples
+texto s1 "girar e refletir" centro 553 852.12 tamanho 35 cor #B8C7D1 largura 240 simples
+seta g1 de 375 812.12 ate 408 812.12 cor #7890A0 espessura 4
+caixa k2 centro 876 812.12 tamanho 280 250 cor #83C167 espessura 4
+texto a2 "Grupo pontual" centro 876 762.12 tamanho 36 cor #83C167 largura 250 negrito simples
+texto s2 "classificar" centro 876 852.12 tamanho 35 cor #B8C7D1 largura 240 simples
+seta g2 de 698 812.12 ate 731 812.12 cor #7890A0 espessura 4
+caixa k3 centro 1199 812.12 tamanho 280 250 cor #F07A5E espessura 4
+texto a3 "Matrizes" centro 1199 762.12 tamanho 36 cor #F07A5E largura 250 negrito simples
+texto s3 "representar" centro 1199 852.12 tamanho 35 cor #B8C7D1 largura 240 simples
+seta g3 de 1021 812.12 ate 1054 812.12 cor #7890A0 espessura 4
+caixa k4 centro 1522 812.12 tamanho 280 250 cor #FFD166 espessura 4
+texto a4 "Caracteres" centro 1522 762.12 tamanho 36 cor #FFD166 largura 250 negrito simples
+texto s4 "ler o traço" centro 1522 852.12 tamanho 35 cor #B8C7D1 largura 240 simples
+seta g4 de 1344 812.12 ate 1377 812.12 cor #7890A0 espessura 4
+caixa k5 centro 1845 812.12 tamanho 280 250 cor #B488F0 espessura 4
+texto a5 "Tabela" centro 1845 762.12 tamanho 36 cor #B488F0 largura 250 negrito simples
+texto s5 "irredutíveis" centro 1845 852.12 tamanho 35 cor #B8C7D1 largura 240 simples
+seta g5 de 1667 812.12 ate 1700 812.12 cor #7890A0 espessura 4
+caixa k6 centro 2168 812.12 tamanho 280 250 cor #FC6255 espessura 4
+texto a6 "Aplicações" centro 2168 762.12 tamanho 36 cor #FC6255 largura 250 negrito simples
+texto s6 "quiralidade e vibrações" centro 2168 852.12 tamanho 35 cor #B8C7D1 largura 240 simples
+seta g6 de 1990 812.12 ate 2023 812.12 cor #7890A0 espessura 4
+texto fim "O percurso da aula vai dos movimentos das moléculas aos números que descrevem orbitais e vibrações." em 160 1012.12 tamanho 40 cor #F7C948 largura 2080 simples
+aparece kick, titulo em 0.6s
+junto escreve d1 em 2s
+passo "Elementos e operações"
+aparece d2
+passo "Elementos"
+cresce k0 em 0.4s
+junto aparece a0, s0 em 0.4s
+passo "Operações"
+escreve g1 em 0.3s
+cresce k1 em 0.4s
+junto aparece a1, s1 em 0.4s
+passo "Grupo pontual"
+escreve g2 em 0.3s
+cresce k2 em 0.4s
+junto aparece a2, s2 em 0.4s
+passo "Matrizes"
+escreve g3 em 0.3s
+cresce k3 em 0.4s
+junto aparece a3, s3 em 0.4s
+passo "Caracteres"
+escreve g4 em 0.3s
+cresce k4 em 0.4s
+junto aparece a4, s4 em 0.4s
+passo "Tabela"
+escreve g5 em 0.3s
+cresce k5 em 0.4s
+junto aparece a5, s5 em 0.4s
+passo "Aplicações"
+escreve g6 em 0.3s
+cresce k6 em 0.4s
+junto aparece a6, s6 em 0.4s
+passo "O caminho"
+aparece fim
+
+cena "Cinco elementos, cinco tipos de movimento" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  4/48  ·  ELEMENTOS E OPERAÇÕES" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Cinco elementos, cinco tipos de movimento" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d agua centro 470 800 tamanho 820 900
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+vista -30 14
+texto h1 "símbolo" centro 1000 330 tamanho 30 cor #7890A0 negrito simples
+texto h2 "elemento: um lugar" em 1100 312 tamanho 30 cor #7890A0 negrito simples
+texto h3 "operação: um movimento" em 1680 312 tamanho 30 cor #7890A0 negrito simples
+equacao sE "E" centro 1000 446 tamanho 64 cor #E6E9EE
+texto eE "a molécula inteira" em 1100 418 tamanho 38 cor #E4EAEF largura 540 simples
+texto pE "identidade: não fazer nada" em 1680 418 tamanho 38 cor #A9BAC6 largura 620 simples
+equacao sC "C_n" centro 1000 596 tamanho 64 cor #F7C948
+texto eC "eixo de rotação própria" em 1100 568 tamanho 38 cor #E4EAEF largura 540 simples
+texto pC "girar 360°/n" em 1680 568 tamanho 38 cor #A9BAC6 largura 620 simples
+equacao ss "\sigma" centro 1000 746 tamanho 64 cor #58C4DD
+texto es "plano de reflexão" em 1100 718 tamanho 38 cor #E4EAEF largura 540 simples
+texto ps "refletir cada ponto no plano" em 1680 718 tamanho 38 cor #A9BAC6 largura 620 simples
+equacao si "i" centro 1000 896 tamanho 64 cor #FC6255
+texto ei "centro de inversão (um ponto)" em 1100 868 tamanho 38 cor #E4EAEF largura 540 simples
+texto pi "levar (x, y, z) a (−x, −y, −z)" em 1680 868 tamanho 38 cor #A9BAC6 largura 620 simples
+equacao sS "S_n" centro 1000 1046 tamanho 64 cor #83C167
+texto eS "eixo de rotação imprópria" em 1100 1018 tamanho 38 cor #E4EAEF largura 540 simples
+texto pS "girar 360°/n e refletir no plano ⟂" em 1680 1018 tamanho 38 cor #A9BAC6 largura 620 simples
+texto fim "O elemento é a geometria; a operação é a ação que ele permite. Um elemento pode gerar várias operações (um C₃ dá C₃ e C₃²)." em 1000 1170 tamanho 38 cor #F7C948 largura 1300 simples
+aparece kick, titulo em 0.6s
+junto aparece agua em 1s
+junto aparece h1, h2, h3 em 0.6s
+passo "Identidade"
+aparece sE, eE, pE em 0.5s
+aplica agua E em 1s
+passo "Eixo de rotação"
+aparece sC, eC, pC em 0.5s
+exibe agua C2
+aplica agua C2 em 1.8s
+passo "Plano de reflexão"
+aparece ss, es, ps em 0.5s
+restaura agua em 0.6s
+exibe agua syz
+aplica agua syz em 1.5s
+passo "Centro de inversão"
+aparece si, ei, pi em 0.5s
+passo "Rotação imprópria"
+aparece sS, eS, pS em 0.5s
+passo "Lugar e movimento"
+esconde agua C2, syz
+restaura agua em 0.6s
+escreve fim em 1.4s
+
+cena "E: não fazer nada" fundo #0E1821
+roteiro pagina
+transicao 800 agua
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  5/48  ·  IDENTIDADE" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "E: não fazer nada" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d agua centro 420 700 tamanho 640 680
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+vista -30 14
+molecula3d chf centro 1180 700 tamanho 640 680
+atomo C C 0 0 0
+atomo H H 0 0 1.09
+atomo F F 1.2728 0 -0.45
+atomo Cl Cl -0.8344 1.4452 -0.59
+atomo Br Br -0.9145 -1.584 -0.6467
+ligacao C H
+ligacao C F
+ligacao C Cl
+ligacao C Br
+elemento ch eixo 0 0 1 ordem 3 "?" cor #8E9BA8
+vista -30 18
+semrotulos
+texto lw "H₂O" centro 420 1060 tamanho 44 cor #E4EAEF negrito simples
+texto lc "CHFClBr" centro 1180 1060 tamanho 44 cor #E4EAEF negrito simples
+texto t1 "A identidade E deixa tudo onde está. Parece trivial, mas é obrigatória em todo grupo: corresponde à existência da molécula." em 1600 300 tamanho 42 cor #E4EAEF largura 720 simples
+texto t2 "Toda molécula tem E, até a que não tem mais nenhuma simetria." em 1600 578.2 tamanho 40 cor #A9BAC6 largura 720 simples
+texto t3 "No CHFClBr, gire 120° em torno da ligação C–H: o F vai para onde estava o Cl. Os círculos tracejados mostram que os átomos não coincidem." em 1600 697.8 tamanho 40 cor #A9BAC6 largura 720 simples
+texto t4 "Nenhum giro, reflexo ou inversão funciona. Só E: é o grupo mais pobre, C₁." em 1600 963.8 tamanho 40 cor #F7C948 largura 720 simples
+aparece kick, titulo em 0.6s
+junto aparece agua, chf, lw, lc em 1s
+junto escreve t1 em 1.6s
+passo "E nas duas"
+aplica agua E em 1s
+junto aplica chf E em 1s
+aparece t2
+passo "Tente um giro"
+exibe chf ch
+fantasma chf
+aplica chf ch em 2s
+aparece t3
+passo "Só E"
+restaura chf em 0.8s
+esconde chf ch
+fantasma chf limpa
+aparece t4
+
+cena "Cₙ: girar 360°/n" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  6/48  ·  ROTAÇÃO PRÓPRIA" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Cₙ: girar 360°/n" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d agua centro 330 600 tamanho 560 620
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+projecao centro 810 600 tamanho 400 "\text{de cima}"
+vista -30 14
+molecula3d nh3 centro 1430 600 tamanho 560 620
+atomo N N 0 0 0.2861
+atomo H1 H 0.9373 0 -0.0954 "1"
+atomo H2 H -0.4687 0.8118 -0.0954 "2"
+atomo H3 H -0.4687 -0.8118 -0.0954 "3"
+ligacao N H1
+ligacao N H2
+ligacao N H3
+elemento C3 eixo 0 0 1 ordem 3 "C_3" cor #F7C948
+projecao centro 1930 600 tamanho 400 "\text{de cima}"
+vista -90 18
+equacao c2 "\textcolor{#F7C948}{C_2}:\ 360°/2 = 180°" centro 560 990 tamanho 54 cor #E4EAEF
+equacao c3 "\textcolor{#F7C948}{C_3}:\ 360°/3 = 120°" centro 1680 990 tamanho 54 cor #E4EAEF
+equacao p1 "C_3" centro 1460 1110 tamanho 54 cor #E4EAEF
+equacao p2 "C_3^2" centro 1680 1110 tamanho 54 cor #E4EAEF
+equacao p3 "C_3^3 = E" centro 1940 1110 tamanho 54 cor #F7C948
+texto r1 "O elemento Cₙ é o eixo; a operação Cₙ é o giro de 360°/n em torno dele. Aplicar Cₙ m vezes é a operação Cₙᵐ, e Cₙⁿ = E." em 160 1190 tamanho 38 cor #E4EAEF largura 1250 simples
+texto r2 "Um C₃ gera duas operações novas: C₃ e C₃²." em 1460 1190 tamanho 38 cor #A9BAC6 largura 800 simples
+aparece kick, titulo em 0.6s
+junto aparece agua, nh3 em 1s
+passo "C₂ na água"
+exibe agua C2
+aplica agua C2 em 2s
+escreve c2 em 0.9s
+passo "C₃ na amônia"
+exibe nh3 C3
+aplica nh3 C3 em 1.8s
+escreve c3 em 0.9s
+aparece p1
+passo "Mais um giro"
+aplica nh3 C3 em 1.8s
+aparece p2
+passo "E mais um"
+aplica nh3 C3 em 1.8s
+aparece p3
+passo "A regra"
+aparece r1
+aparece r2
+
+cena "Anti-horário ou horário?" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  7/48  ·  SENTIDO DO GIRO" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Anti-horário ou horário?" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d a centro 330 620 tamanho 560 600
+atomo N N 0 0 0.2861
+atomo H1 H 0.9373 0 -0.0954 "1"
+atomo H2 H -0.4687 0.8118 -0.0954 "2"
+atomo H3 H -0.4687 -0.8118 -0.0954 "3"
+ligacao N H1
+ligacao N H2
+ligacao N H3
+elemento C3 eixo 0 0 1 ordem 3 "C_3" cor #F7C948
+projecao centro 810 620 tamanho 400 "\text{de cima}"
+vista -90 18
+molecula3d h centro 1430 620 tamanho 560 600
+atomo N N 0 0 0.2861
+atomo H1 H 0.9373 0 -0.0954 "1"
+atomo H2 H -0.4687 0.8118 -0.0954 "2"
+atomo H3 H -0.4687 -0.8118 -0.0954 "3"
+ligacao N H1
+ligacao N H2
+ligacao N H3
+elemento C3 eixo 0 0 1 ordem 3 "C_3" cor #F7C948
+projecao centro 1930 620 tamanho 400 "\text{de cima}"
+vista -90 18
+texto la "anti-horário: +120°" centro 570 970 tamanho 42 cor #F7C948 negrito simples
+texto lh "horário: −240°" centro 1680 970 tamanho 42 cor #F49A5C negrito simples
+equacao eq "C_3 = C_3^{-2}\qquad C_3^{-1} = C_3^2" centro 1200 1080 tamanho 58 cor #E4EAEF
+texto t1 "Olhando da ponta do eixo para a molécula: Miessler e Huheey giram no sentido anti-horário; Housecroft, Pfennig e Weller, no horário. O resultado de uma operação não depende da escolha, mas a escolha precisa ser a mesma do começo ao fim. Aqui: anti-horário." em 160 1150 tamanho 36 cor #A9BAC6 largura 2080 simples
+aparece kick, titulo em 0.6s
+junto aparece a, h em 1s
+junto exibe a C3
+junto exibe h C3
+passo "Anti-horário"
+aparece la
+aplica a C3 em 1.8s
+passo "Horário, 240°"
+aparece lh
+aplica h giro 0 0 1 -240 em 2.6s
+passo "O mesmo lugar"
+escreve eq em 1.2s
+passo "Convenções"
+aparece t1
+
+cena "XeF₄: C₄, C₂, C₂′ e C₂″" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  8/48  ·  VÁRIOS EIXOS" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "XeF₄: C₄, C₂, C₂′ e C₂″" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d xe centro 470 760 tamanho 820 860
+atomo Xe Xe 0 0 0
+atomo F1 F 1.95 0 0 "1"
+atomo F2 F 0 1.95 0 "2"
+atomo F3 F -1.95 0 0 "3"
+atomo F4 F 0 -1.95 0 "4"
+ligacao Xe F1
+ligacao Xe F2
+ligacao Xe F3
+ligacao Xe F4
+elemento C4 eixo 0 0 1 ordem 4 "C_4" cor #F7C948
+elemento sh plano 0 0 1 "\sigma_h" cor #4DD6B6
+elemento i centro "i" cor #FC6255
+elemento S4 impropria 0 0 1 ordem 4 "S_4" cor #83C167
+elemento C2p1 eixo 1 0 0 ordem 2 "C_2'" cor #F49A5C comprimento 2.6
+elemento sv1 plano 0 1 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento C2q1 eixo 0.7071 0.7071 0 ordem 2 "C_2''" cor #E8A06A comprimento 2.6
+elemento sd1 plano -0.7071 0.7071 0 "\sigma_d" cor #F07AB4 vertical 0 0 1
+elemento C2p2 eixo 0 1 0 ordem 2 "C_2'" cor #F49A5C comprimento 2.6
+elemento sv2 plano -1 0 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento C2q2 eixo -0.7071 0.7071 0 ordem 2 "C_2''" cor #E8A06A comprimento 2.6
+elemento sd2 plano -0.7071 -0.7071 0 "\sigma_d" cor #F07AB4 vertical 0 0 1
+projecao centro 1220 720 tamanho 560 "\text{de cima}"
+vista -28 30
+texto t1 "O XeF₄ é plano e quadrado. Perpendicular ao plano, pelo Xe, passa um eixo C₄." em 1600 290 tamanho 40 cor #E4EAEF largura 740 simples
+texto t2 "Dois giros de 90° são um giro de 180°: no mesmo lugar há também um C₂." em 1600 458.4 tamanho 40 cor #A9BAC6 largura 740 simples
+equacao e1 "\textcolor{#F7C948}{C_4^2} = \textcolor{#F7C948}{C_2}" centro 1970 671.8 tamanho 60 cor #E4EAEF
+texto t3 "No plano, dois eixos C₂′ seguem as ligações F–Xe–F." em 1600 738.8 tamanho 40 cor #F49A5C largura 740 simples
+texto t4 "Outros dois, C₂″, ficam nas bissetrizes dos ângulos F–Xe–F." em 1600 858.4 tamanho 40 cor #E8A06A largura 740 simples
+texto t5 "Eixo principal: o de maior ordem, aqui o C₄. Por convenção, ele é o eixo z." em 1600 1026.8 tamanho 42 cor #F7C948 largura 740 negrito simples
+aparece kick, titulo em 0.6s
+junto aparece xe em 1s
+junto aparece t1
+junto exibe xe C4
+passo "Gire 90°"
+aplica xe C4 em 1.6s
+passo "Mais 90°"
+aplica xe C4 em 1.6s
+aparece t2
+escreve e1 em 0.9s
+passo "Os C₂′"
+restaura xe em 0.8s
+exibe xe C2p1, C2p2 em 0.6s
+aparece t3
+aplica xe C2p1 em 2s
+passo "Os C₂″"
+restaura xe em 0.8s
+exibe xe C2q1, C2q2 em 0.6s
+aparece t4
+aplica xe C2q1 em 2s
+passo "O principal"
+restaura xe em 0.8s
+esconde xe C2p1, C2p2, C2q1, C2q2
+aparece t5
+
+cena "BF₃: um C₃ e três C₂" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  9/48  ·  EIXO PRINCIPAL" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "BF₃: um C₃ e três C₂" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d bf3 centro 470 760 tamanho 820 860
+atomo B B 0 0 0
+atomo F1 F 1.313 0 0 "1"
+atomo F2 F -0.6565 1.1371 0 "2"
+atomo F3 F -0.6565 -1.1371 0 "3"
+ligacao B F1
+ligacao B F2
+ligacao B F3
+elemento C3 eixo 0 0 1 ordem 3 "C_3" cor #F7C948
+elemento sh plano 0 0 1 "\sigma_h" cor #4DD6B6
+elemento S3 impropria 0 0 1 ordem 3 "S_3" cor #83C167
+elemento C21 eixo 1 0 0 ordem 2 "C_2" cor #F49A5C comprimento 1.85
+elemento sv1 plano 0 1 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento C22 eixo -0.5 0.866 0 ordem 2 "C_2" cor #F49A5C comprimento 1.85
+elemento sv2 plano -0.866 -0.5 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento C23 eixo -0.5 -0.866 0 ordem 2 "C_2" cor #F49A5C comprimento 1.85
+elemento sv3 plano 0.866 -0.5 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+projecao centro 1220 720 tamanho 560 "\text{de cima}"
+vista -18 30
+texto t1 "O BF₃ é plano: um eixo C₃ atravessa o boro, perpendicular à molécula." em 1600 300 tamanho 40 cor #E4EAEF largura 740 simples
+texto t2 "Três eixos C₂ ficam no plano, cada um ao longo de uma ligação B–F." em 1600 468.4 tamanho 40 cor #A9BAC6 largura 740 simples
+texto t3 "O giro de 180° em torno de um C₂ vira a molécula de cabeça para baixo: o F do eixo fica, os outros dois trocam de lugar. Na vista de cima, o reflexo parece um espelho, mas é um giro." em 1600 636.8 tamanho 40 cor #A9BAC6 largura 740 simples
+texto t4 "Eixo principal: o C₃, de maior ordem. Os C₂ são perpendiculares a ele, e isso vai pesar na hora de dar nome ao grupo." em 1600 1000.4 tamanho 42 cor #F7C948 largura 740 negrito simples
+aparece kick, titulo em 0.6s
+junto aparece bf3 em 1s
+passo "O C₃"
+exibe bf3 C3
+aparece t1
+aplica bf3 C3 em 1.8s
+passo "Os três C₂"
+restaura bf3 em 0.6s
+exibe bf3 C21, C22, C23 em 0.8s
+aparece t2
+passo "Gire 180° em torno de um C₂"
+aparece t3
+fixos bf3
+aplica bf3 C21 em 2.2s
+passo "O principal"
+fixos bf3 limpa
+restaura bf3 em 0.8s
+esconde bf3 C21, C22, C23
+aparece t4
+
+cena "σ: cada ponto vai ao seu reflexo" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  10/48  ·  PLANO DE REFLEXÃO" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "σ: cada ponto vai ao seu reflexo" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d agua centro 470 780 tamanho 820 880
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+ponto P 0.5 0.55 0.55 "P"
+projecao centro 1220 720 tamanho 520 "\text{de cima: planos viram retas}"
+vista -50 18
+texto t1 "O ponto e sua imagem ficam à mesma distância do plano. O traço perpendicular indica a correspondência entre as posições." em 1590 290 tamanho 40 cor #E4EAEF largura 750 simples
+texto t2 "σᵥ(xz) é o plano da própria molécula: nenhum átomo sai do lugar. O ponto P, fora do espelho, vai para o outro lado." em 1590 507.2 tamanho 38 cor #A9BAC6 largura 750 simples
+equacao e1 "\textcolor{#58C4DD}{\sigma_v(xz)}:\ (x,\ y,\ z) \to (x,\ -y,\ z)" centro 1965 749.14 tamanho 46 cor #E4EAEF
+texto t3 "No plano yz, os H trocam de sítio com a mesma geometria." em 1590 805.64 tamanho 38 cor #A9BAC6 largura 750 simples
+equacao e2 "\textcolor{#B488F0}{\sigma_v'(yz)}:\ (x,\ y,\ z) \to (-x,\ y,\ z)" centro 1965 954.86 tamanho 46 cor #E4EAEF
+texto t4 "Os dois contêm o eixo C₂: são planos verticais, σᵥ. Na vista de cima, cada um é uma reta pelo centro." em 1590 1011.36 tamanho 38 cor #F7C948 largura 750 simples
+aparece kick, titulo em 0.6s
+junto aparece agua em 1s
+junto aparece t1
+passo "O plano da molécula"
+exibe agua sxz, P
+aparece t2
+aplica agua sxz em 1.8s
+escreve e1 em 1s
+passo "O plano perpendicular"
+esconde agua sxz
+restaura agua em 0.6s
+exibe agua syz
+aparece t3
+aplica agua syz em 1.8s
+escreve e2 em 1s
+passo "Planos verticais"
+exibe agua C2, sxz
+aparece t4
+
+cena "σₕ, σᵥ e σd no XeF₄" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  11/48  ·  TRÊS TIPOS DE PLANO" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "σₕ, σᵥ e $\sigma_d$ no XeF₄" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d xe centro 470 760 tamanho 820 860
+atomo Xe Xe 0 0 0
+atomo F1 F 1.95 0 0 "1"
+atomo F2 F 0 1.95 0 "2"
+atomo F3 F -1.95 0 0 "3"
+atomo F4 F 0 -1.95 0 "4"
+ligacao Xe F1
+ligacao Xe F2
+ligacao Xe F3
+ligacao Xe F4
+elemento C4 eixo 0 0 1 ordem 4 "C_4" cor #F7C948
+elemento sh plano 0 0 1 "\sigma_h" cor #4DD6B6
+elemento i centro "i" cor #FC6255
+elemento S4 impropria 0 0 1 ordem 4 "S_4" cor #83C167
+elemento C2p1 eixo 1 0 0 ordem 2 "C_2'" cor #F49A5C comprimento 2.6
+elemento sv1 plano 0 1 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento C2q1 eixo 0.7071 0.7071 0 ordem 2 "C_2''" cor #E8A06A comprimento 2.6
+elemento sd1 plano -0.7071 0.7071 0 "\sigma_d" cor #F07AB4 vertical 0 0 1
+elemento C2p2 eixo 0 1 0 ordem 2 "C_2'" cor #F49A5C comprimento 2.6
+elemento sv2 plano -1 0 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento C2q2 eixo -0.7071 0.7071 0 ordem 2 "C_2''" cor #E8A06A comprimento 2.6
+elemento sd2 plano -0.7071 -0.7071 0 "\sigma_d" cor #F07AB4 vertical 0 0 1
+projecao centro 1220 720 tamanho 560 "\text{de cima}"
+vista -28 32
+texto t1 "σₕ (horizontal) é perpendicular ao eixo principal. No XeF₄, é o plano da molécula: na vista de cima, é o círculo." em 1600 290 tamanho 40 cor #4DD6B6 largura 740 simples
+texto t2 "σᵥ (vertical) contém o eixo principal. Os dois σᵥ do XeF₄ passam pelas ligações, sobre os C₂′." em 1600 556 tamanho 40 cor #58C4DD largura 740 simples
+texto t3 "$\sigma_d$ (diédrico) também contém o eixo principal, mas fica entre dois C₂: nas bissetrizes, sobre os C₂″." em 1600 773.2 tamanho 40 cor #F07AB4 largura 740 simples
+texto t4 "Refletir no $\sigma_d$ troca F₁ com F₂ e F₃ com F₄." em 1600 990.4 tamanho 38 cor #A9BAC6 largura 740 simples
+texto t5 "No σₕ, ninguém se move: todos os átomos estão no espelho." em 1600 1105.12 tamanho 38 cor #A9BAC6 largura 740 simples
+aparece kick, titulo em 0.6s
+junto aparece xe em 1s
+junto exibe xe C4
+passo "σₕ"
+exibe xe sh em 0.6s
+aparece t1
+passo "σᵥ"
+exibe xe sv1, sv2, C2p1, C2p2 em 0.6s
+aparece t2
+passo "σd"
+exibe xe sd1, sd2, C2q1, C2q2 em 0.6s
+aparece t3
+passo "Reflita num σd"
+esconde xe sv1, sv2, C2p1, C2p2, C2q1, C2q2, sd2
+aplica xe sd1 em 1.8s
+aparece t4
+passo "Reflita no σₕ"
+restaura xe em 0.6s
+esconde xe sd1
+fixos xe
+aplica xe sh em 1.6s
+aparece t5
+
+cena "i: atravessar o centro" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  12/48  ·  CENTRO DE INVERSÃO" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "i: atravessar o centro" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d nf centro 400 600 tamanho 720 680
+atomo N1 N -0.607 0 0 "1"
+atomo N2 N 0.607 0 0 "2"
+atomo F1 F -0.9801 -1.3452 0 "1"
+atomo F2 F 0.9801 1.3452 0 "2"
+ligacao N1 N2 ordem 2
+ligacao N1 F1
+ligacao N2 F2
+elemento i centro "i" cor #FC6255
+projecao centro 1000 600 tamanho 440 "\text{de cima}"
+vista -14 44
+molecula3d xe centro 1520 600 tamanho 600 600
+atomo Xe Xe 0 0 0
+atomo F1 F 1.95 0 0 "1"
+atomo F2 F 0 1.95 0 "2"
+atomo F3 F -1.95 0 0 "3"
+atomo F4 F 0 -1.95 0 "4"
+ligacao Xe F1
+ligacao Xe F2
+ligacao Xe F3
+ligacao Xe F4
+elemento i centro "i" cor #FC6255
+vista -28 32
+molecula3d agua centro 2050 600 tamanho 480 480
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento ic centro "i?" cor #FC6255
+vista -30 12
+texto l1 "trans-N₂F₂" centro 700 960 tamanho 40 cor #E4EAEF negrito simples
+texto l2 "XeF₄" centro 1500 960 tamanho 40 cor #E4EAEF negrito simples
+texto l3 "H₂O" centro 2050 960 tamanho 40 cor #E4EAEF negrito simples
+equacao e "\textcolor{#FC6255}{i}:\ (x,\ y,\ z) \to (-x,\ -y,\ -z)" centro 1200 1060 tamanho 58 cor #E4EAEF
+texto t1 "No N₂F₂, o centro de inversão fica no meio da ligação N=N, onde não há átomo." em 160 1150 tamanho 36 cor #A9BAC6 largura 1000 simples
+texto t2 "No XeF₄, o centro está sobre o Xe: cada F vai para o F oposto." em 1260 1150 tamanho 36 cor #A9BAC6 largura 1000 simples
+texto t3 "Na água, os átomos cairiam em lugares vazios: a água não tem i." em 1260 1240 tamanho 36 cor #FC6255 largura 1000 simples
+aparece kick, titulo em 0.6s
+junto aparece nf, l1 em 1s
+passo "Inverta o N₂F₂"
+exibe nf i
+aplica nf i em 2s
+escreve e em 1s
+aparece t1
+passo "Inverta o XeF₄"
+aparece xe, l2 em 0.6s
+exibe xe i
+aplica xe i em 2s
+aparece t2
+passo "Tente na água"
+aparece agua, l3 em 0.6s
+exibe agua ic
+fantasma agua
+aplica agua ic em 2s
+aparece t3
+
+cena "Sₙ: girar e refletir" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  13/48  ·  ROTAÇÃO IMPRÓPRIA" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Sₙ: girar e refletir" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d ch4 centro 470 780 tamanho 800 860
+atomo C C 0 0 0
+atomo H1 H 0.6276 0.6276 0.6276 "1"
+atomo H2 H 0.6276 -0.6276 -0.6276 "2"
+atomo H3 H -0.6276 0.6276 -0.6276 "3"
+atomo H4 H -0.6276 -0.6276 0.6276 "4"
+ligacao C H1
+ligacao C H2
+ligacao C H3
+ligacao C H4
+elemento S4 impropria 0 0 1 ordem 4 "S_4" cor #83C167
+elemento r4 eixo 0 0 1 ordem 4 "C_4" cor #8E9BA8
+elemento sh plano 0 0 1 "\sigma_h" cor #58C4DD
+projecao centro 1200 740 tamanho 540 "\text{ao longo de }S_4"
+vista -20 13
+texto t0 "Na vista de cima, H₁ e H₄ estão acima do plano (cunhas cheias) e H₂ e H₃, abaixo (cunhas tracejadas)." em 1580 280 tamanho 38 cor #A9BAC6 largura 760 simples
+texto t1 "Gire 90°: as cunhas cheias vão para onde havia tracejadas. Os H caem em lugares vazios (os círculos). O CH₄ não tem C₄." em 1580 487.44 tamanho 38 cor #E4EAEF largura 760 simples
+texto t2 "Agora reflita no plano perpendicular ao eixo: o que estava em cima vai para baixo. Cada H volta a um lugar ocupado." em 1580 694.88 tamanho 38 cor #E4EAEF largura 760 simples
+equacao e1 "\textcolor{#83C167}{S_4} = \textcolor{#58C4DD}{\sigma_h}\,\textcolor{#AEB8C2}{C_4}" centro 1960 948.82 tamanho 62 cor #E4EAEF
+texto t3 "Nem C₄ nem σₕ são simetrias do CH₄, mas a combinação é." em 1580 1017.32 tamanho 38 cor #F7C948 largura 760 simples
+texto t4 "Dois S₄ seguidos: 180° de giro e duas reflexões, que se anulam." em 1580 1132.04 tamanho 38 cor #A9BAC6 largura 760 simples
+equacao e2 "S_4^2 = C_2" centro 1960 1287.26 tamanho 54 cor #83C167
+aparece kick, titulo em 0.6s
+junto aparece ch4 em 1s
+junto aparece t0
+passo "O eixo S₄"
+exibe ch4 S4
+passo "Só o giro de 90°"
+fantasma ch4
+esconde ch4 S4 em 0.3s
+exibe ch4 r4
+aplica ch4 r4 em 2s
+aparece t1
+passo "Agora reflita"
+exibe ch4 sh
+aplica ch4 sh em 1.8s
+aparece t2
+escreve e1 em 1s
+aparece t3
+passo "Tudo de uma vez"
+esconde ch4 r4, sh
+exibe ch4 S4
+restaura ch4 em 0.8s
+aplica ch4 S4 em 3s
+passo "S₄ duas vezes"
+aplica ch4 S4 em 3s
+aparece t4
+escreve e2 em 0.9s
+
+cena "C₄ duas vezes é C₂" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  14/48  ·  OPERAÇÕES SUCESSIVAS" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "C₄ duas vezes é C₂" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d xa centro 330 620 tamanho 560 560
+atomo Xe Xe 0 0 0
+atomo F1 F 1.95 0 0 "a"
+atomo F2 F 0 1.95 0 "b"
+atomo F3 F -1.95 0 0 "c"
+atomo F4 F 0 -1.95 0 "d"
+ligacao Xe F1
+ligacao Xe F2
+ligacao Xe F3
+ligacao Xe F4
+elemento C4 eixo 0 0 1 ordem 4 "C_4" cor #F7C948
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F49A5C
+projecao centro 800 620 tamanho 400 "\text{de cima}"
+vista -28 32
+molecula3d xb centro 1430 620 tamanho 560 560
+atomo Xe Xe 0 0 0
+atomo F1 F 1.95 0 0 "a"
+atomo F2 F 0 1.95 0 "b"
+atomo F3 F -1.95 0 0 "c"
+atomo F4 F 0 -1.95 0 "d"
+ligacao Xe F1
+ligacao Xe F2
+ligacao Xe F3
+ligacao Xe F4
+elemento C4 eixo 0 0 1 ordem 4 "C_4" cor #F7C948
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F49A5C
+projecao centro 1900 620 tamanho 400 "\text{de cima}"
+vista -28 32
+texto la "C₄, depois C₄" centro 570 960 tamanho 42 cor #F7C948 negrito simples
+texto lb "um C₂" centro 1670 960 tamanho 42 cor #F49A5C negrito simples
+equacao eq "C_4 \cdot C_4 = C_4^2 = C_2" centro 1200 1070 tamanho 62 cor #E4EAEF
+texto t1 "Os F foram marcados a, b, c, d. Fazer uma operação depois de outra dá o mesmo resultado que uma terceira operação. Escreve-se o produto, e a operação que se faz primeiro fica à direita." em 160 1150 tamanho 36 cor #A9BAC6 largura 2080 simples
+aparece kick, titulo em 0.6s
+junto aparece xa, xb em 1s
+junto exibe xa C4
+junto exibe xb C2
+passo "Primeiro C₄"
+aparece la
+aplica xa C4 em 1.6s
+passo "De novo C₄"
+aplica xa C4 em 1.6s
+passo "Agora um C₂"
+aparece lb
+aplica xb C2 em 2s
+passo "O mesmo resultado"
+escreve eq em 1.2s
+aparece t1
+
+cena "S₁ = σₕ e S₂ = i" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  15/48  ·  CASOS ESPECIAIS" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "S₁ = σₕ e S₂ = i" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d xa centro 420 700 tamanho 760 760
+atomo Xe Xe 0 0 0
+atomo F1 F 1.95 0 0 "1"
+atomo F2 F 0 1.95 0 "2"
+atomo F3 F -1.95 0 0 "3"
+atomo F4 F 0 -1.95 0 "4"
+ligacao Xe F1
+ligacao Xe F2
+ligacao Xe F3
+ligacao Xe F4
+elemento S1 impropria 0 0 1 ordem 1 "S_1" cor #83C167
+elemento sh plano 0 0 1 "\sigma_h" cor #4DD6B6
+elemento S2 impropria 0 0 1 ordem 2 "S_2" cor #83C167
+elemento i centro "i" cor #FC6255
+ponto P 0.9 0.6 0.9 "P"
+vista -28 22
+molecula3d xb centro 1180 700 tamanho 760 760
+atomo Xe Xe 0 0 0
+atomo F1 F 1.95 0 0 "1"
+atomo F2 F 0 1.95 0 "2"
+atomo F3 F -1.95 0 0 "3"
+atomo F4 F 0 -1.95 0 "4"
+ligacao Xe F1
+ligacao Xe F2
+ligacao Xe F3
+ligacao Xe F4
+elemento S1 impropria 0 0 1 ordem 1 "S_1" cor #83C167
+elemento sh plano 0 0 1 "\sigma_h" cor #4DD6B6
+elemento S2 impropria 0 0 1 ordem 2 "S_2" cor #83C167
+elemento i centro "i" cor #FC6255
+ponto P 0.9 0.6 0.9 "P"
+vista -28 22
+texto t1 "S₁ gira 360° (não muda nada) e reflete no plano perpendicular: é só a reflexão σₕ." em 1600 290 tamanho 40 cor #E4EAEF largura 740 simples
+equacao e1 "S_1 = \sigma_h" centro 1970 550.7 tamanho 58 cor #83C167
+texto t2 "S₂ gira 180° e reflete: o ponto P vai parar exatamente onde a inversão o levaria." em 1600 616.2 tamanho 40 cor #E4EAEF largura 740 simples
+equacao e2 "S_2 = i" centro 1970 828.1 tamanho 58 cor #83C167
+texto t3 "Convenção: escreve-se sempre a operação mais simples. Fala-se em σₕ e i, não em S₁ e S₂; em C₂, não em C₄²." em 1600 893.6 tamanho 40 cor #F7C948 largura 740 simples
+aparece kick, titulo em 0.6s
+junto aparece xa, xb em 1s
+passo "S₁"
+exibe xa S1, P
+exibe xb sh, P
+aplica xa S1 em 2.4s
+junto aplica xb sh em 1.8s
+aparece t1
+escreve e1 em 0.8s
+passo "S₂"
+restaura xa em 0.5s
+junto restaura xb em 0.5s
+esconde xa S1
+esconde xb sh
+exibe xa S2
+exibe xb i
+aplica xa S2 em 2.8s
+junto aplica xb i em 2s
+aparece t2
+escreve e2 em 0.8s
+passo "A notação mais simples"
+aparece t3
+
+cena "C₁, Cₛ e Cᵢ" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  16/48  ·  BAIXA SIMETRIA" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "C₁, Cₛ e Cᵢ: um único elemento (ou nenhum)" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d m1 centro 400 620 tamanho 640 640
+atomo C C 0 0 0
+atomo H H 0 0 1.09
+atomo F F 1.2728 0 -0.45
+atomo Cl Cl -0.8344 1.4452 -0.59
+atomo Br Br -0.9145 -1.584 -0.6467
+ligacao C H
+ligacao C F
+ligacao C Cl
+ligacao C Br
+vista -30 18
+semrotulos
+molecula3d m2 centro 1200 620 tamanho 640 640
+atomo C1 C -0.67 0 0
+atomo C2 C 0.67 0 0
+atomo H1 H -1.21 0.9353 0
+atomo H2 H -1.21 -0.9353 0
+atomo Cl Cl 1.535 1.4982 0
+atomo Br Br 1.615 -1.6368 0
+ligacao C1 C2 ordem 2
+ligacao C1 H1
+ligacao C1 H2
+ligacao C2 Cl
+ligacao C2 Br
+elemento s plano 0 0 1 "\sigma" cor #58C4DD
+vista -24 40
+semrotulos
+molecula3d m3 centro 2000 620 tamanho 640 640
+atomo C1 C 0 0 0.77
+atomo C2 C 0 0 -0.77
+atomo H1 H 0.89 0.5138 1.1333 "1"
+atomo H2 H -0.89 -0.5138 -1.1333 "2"
+atomo Cl1 Cl -1.4534 0.8391 1.3633 "1"
+atomo Cl2 Cl 1.4534 -0.8391 -1.3633 "2"
+atomo Br1 Br 0 -1.8385 1.42 "1"
+atomo Br2 Br 0 1.8385 -1.42 "2"
+ligacao C1 C2
+ligacao C1 H1
+ligacao C2 H2
+ligacao C1 Cl1
+ligacao C2 Cl2
+ligacao C1 Br1
+ligacao C2 Br2
+elemento i centro "i" cor #FC6255
+vista -30 14
+equacao g1 "C_1" centro 400 990 tamanho 70 cor #F7C948
+equacao g2 "C_s" centro 1200 990 tamanho 70 cor #58C4DD
+equacao g3 "C_i" centro 2000 990 tamanho 70 cor #FC6255
+texto d1 "CHFClBr: só a identidade E" centro 400 1090 tamanho 36 cor #A9BAC6 largura 640 simples
+texto d2 "H₂C=CClBr: só um plano (o da molécula)" centro 1200 1090 tamanho 36 cor #A9BAC6 largura 640 simples
+texto d3 "CHClBr–CHClBr (anti): só um centro de inversão" centro 2000 1090 tamanho 36 cor #A9BAC6 largura 640 simples
+texto fim "C₁ tem só E e ordem 1. Cₛ acrescenta σ e Cᵢ acrescenta i. Os dois têm ordem 2." em 160 1200 tamanho 38 cor #F7C948 largura 2080 simples
+aparece kick, titulo em 0.6s
+junto aparece m1 em 0.8s
+junto orbita m1 360 em 18s
+passo "C₁"
+escreve g1 em 0.6s
+aparece d1
+passo "Cs"
+aparece m2 em 0.8s
+exibe m2 s
+aplica m2 s em 1.6s
+escreve g2 em 0.6s
+aparece d2
+passo "Ci"
+aparece m3 em 0.8s
+exibe m3 i
+aplica m3 i em 2s
+escreve g3 em 0.6s
+aparece d3
+passo "Ordem baixa"
+aparece fim
+
+cena "C∞ᵥ e D∞ₕ" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  17/48  ·  ALTA SIMETRIA: LINEARES" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "C∞ᵥ e D∞ₕ: qualquer ângulo serve" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d co centro 470 650 tamanho 700 700
+atomo C C 0 0 -0.564
+atomo O O 0 0 0.564
+ligacao C O ordem 3
+elemento Ci eixo 0 0 1 ordem 99 "C_\infty" cor #F7C948
+elemento sv plano 0 1 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+vista -30 10
+molecula3d co2 centro 1250 650 tamanho 700 700
+atomo C C 0 0 0
+atomo O1 O 0 0 1.16 "1"
+atomo O2 O 0 0 -1.16 "2"
+ligacao C O1 ordem 2
+ligacao C O2 ordem 2
+elemento Ci eixo 0 0 1 ordem 99 "C_\infty" cor #F7C948
+elemento sv plano 0 1 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento i centro "i" cor #FC6255
+elemento sh plano 0 0 1 "\sigma_h" cor #4DD6B6
+elemento C20 eixo 1 0 0 ordem 2 "C_2" cor #F49A5C comprimento 1.7
+elemento C21 eixo 0.7071 0.7071 0 ordem 2 "" cor #F49A5C comprimento 1.7
+elemento C22 eixo 0 1 0 ordem 2 "" cor #F49A5C comprimento 1.7
+elemento C23 eixo -0.7071 0.7071 0 ordem 2 "" cor #F49A5C comprimento 1.7
+vista -30 14
+equacao g1 "C_{\infty v}" centro 470 1050 tamanho 70 cor #F7C948
+equacao g2 "D_{\infty h}" centro 1250 1050 tamanho 70 cor #F7C948
+texto t1 "Uma molécula linear pode girar qualquer ângulo em torno do seu eixo: 37°, 101°, … O eixo é C∞." em 1700 300 tamanho 40 cor #E4EAEF largura 640 simples
+texto t2 "Infinitos planos σᵥ contêm o eixo." em 1700 517.2 tamanho 38 cor #A9BAC6 largura 640 simples
+texto t3 "O CO₂ tem mais: centro de inversão, σₕ e infinitos C₂ perpendiculares ao eixo." em 1700 631.92 tamanho 38 cor #A9BAC6 largura 640 simples
+texto t4 "Linear sem i: C∞ᵥ (CO, HCl). Linear com i: D∞ₕ (CO₂, N₂, H₂)." em 1700 793 tamanho 40 cor #F7C948 largura 640 simples
+aparece kick, titulo em 0.6s
+junto aparece co, co2 em 1s
+junto exibe co Ci
+junto exibe co2 Ci
+passo "Qualquer ângulo"
+aparece t1
+aplica co giro 0 0 1 37 em 1.4s
+junto aplica co2 giro 0 0 1 37 em 1.4s
+passo "Mais um ângulo qualquer"
+aplica co giro 0 0 1 101 em 1.8s
+junto aplica co2 giro 0 0 1 101 em 1.8s
+passo "Planos verticais"
+exibe co sv
+junto exibe co2 sv
+aparece t2
+passo "O que só o CO₂ tem"
+restaura co2 em 0.5s
+exibe co2 i, sh, C20, C21, C22, C23 em 0.6s
+aparece t3
+aplica co2 i em 2s
+passo "Os dois grupos"
+escreve g1 em 0.6s
+escreve g2 em 0.6s
+aparece t4
+
+cena "Td: 24 operações no CH₄" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  18/48  ·  ALTA SIMETRIA: TETRAEDRO" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Td: 24 operações no CH₄" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d ch4 centro 470 760 tamanho 800 860
+atomo C C 0 0 0
+atomo H1 H 0.6276 0.6276 0.6276 "1"
+atomo H2 H 0.6276 -0.6276 -0.6276 "2"
+atomo H3 H -0.6276 0.6276 -0.6276 "3"
+atomo H4 H -0.6276 -0.6276 0.6276 "4"
+ligacao C H1
+ligacao C H2
+ligacao C H3
+ligacao C H4
+elemento C3 eixo 1 1 1 ordem 3 "C_3" cor #F7C948 comprimento 1.6
+elemento C2 eixo 0 0 1 ordem 2 "C_2,\ S_4" cor #F49A5C
+elemento sd plano 1 -1 0 "\sigma_d" cor #F07AB4 vertical 0 0 1
+projecao centro 1220 720 tamanho 540 eixo 1 1 1 cima 0 0 1 "\text{ao longo de um }C_3"
+vista -20 14
+texto t1 "Cada ligação C–H é um eixo C₃. Na vista ao longo de um deles, o H₁ fica no centro e os outros três giram em volta." em 1600 290 tamanho 40 cor #E4EAEF largura 740 simples
+texto t2 "Os três eixos S₄ que já vimos também são C₂ (S₄² = C₂)." em 1600 507.2 tamanho 38 cor #A9BAC6 largura 740 simples
+texto t3 "Seis planos σd, cada um contendo duas ligações C–H." em 1600 621.92 tamanho 38 cor #A9BAC6 largura 740 simples
+equacao e1 "T_d = \{E,\ 8C_3,\ 3C_2,\ 6S_4,\ 6\sigma_d\}" centro 1970 772.64 tamanho 48 cor #E4EAEF
+texto t4 "1 + 8 + 3 + 6 + 6 = 24 operações: o grupo tem ordem h = 24." em 1600 830.64 tamanho 40 cor #F7C948 largura 740 simples
+aparece kick, titulo em 0.6s
+junto aparece ch4 em 1s
+passo "Um C₃ por ligação"
+exibe ch4 C3
+aparece t1
+aplica ch4 C3 em 2s
+passo "Mais 120°"
+aplica ch4 C3 em 2s
+passo "C₂ e S₄"
+restaura ch4 em 0.6s
+exibe ch4 C2
+aparece t2
+aplica ch4 C2 em 2s
+passo "Planos σd"
+restaura ch4 em 0.6s
+exibe ch4 sd
+aparece t3
+aplica ch4 sd em 1.8s
+passo "Contando"
+escreve e1 em 1.2s
+aparece t4
+
+cena "Oₕ: 48 operações no SF₆" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  19/48  ·  ALTA SIMETRIA: OCTAEDRO" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Oₕ: 48 operações no SF₆" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d sf6 centro 470 760 tamanho 800 860
+atomo S S 0 0 0
+atomo F1 F 1.56 0 0 "1"
+atomo F2 F -1.56 0 0 "2"
+atomo F3 F 0 1.56 0 "3"
+atomo F4 F 0 -1.56 0 "4"
+atomo F5 F 0 0 1.56 "5"
+atomo F6 F 0 0 -1.56 "6"
+ligacao S F1
+ligacao S F2
+ligacao S F3
+ligacao S F4
+ligacao S F5
+ligacao S F6
+elemento C4 eixo 0 0 1 ordem 4 "C_4" cor #F7C948
+elemento C3 eixo 1 1 1 ordem 3 "C_3" cor #F49A5C comprimento 2.4
+elemento C2 eixo 1 1 0 ordem 2 "C_2" cor #E8A06A comprimento 2.3
+elemento i centro "i" cor #FC6255
+projecao centro 1220 720 tamanho 540 eixo 1 1 1 cima 0 0 1 "\text{ao longo de um }C_3"
+vista -24 18
+texto t1 "Três eixos C₄ passam pelos pares de F opostos." em 1600 290 tamanho 40 cor #E4EAEF largura 740 simples
+texto t2 "Quatro eixos C₃ atravessam o octaedro pelas diagonais do cubo. Ao longo de um deles, os seis F formam um hexágono: três acima, três abaixo." em 1600 409.6 tamanho 38 cor #A9BAC6 largura 740 simples
+texto t3 "Seis C₂ pelas bissetrizes, centro de inversão no S, planos σₕ e σd, eixos S₄ e S₆." em 1600 663.4 tamanho 38 cor #A9BAC6 largura 740 simples
+equacao e1 "O_h:\ h = 48" centro 1970 866.48 tamanho 56 cor #F7C948
+texto t4 "Tetraedro, octaedro e icosaedro são exemplos de grupos poliédricos. O icosaedro tem 120 operações e será nosso próximo exemplo." em 1600 930.48 tamanho 38 cor #E4EAEF largura 740 simples
+aparece kick, titulo em 0.6s
+junto aparece sf6 em 1s
+passo "C₄"
+exibe sf6 C4
+aparece t1
+aplica sf6 C4 em 1.8s
+passo "C₃ pela diagonal"
+restaura sf6 em 0.6s
+esconde sf6 C4
+exibe sf6 C3
+aparece t2
+aplica sf6 C3 em 2.2s
+passo "Mais 120°"
+aplica sf6 C3 em 2.2s
+passo "O resto"
+restaura sf6 em 0.6s
+exibe sf6 C2, i
+aparece t3
+aplica sf6 i em 2s
+escreve e1 em 0.9s
+passo "Icosaedro"
+aparece t4
+
+cena "Iₕ: 120 operações no C₆₀" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  20/48  ·  ALTA SIMETRIA: ICOSAEDRO" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Iₕ: 120 operações no C₆₀" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d c60 centro 600 760 tamanho 1000 980
+atomo C1 C -3.4221 0 -0.705
+atomo C2 C -3.4221 0 0.705
+atomo C3 C -2.9864 -1.1407 -1.41
+atomo C4 C -2.9864 -1.1407 1.41
+atomo C5 C -2.9864 1.1407 -1.41
+atomo C6 C -2.9864 1.1407 1.41
+atomo C7 C -2.5507 -2.2814 -0.705
+atomo C8 C -2.5507 -2.2814 0.705
+atomo C9 C -2.5507 2.2814 -0.705
+atomo C10 C -2.5507 2.2814 0.705
+atomo C11 C -2.2814 -0.705 -2.5507
+atomo C12 C -2.2814 -0.705 2.5507
+atomo C13 C -2.2814 0.705 -2.5507
+atomo C14 C -2.2814 0.705 2.5507
+atomo C15 C -1.41 -2.9864 -1.1407
+atomo C16 C -1.41 -2.9864 1.1407
+atomo C17 C -1.41 2.9864 -1.1407
+atomo C18 C -1.41 2.9864 1.1407
+atomo C19 C -1.1407 -1.41 -2.9864
+atomo C20 C -1.1407 -1.41 2.9864
+atomo C21 C -1.1407 1.41 -2.9864
+atomo C22 C -1.1407 1.41 2.9864
+atomo C23 C -0.705 -3.4221 0
+atomo C24 C -0.705 -2.5507 -2.2814
+atomo C25 C -0.705 -2.5507 2.2814
+atomo C26 C -0.705 2.5507 -2.2814
+atomo C27 C -0.705 2.5507 2.2814
+atomo C28 C -0.705 3.4221 0
+atomo C29 C 0 -0.705 -3.4221
+atomo C30 C 0 -0.705 3.4221
+atomo C31 C 0 0.705 -3.4221
+atomo C32 C 0 0.705 3.4221
+atomo C33 C 0.705 -3.4221 0
+atomo C34 C 0.705 -2.5507 -2.2814
+atomo C35 C 0.705 -2.5507 2.2814
+atomo C36 C 0.705 2.5507 -2.2814
+atomo C37 C 0.705 2.5507 2.2814
+atomo C38 C 0.705 3.4221 0
+atomo C39 C 1.1407 -1.41 -2.9864
+atomo C40 C 1.1407 -1.41 2.9864
+atomo C41 C 1.1407 1.41 -2.9864
+atomo C42 C 1.1407 1.41 2.9864
+atomo C43 C 1.41 -2.9864 -1.1407
+atomo C44 C 1.41 -2.9864 1.1407
+atomo C45 C 1.41 2.9864 -1.1407
+atomo C46 C 1.41 2.9864 1.1407
+atomo C47 C 2.2814 -0.705 -2.5507
+atomo C48 C 2.2814 -0.705 2.5507
+atomo C49 C 2.2814 0.705 -2.5507
+atomo C50 C 2.2814 0.705 2.5507
+atomo C51 C 2.5507 -2.2814 -0.705
+atomo C52 C 2.5507 -2.2814 0.705
+atomo C53 C 2.5507 2.2814 -0.705
+atomo C54 C 2.5507 2.2814 0.705
+atomo C55 C 2.9864 -1.1407 -1.41
+atomo C56 C 2.9864 -1.1407 1.41
+atomo C57 C 2.9864 1.1407 -1.41
+atomo C58 C 2.9864 1.1407 1.41
+atomo C59 C 3.4221 0 -0.705
+atomo C60 C 3.4221 0 0.705
+ligacao C1 C2
+ligacao C1 C3
+ligacao C1 C5
+ligacao C2 C4
+ligacao C2 C6
+ligacao C3 C7
+ligacao C3 C11
+ligacao C4 C8
+ligacao C4 C12
+ligacao C5 C9
+ligacao C5 C13
+ligacao C6 C10
+ligacao C6 C14
+ligacao C7 C8
+ligacao C7 C15
+ligacao C8 C16
+ligacao C9 C10
+ligacao C9 C17
+ligacao C10 C18
+ligacao C11 C13
+ligacao C11 C19
+ligacao C12 C14
+ligacao C12 C20
+ligacao C13 C21
+ligacao C14 C22
+ligacao C15 C23
+ligacao C15 C24
+ligacao C16 C23
+ligacao C16 C25
+ligacao C17 C26
+ligacao C17 C28
+ligacao C18 C27
+ligacao C18 C28
+ligacao C19 C24
+ligacao C19 C29
+ligacao C20 C25
+ligacao C20 C30
+ligacao C21 C26
+ligacao C21 C31
+ligacao C22 C27
+ligacao C22 C32
+ligacao C23 C33
+ligacao C24 C34
+ligacao C25 C35
+ligacao C26 C36
+ligacao C27 C37
+ligacao C28 C38
+ligacao C29 C31
+ligacao C29 C39
+ligacao C30 C32
+ligacao C30 C40
+ligacao C31 C41
+ligacao C32 C42
+ligacao C33 C43
+ligacao C33 C44
+ligacao C34 C39
+ligacao C34 C43
+ligacao C35 C40
+ligacao C35 C44
+ligacao C36 C41
+ligacao C36 C45
+ligacao C37 C42
+ligacao C37 C46
+ligacao C38 C45
+ligacao C38 C46
+ligacao C39 C47
+ligacao C40 C48
+ligacao C41 C49
+ligacao C42 C50
+ligacao C43 C51
+ligacao C44 C52
+ligacao C45 C53
+ligacao C46 C54
+ligacao C47 C49
+ligacao C47 C55
+ligacao C48 C50
+ligacao C48 C56
+ligacao C49 C57
+ligacao C50 C58
+ligacao C51 C52
+ligacao C51 C55
+ligacao C52 C56
+ligacao C53 C54
+ligacao C53 C57
+ligacao C54 C58
+ligacao C55 C59
+ligacao C56 C60
+ligacao C57 C59
+ligacao C58 C60
+ligacao C59 C60
+elemento C5 eixo 0 1 1.618 ordem 5 "C_5" cor #F7C948 comprimento 4.6
+elemento C3 eixo 1 1 1 ordem 3 "C_3" cor #F49A5C comprimento 4.6
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #E8A06A comprimento 4.6
+ligacoes raio 0.06
+vista -24 16
+semrotulos
+texto t1 "O C₆₀ tem 12 pentágonos e 20 hexágonos. Pelo centro de cada par de pentágonos opostos passa um eixo C₅: são 6." em 1300 300 tamanho 40 cor #E4EAEF largura 1020 simples
+texto t2 "Pelos hexágonos opostos, 10 eixos C₃; pelas ligações entre dois hexágonos, 15 eixos C₂." em 1300 468.4 tamanho 40 cor #A9BAC6 largura 1020 simples
+equacao e1 "I_h = \{E,\ 12C_5,\ 12C_5^2,\ 20C_3,\ 15C_2,\ i,\ 12S_{10},\ 12S_{10}^3,\ 20S_6,\ 15\sigma\}" centro 1810 666.8 tamanho 40 cor #E4EAEF
+texto t3 "O grupo Iₕ tem 120 operações, divididas em 60 rotações próprias (incluindo E) e 60 operações impróprias." em 1300 718.8 tamanho 40 cor #F7C948 largura 1020 simples
+aparece kick, titulo em 0.6s
+junto aparece c60 em 1.2s
+junto orbita c60 30 em 6s
+passo "C₅"
+exibe c60 C5
+aparece t1
+aplica c60 C5 em 2s
+passo "Mais 72°"
+aplica c60 C5 em 2s
+passo "C₃ e C₂"
+restaura c60 em 0.6s
+esconde c60 C5
+exibe c60 C3, C2
+aparece t2
+aplica c60 C3 em 2s
+passo "Contando"
+escreve e1 em 1.4s
+aparece t3
+
+cena "Como descobrir o grupo de uma molécula" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  21/48  ·  GRUPOS PONTUAIS" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Como descobrir o grupo de uma molécula" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+caixa Q1 centro 1200 285 tamanho 760 84 cor #7890A0 espessura 3
+texto t_Q1 "Linear, ou vários eixos Cₙ com n ≥ 3?" centro 1200 285 tamanho 32 cor #E4EAEF largura 730 simples
+caixa SP centro 390 285 tamanho 560 170 cor #7890A0 espessura 3
+caixa Q2 centro 1200 445 tamanho 440 80 cor #7890A0 espessura 3
+texto t_Q2 "Tem eixo Cₙ?" centro 1200 445 tamanho 32 cor #E4EAEF largura 410 simples
+caixa LS centro 1900 445 tamanho 600 170 cor #7890A0 espessura 3
+caixa Q3 centro 1200 610 tamanho 860 90 cor #7890A0 espessura 3
+texto t_Q3 "Escolha o Cₙ de maior n. Há n eixos C₂ ⟂ a ele?" centro 1200 610 tamanho 32 cor #E4EAEF largura 830 simples
+caixa Q4 centro 620 790 tamanho 300 80 cor #7890A0 espessura 3
+texto t_Q4 "Tem σₕ?" centro 620 790 tamanho 32 cor #E4EAEF largura 270 simples
+caixa Q6 centro 1780 790 tamanho 300 80 cor #7890A0 espessura 3
+texto t_Q6 "Tem σₕ?" centro 1780 790 tamanho 32 cor #E4EAEF largura 270 simples
+caixa Dnh centro 400 950 tamanho 200 90 cor #F7C948 espessura 3
+equacao t_Dnh "D_{nh}" centro 400 950 tamanho 52 cor #F7C948
+caixa Q5 centro 820 950 tamanho 300 80 cor #7890A0 espessura 3
+texto t_Q5 "n planos σd?" centro 820 950 tamanho 32 cor #E4EAEF largura 270 simples
+caixa Dnd centro 680 1110 tamanho 200 90 cor #F7C948 espessura 3
+equacao t_Dnd "D_{nd}" centro 680 1110 tamanho 52 cor #F7C948
+caixa Dn centro 960 1110 tamanho 200 90 cor #F7C948 espessura 3
+equacao t_Dn "D_n" centro 960 1110 tamanho 52 cor #F7C948
+caixa Cnh centro 1560 950 tamanho 200 90 cor #F7C948 espessura 3
+equacao t_Cnh "C_{nh}" centro 1560 950 tamanho 52 cor #F7C948
+caixa Q7 centro 1990 950 tamanho 300 80 cor #7890A0 espessura 3
+texto t_Q7 "n planos σᵥ?" centro 1990 950 tamanho 32 cor #E4EAEF largura 270 simples
+caixa Cnv centro 1820 1110 tamanho 200 90 cor #F7C948 espessura 3
+equacao t_Cnv "C_{nv}" centro 1820 1110 tamanho 52 cor #F7C948
+caixa Q8 centro 2170 1110 tamanho 260 80 cor #7890A0 espessura 3
+texto t_Q8 "Tem S₂ₙ?" centro 2170 1110 tamanho 32 cor #E4EAEF largura 230 simples
+caixa S2n centro 2040 1270 tamanho 200 80 cor #F7C948 espessura 3
+equacao t_S2n "S_{2n}" centro 2040 1270 tamanho 52 cor #F7C948
+caixa Cn centro 2290 1270 tamanho 160 80 cor #F7C948 espessura 3
+equacao t_Cn "C_n" centro 2290 1270 tamanho 52 cor #F7C948
+texto t_SP1 "linear com i  →  $D_{\infty h}$" centro 390 230 tamanho 32 cor #E4EAEF simples
+texto t_SP2 "linear sem i  →  $C_{\infty v}$" centro 390 285 tamanho 32 cor #E4EAEF simples
+texto t_SP3 "vários Cₙ  →  $T_d$, $O_h$, $I_h$" centro 390 340 tamanho 32 cor #E4EAEF simples
+texto t_LS1 "sem Cₙ, com σ  →  $C_s$" centro 1900 390 tamanho 32 cor #E4EAEF simples
+texto t_LS2 "sem Cₙ, com i  →  $C_i$" centro 1900 445 tamanho 32 cor #E4EAEF simples
+texto t_LS3 "nenhum elemento  →  $C_1$" centro 1900 500 tamanho 32 cor #E4EAEF simples
+seta a1sp de 820 285 ate 670 285 cor #7890A0 espessura 3
+texto l_a1sp "sim" centro 745 315 tamanho 26 cor #A9BAC6 simples
+seta a12 de 1200 327 ate 1200 405 cor #7890A0 espessura 3
+texto l_a12 "não" centro 1234 366 tamanho 26 cor #A9BAC6 simples
+seta a2ls de 1420 445 ate 1600 445 cor #7890A0 espessura 3
+texto l_a2ls "não" centro 1510 415 tamanho 26 cor #A9BAC6 simples
+seta a23 de 1200 485 ate 1200 565 cor #7890A0 espessura 3
+texto l_a23 "sim" centro 1234 525 tamanho 26 cor #A9BAC6 simples
+seta a34 de 900 655 ate 700 750 cor #7890A0 espessura 3
+texto l_a34 "sim" centro 814.5879 729.5983 tamanho 26 cor #A9BAC6 simples
+seta a36 de 1500 655 ate 1700 750 cor #7890A0 espessura 3
+texto l_a36 "não" centro 1614.5879 675.4017 tamanho 26 cor #A9BAC6 simples
+seta a4dnh de 560 830 ate 440 905 cor #7890A0 espessura 3
+texto l_a4dnh "sim" centro 518.02 892.9399 tamanho 26 cor #A9BAC6 simples
+seta a45 de 680 830 ate 780 910 cor #7890A0 espessura 3
+texto l_a45 "não" centro 751.2396 846.5739 tamanho 26 cor #A9BAC6 simples
+seta a5dnd de 780 990 ate 710 1065 cor #7890A0 espessura 3
+texto l_a5dnd "sim" centro 769.8559 1047.9695 tamanho 26 cor #A9BAC6 simples
+seta a5dn de 860 990 ate 930 1065 cor #7890A0 espessura 3
+texto l_a5dn "não" centro 919.8559 1007.0305 tamanho 26 cor #A9BAC6 simples
+seta a6cnh de 1720 830 ate 1600 905 cor #7890A0 espessura 3
+texto l_a6cnh "sim" centro 1678.02 892.9399 tamanho 26 cor #A9BAC6 simples
+seta a67 de 1840 830 ate 1950 910 cor #7890A0 espessura 3
+texto l_a67 "não" centro 1914.9978 845.7379 tamanho 26 cor #A9BAC6 simples
+seta a7cnv de 1940 990 ate 1860 1065 cor #7890A0 espessura 3
+texto l_a7cnv "sim" centro 1923.254 1049.3861 tamanho 26 cor #A9BAC6 simples
+seta a78 de 2050 990 ate 2130 1070 cor #7890A0 espessura 3
+texto l_a78 "não" centro 2114.0416 1008.7868 tamanho 26 cor #A9BAC6 simples
+seta a8s2n de 2120 1150 ate 2070 1230 cor #7890A0 espessura 3
+texto l_a8s2n "sim" centro 2123.8319 1205.9 tamanho 26 cor #A9BAC6 simples
+seta a8cn de 2220 1150 ate 2270 1230 cor #7890A0 espessura 3
+texto l_a8cn "não" centro 2273.8319 1174.1 tamanho 26 cor #A9BAC6 simples
+caixa hw_Q1 centro 1200 285 tamanho 778 102 cor #F7C948 espessura 7
+seta hw_a12 de 1200 327 ate 1200 405 cor #F7C948 espessura 7
+caixa hw_Q2 centro 1200 445 tamanho 458 98 cor #F7C948 espessura 7
+seta hw_a23 de 1200 485 ate 1200 565 cor #F7C948 espessura 7
+caixa hw_Q3 centro 1200 610 tamanho 878 108 cor #F7C948 espessura 7
+seta hw_a36 de 1500 655 ate 1700 750 cor #F7C948 espessura 7
+caixa hw_Q6 centro 1780 790 tamanho 318 98 cor #F7C948 espessura 7
+seta hw_a67 de 1840 830 ate 1950 910 cor #F7C948 espessura 7
+caixa hw_Q7 centro 1990 950 tamanho 318 98 cor #F7C948 espessura 7
+seta hw_a7cnv de 1940 990 ate 1860 1065 cor #F7C948 espessura 7
+caixa hw_Cnv centro 1820 1110 tamanho 218 108 cor #F7C948 espessura 7
+molecula3d mw centro 240 1170 tamanho 420 320
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+vista -30 12
+semrotulos
+texto nw "H₂O" centro 240 1010 tamanho 38 cor #E4EAEF negrito simples
+equacao gw "\to\ C_{2v}" centro 500 1170 tamanho 60 cor #F7C948
+texto yw "C₂ é o maior eixo; não há C₂ ⟂; não há σₕ; há 2 σᵥ." em 1050 1235 tamanho 34 cor #A9BAC6 largura 880 simples
+caixa hn_Q1 centro 1200 285 tamanho 778 102 cor #F7C948 espessura 7
+seta hn_a12 de 1200 327 ate 1200 405 cor #F7C948 espessura 7
+caixa hn_Q2 centro 1200 445 tamanho 458 98 cor #F7C948 espessura 7
+seta hn_a23 de 1200 485 ate 1200 565 cor #F7C948 espessura 7
+caixa hn_Q3 centro 1200 610 tamanho 878 108 cor #F7C948 espessura 7
+seta hn_a36 de 1500 655 ate 1700 750 cor #F7C948 espessura 7
+caixa hn_Q6 centro 1780 790 tamanho 318 98 cor #F7C948 espessura 7
+seta hn_a67 de 1840 830 ate 1950 910 cor #F7C948 espessura 7
+caixa hn_Q7 centro 1990 950 tamanho 318 98 cor #F7C948 espessura 7
+seta hn_a7cnv de 1940 990 ate 1860 1065 cor #F7C948 espessura 7
+caixa hn_Cnv centro 1820 1110 tamanho 218 108 cor #F7C948 espessura 7
+molecula3d mn centro 240 1170 tamanho 420 320
+atomo N N 0 0 0.2861
+atomo H1 H 0.9373 0 -0.0954 "1"
+atomo H2 H -0.4687 0.8118 -0.0954 "2"
+atomo H3 H -0.4687 -0.8118 -0.0954 "3"
+ligacao N H1
+ligacao N H2
+ligacao N H3
+vista -90 20
+semrotulos
+texto nn "NH₃" centro 240 1010 tamanho 38 cor #E4EAEF negrito simples
+equacao gn "\to\ C_{3v}" centro 500 1170 tamanho 60 cor #F7C948
+texto yn "C₃; nenhum C₂ ⟂; sem σₕ; 3 σᵥ." em 1050 1235 tamanho 34 cor #A9BAC6 largura 880 simples
+caixa hbf_Q1 centro 1200 285 tamanho 778 102 cor #F7C948 espessura 7
+seta hbf_a12 de 1200 327 ate 1200 405 cor #F7C948 espessura 7
+caixa hbf_Q2 centro 1200 445 tamanho 458 98 cor #F7C948 espessura 7
+seta hbf_a23 de 1200 485 ate 1200 565 cor #F7C948 espessura 7
+caixa hbf_Q3 centro 1200 610 tamanho 878 108 cor #F7C948 espessura 7
+seta hbf_a34 de 900 655 ate 700 750 cor #F7C948 espessura 7
+caixa hbf_Q4 centro 620 790 tamanho 318 98 cor #F7C948 espessura 7
+seta hbf_a4dnh de 560 830 ate 440 905 cor #F7C948 espessura 7
+caixa hbf_Dnh centro 400 950 tamanho 218 108 cor #F7C948 espessura 7
+molecula3d mbf centro 240 1170 tamanho 420 320
+atomo B B 0 0 0
+atomo F1 F 1.313 0 0 "1"
+atomo F2 F -0.6565 1.1371 0 "2"
+atomo F3 F -0.6565 -1.1371 0 "3"
+ligacao B F1
+ligacao B F2
+ligacao B F3
+vista -18 30
+semrotulos
+texto nbf "BF₃" centro 240 1010 tamanho 38 cor #E4EAEF negrito simples
+equacao gbf "\to\ D_{3h}" centro 500 1170 tamanho 60 cor #F7C948
+texto ybf "C₃ com 3 C₂ ⟂; tem σₕ (o plano da molécula)." em 1050 1235 tamanho 34 cor #A9BAC6 largura 880 simples
+caixa hxe_Q1 centro 1200 285 tamanho 778 102 cor #F7C948 espessura 7
+seta hxe_a12 de 1200 327 ate 1200 405 cor #F7C948 espessura 7
+caixa hxe_Q2 centro 1200 445 tamanho 458 98 cor #F7C948 espessura 7
+seta hxe_a23 de 1200 485 ate 1200 565 cor #F7C948 espessura 7
+caixa hxe_Q3 centro 1200 610 tamanho 878 108 cor #F7C948 espessura 7
+seta hxe_a34 de 900 655 ate 700 750 cor #F7C948 espessura 7
+caixa hxe_Q4 centro 620 790 tamanho 318 98 cor #F7C948 espessura 7
+seta hxe_a4dnh de 560 830 ate 440 905 cor #F7C948 espessura 7
+caixa hxe_Dnh centro 400 950 tamanho 218 108 cor #F7C948 espessura 7
+molecula3d mxe centro 240 1170 tamanho 420 320
+atomo Xe Xe 0 0 0
+atomo F1 F 1.95 0 0 "1"
+atomo F2 F 0 1.95 0 "2"
+atomo F3 F -1.95 0 0 "3"
+atomo F4 F 0 -1.95 0 "4"
+ligacao Xe F1
+ligacao Xe F2
+ligacao Xe F3
+ligacao Xe F4
+vista -28 32
+semrotulos
+texto nxe "XeF₄" centro 240 1010 tamanho 38 cor #E4EAEF negrito simples
+equacao gxe "\to\ D_{4h}" centro 500 1170 tamanho 60 cor #F7C948
+texto yxe "C₄ com 4 C₂ ⟂; tem σₕ." em 1050 1235 tamanho 34 cor #A9BAC6 largura 880 simples
+caixa hnf_Q1 centro 1200 285 tamanho 778 102 cor #F7C948 espessura 7
+seta hnf_a12 de 1200 327 ate 1200 405 cor #F7C948 espessura 7
+caixa hnf_Q2 centro 1200 445 tamanho 458 98 cor #F7C948 espessura 7
+seta hnf_a23 de 1200 485 ate 1200 565 cor #F7C948 espessura 7
+caixa hnf_Q3 centro 1200 610 tamanho 878 108 cor #F7C948 espessura 7
+seta hnf_a36 de 1500 655 ate 1700 750 cor #F7C948 espessura 7
+caixa hnf_Q6 centro 1780 790 tamanho 318 98 cor #F7C948 espessura 7
+seta hnf_a6cnh de 1720 830 ate 1600 905 cor #F7C948 espessura 7
+caixa hnf_Cnh centro 1560 950 tamanho 218 108 cor #F7C948 espessura 7
+molecula3d mnf centro 240 1170 tamanho 420 320
+atomo N1 N -0.607 0 0 "1"
+atomo N2 N 0.607 0 0 "2"
+atomo F1 F -0.9801 -1.3452 0 "1"
+atomo F2 F 0.9801 1.3452 0 "2"
+ligacao N1 N2 ordem 2
+ligacao N1 F1
+ligacao N2 F2
+vista -14 44
+semrotulos
+texto nnf "trans-N₂F₂" centro 240 1010 tamanho 38 cor #E4EAEF negrito simples
+equacao gnf "\to\ C_{2h}" centro 500 1170 tamanho 60 cor #F7C948
+texto ynf "C₂ ⟂ ao plano; nenhum C₂ ⟂ a ele; tem σₕ." em 1050 1235 tamanho 34 cor #A9BAC6 largura 880 simples
+caixa hch_Q1 centro 1200 285 tamanho 778 102 cor #F7C948 espessura 7
+seta hch_a1sp de 820 285 ate 670 285 cor #F7C948 espessura 7
+caixa hch_SP centro 390 285 tamanho 578 188 cor #F7C948 espessura 7
+molecula3d mch centro 240 1170 tamanho 420 320
+atomo C C 0 0 0
+atomo H1 H 0.6276 0.6276 0.6276 "1"
+atomo H2 H 0.6276 -0.6276 -0.6276 "2"
+atomo H3 H -0.6276 0.6276 -0.6276 "3"
+atomo H4 H -0.6276 -0.6276 0.6276 "4"
+ligacao C H1
+ligacao C H2
+ligacao C H3
+ligacao C H4
+vista -20 14
+semrotulos
+texto nch "CH₄" centro 240 1010 tamanho 38 cor #E4EAEF negrito simples
+equacao gch "\to\ T_d" centro 500 1170 tamanho 60 cor #F7C948
+texto ych "vários C₃: grupo cúbico, tetraedro." em 1050 1235 tamanho 34 cor #A9BAC6 largura 880 simples
+caixa hcf_Q1 centro 1200 285 tamanho 778 102 cor #F7C948 espessura 7
+seta hcf_a12 de 1200 327 ate 1200 405 cor #F7C948 espessura 7
+caixa hcf_Q2 centro 1200 445 tamanho 458 98 cor #F7C948 espessura 7
+seta hcf_a2ls de 1420 445 ate 1600 445 cor #F7C948 espessura 7
+caixa hcf_LS centro 1900 445 tamanho 618 188 cor #F7C948 espessura 7
+molecula3d mcf centro 240 1170 tamanho 420 320
+atomo C C 0 0 0
+atomo H H 0 0 1.09
+atomo F F 1.2728 0 -0.45
+atomo Cl Cl -0.8344 1.4452 -0.59
+atomo Br Br -0.9145 -1.584 -0.6467
+ligacao C H
+ligacao C F
+ligacao C Cl
+ligacao C Br
+vista -30 18
+semrotulos
+texto ncf "CHFClBr" centro 240 1010 tamanho 38 cor #E4EAEF negrito simples
+equacao gcf "\to\ C_1" centro 500 1170 tamanho 60 cor #F7C948
+texto ycf "nenhum eixo, plano ou centro." em 1050 1235 tamanho 34 cor #A9BAC6 largura 880 simples
+aparece kick, titulo em 0.6s
+passo "Casos especiais"
+cresce Q1 em 0.4s
+junto aparece t_Q1 em 0.4s
+escreve a1sp em 0.35s
+junto aparece l_a1sp em 0.3s
+cresce SP em 0.4s
+junto aparece t_SP1, t_SP2, t_SP3 em 0.5s
+passo "Sem eixo"
+escreve a12 em 0.35s
+junto aparece l_a12 em 0.3s
+cresce Q2 em 0.4s
+junto aparece t_Q2 em 0.4s
+escreve a2ls em 0.35s
+junto aparece l_a2ls em 0.3s
+cresce LS em 0.4s
+junto aparece t_LS1, t_LS2, t_LS3 em 0.5s
+passo "O eixo de maior ordem"
+escreve a23 em 0.35s
+junto aparece l_a23 em 0.3s
+cresce Q3 em 0.4s
+junto aparece t_Q3 em 0.4s
+passo "Grupos D"
+escreve a34 em 0.35s
+junto aparece l_a34 em 0.3s
+cresce Q4 em 0.4s
+junto aparece t_Q4 em 0.4s
+escreve a4dnh em 0.35s
+junto aparece l_a4dnh em 0.3s
+cresce Dnh em 0.4s
+junto aparece t_Dnh em 0.4s
+escreve a45 em 0.35s
+junto aparece l_a45 em 0.3s
+cresce Q5 em 0.4s
+junto aparece t_Q5 em 0.4s
+escreve a5dnd em 0.35s
+junto aparece l_a5dnd em 0.3s
+cresce Dnd em 0.4s
+junto aparece t_Dnd em 0.4s
+escreve a5dn em 0.35s
+junto aparece l_a5dn em 0.3s
+cresce Dn em 0.4s
+junto aparece t_Dn em 0.4s
+passo "Grupos C"
+escreve a36 em 0.35s
+junto aparece l_a36 em 0.3s
+cresce Q6 em 0.4s
+junto aparece t_Q6 em 0.4s
+escreve a6cnh em 0.35s
+junto aparece l_a6cnh em 0.3s
+cresce Cnh em 0.4s
+junto aparece t_Cnh em 0.4s
+escreve a67 em 0.35s
+junto aparece l_a67 em 0.3s
+cresce Q7 em 0.4s
+junto aparece t_Q7 em 0.4s
+escreve a7cnv em 0.35s
+junto aparece l_a7cnv em 0.3s
+cresce Cnv em 0.4s
+junto aparece t_Cnv em 0.4s
+escreve a78 em 0.35s
+junto aparece l_a78 em 0.3s
+cresce Q8 em 0.4s
+junto aparece t_Q8 em 0.4s
+escreve a8s2n em 0.35s
+junto aparece l_a8s2n em 0.3s
+cresce S2n em 0.4s
+junto aparece t_S2n em 0.4s
+escreve a8cn em 0.35s
+junto aparece l_a8cn em 0.3s
+cresce Cn em 0.4s
+junto aparece t_Cn em 0.4s
+passo "H₂O"
+aparece mw, nw em 0.5s
+aparece hw_Q1 em 0.25s
+aparece hw_a12 em 0.25s
+aparece hw_Q2 em 0.25s
+aparece hw_a23 em 0.25s
+aparece hw_Q3 em 0.25s
+aparece hw_a36 em 0.25s
+aparece hw_Q6 em 0.25s
+aparece hw_a67 em 0.25s
+aparece hw_Q7 em 0.25s
+aparece hw_a7cnv em 0.25s
+aparece hw_Cnv em 0.25s
+escreve gw em 0.6s
+junto aparece yw em 0.5s
+passo "NH₃"
+some mw, nw, gw, yw em 0.3s
+junto some hw_Q1 em 0.3s
+junto some hw_a12 em 0.3s
+junto some hw_Q2 em 0.3s
+junto some hw_a23 em 0.3s
+junto some hw_Q3 em 0.3s
+junto some hw_a36 em 0.3s
+junto some hw_Q6 em 0.3s
+junto some hw_a67 em 0.3s
+junto some hw_Q7 em 0.3s
+junto some hw_a7cnv em 0.3s
+junto some hw_Cnv em 0.3s
+aparece mn, nn em 0.5s
+aparece hn_Q1 em 0.25s
+aparece hn_a12 em 0.25s
+aparece hn_Q2 em 0.25s
+aparece hn_a23 em 0.25s
+aparece hn_Q3 em 0.25s
+aparece hn_a36 em 0.25s
+aparece hn_Q6 em 0.25s
+aparece hn_a67 em 0.25s
+aparece hn_Q7 em 0.25s
+aparece hn_a7cnv em 0.25s
+aparece hn_Cnv em 0.25s
+escreve gn em 0.6s
+junto aparece yn em 0.5s
+passo "BF₃"
+some mn, nn, gn, yn em 0.3s
+junto some hn_Q1 em 0.3s
+junto some hn_a12 em 0.3s
+junto some hn_Q2 em 0.3s
+junto some hn_a23 em 0.3s
+junto some hn_Q3 em 0.3s
+junto some hn_a36 em 0.3s
+junto some hn_Q6 em 0.3s
+junto some hn_a67 em 0.3s
+junto some hn_Q7 em 0.3s
+junto some hn_a7cnv em 0.3s
+junto some hn_Cnv em 0.3s
+aparece mbf, nbf em 0.5s
+aparece hbf_Q1 em 0.25s
+aparece hbf_a12 em 0.25s
+aparece hbf_Q2 em 0.25s
+aparece hbf_a23 em 0.25s
+aparece hbf_Q3 em 0.25s
+aparece hbf_a34 em 0.25s
+aparece hbf_Q4 em 0.25s
+aparece hbf_a4dnh em 0.25s
+aparece hbf_Dnh em 0.25s
+escreve gbf em 0.6s
+junto aparece ybf em 0.5s
+passo "XeF₄"
+some mbf, nbf, gbf, ybf em 0.3s
+junto some hbf_Q1 em 0.3s
+junto some hbf_a12 em 0.3s
+junto some hbf_Q2 em 0.3s
+junto some hbf_a23 em 0.3s
+junto some hbf_Q3 em 0.3s
+junto some hbf_a34 em 0.3s
+junto some hbf_Q4 em 0.3s
+junto some hbf_a4dnh em 0.3s
+junto some hbf_Dnh em 0.3s
+aparece mxe, nxe em 0.5s
+aparece hxe_Q1 em 0.25s
+aparece hxe_a12 em 0.25s
+aparece hxe_Q2 em 0.25s
+aparece hxe_a23 em 0.25s
+aparece hxe_Q3 em 0.25s
+aparece hxe_a34 em 0.25s
+aparece hxe_Q4 em 0.25s
+aparece hxe_a4dnh em 0.25s
+aparece hxe_Dnh em 0.25s
+escreve gxe em 0.6s
+junto aparece yxe em 0.5s
+passo "trans-N₂F₂"
+some mxe, nxe, gxe, yxe em 0.3s
+junto some hxe_Q1 em 0.3s
+junto some hxe_a12 em 0.3s
+junto some hxe_Q2 em 0.3s
+junto some hxe_a23 em 0.3s
+junto some hxe_Q3 em 0.3s
+junto some hxe_a34 em 0.3s
+junto some hxe_Q4 em 0.3s
+junto some hxe_a4dnh em 0.3s
+junto some hxe_Dnh em 0.3s
+aparece mnf, nnf em 0.5s
+aparece hnf_Q1 em 0.25s
+aparece hnf_a12 em 0.25s
+aparece hnf_Q2 em 0.25s
+aparece hnf_a23 em 0.25s
+aparece hnf_Q3 em 0.25s
+aparece hnf_a36 em 0.25s
+aparece hnf_Q6 em 0.25s
+aparece hnf_a6cnh em 0.25s
+aparece hnf_Cnh em 0.25s
+escreve gnf em 0.6s
+junto aparece ynf em 0.5s
+passo "CH₄"
+some mnf, nnf, gnf, ynf em 0.3s
+junto some hnf_Q1 em 0.3s
+junto some hnf_a12 em 0.3s
+junto some hnf_Q2 em 0.3s
+junto some hnf_a23 em 0.3s
+junto some hnf_Q3 em 0.3s
+junto some hnf_a36 em 0.3s
+junto some hnf_Q6 em 0.3s
+junto some hnf_a6cnh em 0.3s
+junto some hnf_Cnh em 0.3s
+aparece mch, nch em 0.5s
+aparece hch_Q1 em 0.25s
+aparece hch_a1sp em 0.25s
+aparece hch_SP em 0.25s
+escreve gch em 0.6s
+junto aparece ych em 0.5s
+passo "CHFClBr"
+some mch, nch, gch, ych em 0.3s
+junto some hch_Q1 em 0.3s
+junto some hch_a1sp em 0.3s
+junto some hch_SP em 0.3s
+aparece mcf, ncf em 0.5s
+aparece hcf_Q1 em 0.25s
+aparece hcf_a12 em 0.25s
+aparece hcf_Q2 em 0.25s
+aparece hcf_a2ls em 0.25s
+aparece hcf_LS em 0.25s
+escreve gcf em 0.6s
+junto aparece ycf em 0.5s
+
+cena "H₂O e SF₄: o mesmo C₂ᵥ" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  22/48  ·  UM GRUPO, VÁRIAS MOLÉCULAS" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "H₂O e SF₄: o mesmo C₂ᵥ" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d agua centro 330 620 tamanho 560 600
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+projecao centro 810 620 tamanho 400 "\text{de cima}"
+vista -34 16
+molecula3d sf4 centro 1430 620 tamanho 560 600
+atomo S S 0 0 0
+atomo Fa1 F 1.6429 0 -0.1005 "1"
+atomo Fa2 F -1.6429 0 -0.1005 "2"
+atomo Fe1 F 0 1.1973 -0.9765 "3"
+atomo Fe2 F 0 -1.1973 -0.9765 "4"
+ligacao S Fa1
+ligacao S Fa2
+ligacao S Fe1
+ligacao S Fe2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+projecao centro 1930 620 tamanho 400 "\text{de cima}"
+vista -34 16
+texto la "H₂O" centro 570 970 tamanho 44 cor #E4EAEF negrito simples
+texto lb "SF₄ (gangorra)" centro 1680 970 tamanho 44 cor #E4EAEF negrito simples
+equacao eq "C_{2v} = \{E,\ \textcolor{#F7C948}{C_2},\ \textcolor{#58C4DD}{\sigma_v(xz)},\ \textcolor{#B488F0}{\sigma_v'(yz)}\}" centro 1200 1080 tamanho 56 cor #E4EAEF
+texto t1 "Moléculas diferentes, os mesmos elementos de simetria: o mesmo grupo pontual. Tudo o que se disser do C₂ᵥ vale para as duas." em 160 1160 tamanho 38 cor #F7C948 largura 2080 simples
+aparece kick, titulo em 0.6s
+junto aparece agua, sf4, la, lb em 1s
+passo "C₂"
+exibe agua C2
+junto exibe sf4 C2
+aplica agua C2 em 2s
+junto aplica sf4 C2 em 2s
+passo "σv(xz)"
+restaura agua em 0.5s
+junto restaura sf4 em 0.5s
+exibe agua sxz
+junto exibe sf4 sxz
+aplica agua sxz em 1.8s
+junto aplica sf4 sxz em 1.8s
+passo "σv′(yz)"
+restaura agua em 0.5s
+junto restaura sf4 em 0.5s
+exibe agua syz
+junto exibe sf4 syz
+aplica agua syz em 1.8s
+junto aplica sf4 syz em 1.8s
+passo "O grupo"
+escreve eq em 1.2s
+aparece t1
+
+cena "Compor duas operações dá outra operação" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  23/48  ·  O GRUPO C₂ᵥ" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Compor duas operações dá outra operação" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d a1 centro 380 600 tamanho 700 700
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+ponto P 0.42 0.62 0.62 "P"
+vista -50 16
+molecula3d a2 centro 1060 600 tamanho 700 700
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+ponto P 0.42 0.62 0.62 "P"
+vista -50 16
+texto l1 "σᵥ′(yz) e depois σᵥ(xz)" centro 380 980 tamanho 40 cor #A9BAC6 simples
+texto l2 "só C₂" centro 1060 980 tamanho 40 cor #A9BAC6 simples
+equacao eq "\textcolor{#58C4DD}{\sigma_v(xz)}\;\textcolor{#B488F0}{\sigma_v'(yz)} = \textcolor{#F7C948}{C_2}" centro 720 1100 tamanho 62 cor #E4EAEF
+texto nb "Lê-se da direita para a esquerda: primeiro σᵥ′(yz), depois σᵥ(xz)." em 140 1190 tamanho 36 cor #A9BAC6 largura 1200 simples
+caracteres tg centro 1840 600 tamanho 960 470 letra 40 vazia
+grupo "C_{2v}"
+classe E "E" cor #E6E9EE
+classe C2 "C_2" cor #F7C948
+classe sxz "\sigma_v(xz)" cor #58C4DD
+classe syz "\sigma_v'(yz)" cor #B488F0
+linha rE "E" E C2 sxz syz
+linha rC2 "C_2" C2 E syz sxz
+linha rsxz "\sigma_v(xz)" sxz syz E C2
+linha rsyz "\sigma_v'(yz)" syz sxz C2 E
+texto g1 "A tabela de multiplicação: linha (depois) × coluna (primeiro). Toda combinação cai dentro do conjunto." em 1400 900 tamanho 38 cor #E4EAEF largura 900 simples
+texto g2 "A diagonal só tem E: no C₂ᵥ, cada operação desfaz a si mesma." em 1400 1080 tamanho 38 cor #F7C948 largura 900 simples
+aparece kick, titulo em 0.6s
+junto aparece a1, a2 em 1s
+passo "Duas reflexões seguidas"
+exibe a1 syz, P
+exibe a2 P
+aparece l1
+aplica a1 syz em 1.6s
+esconde a1 syz
+exibe a1 sxz
+aplica a1 sxz em 1.6s
+passo "Um giro só"
+aparece l2
+exibe a2 C2
+aplica a2 C2 em 1.8s
+escreve eq em 1.2s
+aparece nb
+passo "Na tabela"
+aparece tg em 0.6s
+revela tg celula rsxz syz de 720 1100
+junto realca tg celula rsxz syz
+passo "Todas as combinações"
+realca tg limpa
+revela tg tudo em 1.4s
+aparece g1
+passo "A diagonal"
+realca tg celula rE E mais rC2
+aparece g2
+
+cena "Quatro regras que todo grupo cumpre" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  24/48  ·  PROPRIEDADES DE GRUPO" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Quatro regras que todo grupo cumpre" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d agua centro 420 760 tamanho 700 760
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+projecao centro 420 1180 tamanho 280 semeixos
+vista -30 14
+texto n0 "Identidade" em 900 300 tamanho 42 cor #E6E9EE negrito simples
+texto t0 "Existe E, que comuta com todas e não muda nada." em 900 358 tamanho 36 cor #A9BAC6 largura 760 simples
+equacao e0 "EA = AE = A" centro 2020 350 tamanho 48 cor #E4EAEF
+texto n1 "Inversa" em 900 530 tamanho 42 cor #F7C948 negrito simples
+texto t1 "Cada operação tem uma inversa; juntas, dão E. No C₂ᵥ, cada uma é a própria inversa." em 900 588 tamanho 36 cor #A9BAC6 largura 760 simples
+equacao e1 "C_2\,C_2 = E" centro 2020 580 tamanho 48 cor #E4EAEF
+texto n2 "Fechamento" em 900 760 tamanho 42 cor #58C4DD negrito simples
+texto t2 "O produto de duas operações do grupo é outra operação do grupo." em 900 818 tamanho 36 cor #A9BAC6 largura 760 simples
+equacao e2 "\sigma_v'(yz)\,\sigma_v(xz) = C_2" centro 2020 810 tamanho 48 cor #E4EAEF
+texto n3 "Associatividade" em 900 990 tamanho 42 cor #B488F0 negrito simples
+texto t3 "A ordem dos parênteses não importa (a ordem das operações, sim)." em 900 1048 tamanho 36 cor #A9BAC6 largura 760 simples
+equacao e3 "(\sigma_v\,\sigma_v')\,C_2 = \sigma_v\,(\sigma_v'\,C_2) = E" centro 2020 1040 tamanho 48 cor #E4EAEF
+texto fim "Um conjunto de operações que cumpre as quatro regras é um grupo. As operações de simetria de uma molécula sempre cumprem: é o grupo pontual dela." em 900 1230 tamanho 36 cor #F7C948 largura 1450 simples
+aparece kick, titulo em 0.6s
+junto aparece agua em 1s
+passo "Identidade"
+aparece n0, t0
+escreve e0 em 0.9s
+aplica agua E em 1s
+passo "Inversa"
+aparece n1, t1
+exibe agua C2
+aplica agua C2 em 1.8s
+aplica agua C2 em 1.8s
+escreve e1 em 0.9s
+passo "Fechamento"
+aparece n2, t2
+escreve e2 em 1s
+passo "Associatividade"
+aparece n3, t3
+escreve e3 em 1.2s
+passo "Um grupo"
+aparece fim
+
+cena "Cada operação é uma matriz" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  25/48  ·  MATRIZES" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Cada operação é uma matriz" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d agua centro 470 790 tamanho 820 880
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+vista -40 18
+semrotulos
+equacao vf0 "x'" centro 1230 587.9 tamanho 54 cor #E4EAEF
+equacao vf1 "y'" centro 1230 650 tamanho 54 cor #E4EAEF
+equacao vf2 "z'" centro 1230 712.1 tamanho 54 cor #E4EAEF
+linha vfl0 de 1189.5 554.42 ate 1189.5 745.58 cor #E4EAEF espessura 3
+linha vfl1 de 1189.5 554.42 ate 1201.38 554.42 cor #E4EAEF espessura 3
+linha vfl2 de 1189.5 745.58 ate 1201.38 745.58 cor #E4EAEF espessura 3
+linha vfr0 de 1270.5 554.42 ate 1270.5 745.58 cor #E4EAEF espessura 3
+linha vfr1 de 1270.5 554.42 ate 1258.62 554.42 cor #E4EAEF espessura 3
+linha vfr2 de 1270.5 745.58 ate 1258.62 745.58 cor #E4EAEF espessura 3
+equacao vi0 "x" centro 2090 587.9 tamanho 54 cor #E4EAEF
+equacao vi1 "y" centro 2090 650 tamanho 54 cor #E4EAEF
+equacao vi2 "z" centro 2090 712.1 tamanho 54 cor #E4EAEF
+linha vil0 de 2049.5 554.42 ate 2049.5 745.58 cor #E4EAEF espessura 3
+linha vil1 de 2049.5 554.42 ate 2061.38 554.42 cor #E4EAEF espessura 3
+linha vil2 de 2049.5 745.58 ate 2061.38 745.58 cor #E4EAEF espessura 3
+linha vir0 de 2130.5 554.42 ate 2130.5 745.58 cor #E4EAEF espessura 3
+linha vir1 de 2130.5 554.42 ate 2118.62 554.42 cor #E4EAEF espessura 3
+linha vir2 de 2130.5 745.58 ate 2118.62 745.58 cor #E4EAEF espessura 3
+texto eqs "=" centro 1350 635 tamanho 64 cor #E4EAEF simples
+matriz M centro 1660 650 tamanho 520 380 letra 60 vazia
+fila 1 0 0
+fila 0 1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+topo "x \to" "y \to" "z \to"
+texto lf "coordenadas finais" centro 1230 900 tamanho 30 cor #7890A0 simples
+texto lm "matriz da operação" centro 1660 900 tamanho 30 cor #7890A0 simples
+texto li "coordenadas iniciais" centro 2090 900 tamanho 30 cor #7890A0 simples
+texto t1 "Para saber o que a operação faz com qualquer ponto, basta saber para onde ela leva os vetores x, y e z. As setas giram com a molécula; as tracejadas (+x, +y, +z) ficam paradas." em 1060 280 tamanho 32 cor #A9BAC6 largura 1260 simples
+texto t2 "Cada coluna é a imagem de um vetor: x vira −x, y vira −y, z fica." em 1060 960 tamanho 38 cor #E4EAEF largura 1250 simples
+equacao e "\textcolor{#F7C948}{C_2}:\ (x,\ y,\ z) \to (\textcolor{#F07A5E}{-x},\ \textcolor{#86D06C}{-y},\ \textcolor{#6FA8F5}{z})" centro 1680 1100 tamanho 54 cor #E4EAEF
+texto t3 "1: a coordenada fica como está (simétrica). −1: muda de sinal (antissimétrica). 0: não contribui para aquela coordenada." em 1060 1180 tamanho 34 cor #F7C948 largura 1250 simples
+aparece kick, titulo em 0.6s
+junto aparece agua em 1s
+junto aparece t1
+passo "A equação"
+aparece vf0, vf1, vf2, vfl0, vfl1, vfl2, vfr0, vfr1, vfr2, vi0, vi1, vi2, vil0, vil1, vil2, vir0, vir1, vir2, eqs em 0.6s
+aparece M, lf, lm, li em 0.6s
+passo "Os três vetores"
+exibe agua base, eixos, C2
+passo "Gire 180°"
+aplica agua C2 em 2s
+passo "Coluna de x"
+preenche M coluna 1 com -1 0 0
+passo "Coluna de y"
+preenche M coluna 2 com 0 -1 0
+passo "Coluna de z"
+preenche M coluna 3 com 0 0 1
+aparece t2
+passo "Em coordenadas"
+escreve e em 1.2s
+aparece t3
+
+cena "Quatro operações, quatro matrizes" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  26/48  ·  AS MATRIZES DO C₂ᵥ" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Quatro operações, quatro matrizes" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d agua centro 1200 470 tamanho 760 560
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+vista -34 14
+semrotulos
+equacao hmE "E" centro 420 820 tamanho 56 cor #E6E9EE
+matriz mE centro 420 1030 tamanho 440 360 letra 54 vazia
+fila 1 0 0
+fila 0 1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+equacao hc2 "C_2" centro 980 820 tamanho 56 cor #F7C948
+matriz B centro 980 1030 tamanho 440 360 letra 54 vazia
+fila 1 0 0
+fila 0 1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+equacao hxz "\sigma_v(xz)" centro 1540 820 tamanho 56 cor #58C4DD
+matriz A centro 1540 1030 tamanho 440 360 letra 54 vazia
+fila 1 0 0
+fila 0 1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+equacao hmyz "\sigma_v'(yz)" centro 2100 820 tamanho 56 cor #B488F0
+matriz myz centro 2100 1030 tamanho 440 360 letra 54 vazia
+fila 1 0 0
+fila 0 1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+texto t "Todas são diagonais: na água, cada eixo só pode virar ele mesmo ou o seu oposto. x, y e z não se misturam." em 400 1250 tamanho 38 cor #F7C948 largura 1700 simples
+aparece kick, titulo em 0.6s
+junto aparece agua em 0.8s
+junto aparece mE, hmE em 0.6s
+junto aparece B, hc2 em 0.6s
+junto aparece A, hxz em 0.6s
+junto aparece myz, hmyz em 0.6s
+passo "Matriz de E"
+restaura agua em 0.5s
+aplica agua E em 1.6s
+preenche mE tudo com 1 0 0 0 1 0 0 0 1 em 0.8s
+passo "Matriz de C2"
+restaura agua em 0.5s
+exibe agua C2
+aplica agua C2 em 1.6s
+preenche B tudo com -1 0 0 0 -1 0 0 0 1 em 0.8s
+esconde agua C2
+passo "Matriz de sxz"
+restaura agua em 0.5s
+exibe agua sxz
+aplica agua sxz em 1.6s
+preenche A tudo com 1 0 0 0 -1 0 0 0 1 em 0.8s
+esconde agua sxz
+passo "Matriz de syz"
+restaura agua em 0.5s
+exibe agua syz
+aplica agua syz em 1.6s
+preenche myz tudo com -1 0 0 0 1 0 0 0 1 em 0.8s
+esconde agua syz
+passo "Todas diagonais"
+realca mE diagonal
+realca B diagonal
+realca A diagonal
+realca myz diagonal
+aparece t
+
+cena "σᵥ(xz) depois de C₂ é σᵥ′(yz)" fundo #0E1821
+roteiro pagina
+transicao 950 A B hxz hc2
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  27/48  ·  COMPOR = MULTIPLICAR" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "σᵥ(xz) depois de C₂ é σᵥ′(yz)" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d a1 centro 300 440 tamanho 520 460
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+ponto P 0.42 0.62 0.62 "P"
+vista -50 16
+molecula3d a2 centro 860 440 tamanho 520 460
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+ponto P 0.42 0.62 0.62 "P"
+vista -50 16
+texto l1 "C₂, depois σᵥ(xz)" centro 300 690 tamanho 32 cor #A9BAC6 simples
+texto l2 "só σᵥ′(yz)" centro 860 690 tamanho 32 cor #A9BAC6 simples
+equacao hxz "\sigma_v(xz)" centro 1300 300 tamanho 54 cor #58C4DD
+equacao hc2 "C_2" centro 1760 300 tamanho 54 cor #F7C948
+equacao hp "?" centro 2200 300 tamanho 54 cor #E4EAEF
+equacao hyz "\sigma_v'(yz)" centro 2200 300 tamanho 54 cor #B488F0
+matriz A centro 1300 500 tamanho 400 320 letra 54
+fila 1 0 0
+fila 0 -1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+matriz B centro 1760 500 tamanho 400 320 letra 54
+fila -1 0 0
+fila 0 -1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+matriz P centro 2200 500 tamanho 400 320 letra 54 vazia
+fila 0 0 0
+fila 0 0 0
+fila 0 0 0
+cores #F07A5E #86D06C #6FA8F5
+texto vz "×" centro 1530 490 tamanho 66 cor #E4EAEF simples
+texto eqs "=" centro 1985 490 tamanho 66 cor #E4EAEF simples
+texto t1 "A operação feita primeiro fica à direita. Para obter uma entrada, multiplique os pares da linha e da coluna e some os produtos." em 160 760 tamanho 36 cor #A9BAC6 largura 2080 simples
+equacao res "\textcolor{#58C4DD}{\sigma_v(xz)}\,\textcolor{#F7C948}{C_2} = \textcolor{#B488F0}{\sigma_v'(yz)}" centro 1200 1000 tamanho 74 cor #E4EAEF
+texto t2 "As duas rotas chegam à mesma imagem do ponto P." centro 1200 1160 tamanho 44 cor #F7C948 largura 1950 simples
+aparece kick, titulo em 0.6s
+junto aparece a1, a2 em 0.8s
+junto aparece hxz, hc2, A, B em 0.7s
+passo "Na molécula"
+aparece l1, l2
+exibe a1 C2, P
+exibe a2 P
+aplica a1 C2 em 1.6s
+esconde a1 C2
+exibe a1 sxz
+aplica a1 sxz em 1.5s
+exibe a2 syz
+aplica a2 syz em 1.5s
+passo "Nas matrizes"
+aparece hp, P, vz, eqs em 0.7s
+aparece t1
+passo "Linha 1, coluna 1"
+produto A B em P célula 1 1 escolha leitura 1200 960 1500 54
+passo "O resultado"
+produto A B em P célula 1 1 leitura 1200 960 1500 54
+passo "Linha 2, coluna 2"
+produto A B em P célula 2 2 leitura 1200 960 1500 54
+passo "A matriz inteira"
+produto A B em P em 1s
+passo "É o σᵥ′(yz)"
+transforma hp em hyz em 0.9s
+escreve res em 1.1s
+aparece t2
+
+cena "Na amônia, x e y se misturam" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  28/48  ·  BLOCOS" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Na amônia, x e y se misturam" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d nh3 centro 430 640 tamanho 700 680
+atomo N N 0 0 0.2861
+atomo H1 H 0.9373 0 -0.0954 "1"
+atomo H2 H -0.4687 0.8118 -0.0954 "2"
+atomo H3 H -0.4687 -0.8118 -0.0954 "3"
+ligacao N H1
+ligacao N H2
+ligacao N H3
+elemento C3 eixo 0 0 1 ordem 3 "C_3" cor #F7C948
+elemento sv1 plano 0 1 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento sv2 plano -0.866 -0.5 0 "\sigma_v'" cor #58C4DD vertical 0 0 1
+elemento sv3 plano 0.866 -0.5 0 "\sigma_v''" cor #58C4DD vertical 0 0 1
+projecao centro 430 1150 tamanho 330
+vista -62 46
+semrotulos
+equacao l1 "\textcolor{#F7C948}{C_3} =" centro 1030 520 tamanho 60 cor #E4EAEF
+matriz M centro 1400 520 tamanho 560 470 letra 60 vazia
+fila 1 0 0
+fila 0 1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+topo "x \to" "y \to" "z \to"
+equacao l2 "\textcolor{#58C4DD}{\sigma_v} =" centro 1030 1050 tamanho 60 cor #E4EAEF
+matriz N centro 1400 1050 tamanho 560 400 letra 60 vazia
+fila 1 0 0
+fila 0 1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+texto t1 "x gira 120° e vira uma mistura de x e y: (cos 120°, sen 120°, 0). O mesmo vale para y." em 1760 300 tamanho 38 cor #A9BAC6 largura 560 simples
+texto t2 "z nunca se mistura com x e y: as matrizes se partem em um bloco 2 × 2 e um bloco 1 × 1." em 1760 620 tamanho 38 cor #F7C948 largura 560 simples
+texto t3 "Todas as matrizes do grupo têm o mesmo desenho de blocos." em 1760 960 tamanho 38 cor #E4EAEF largura 560 simples
+aparece kick, titulo em 0.6s
+junto aparece nh3 em 1s
+passo "Gire 120°"
+exibe nh3 base, eixos, C3
+aparece M, l1 em 0.5s
+aplica nh3 C3 matriz M em 2s
+aparece t1
+passo "Os blocos"
+blocos M 1 1 2 2, 3 3 3 3
+aparece t2
+passo "Um espelho"
+restaura nh3 em 0.6s
+esconde nh3 C3
+exibe nh3 sv1
+aparece N, l2 em 0.5s
+aplica nh3 sv1 matriz N em 1.6s
+blocos N 1 1 2 2, 3 3 3 3
+aparece t3
+
+cena "O caráter é o traço" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  29/48  ·  CARACTERES" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "O caráter é o traço" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+equacao hmE "E" centro 420 290 tamanho 50 cor #E6E9EE
+matriz mE centro 420 470 tamanho 400 330 letra 50
+fila 1 0 0
+fila 0 1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+equacao hmC2 "C_2" centro 980 290 tamanho 50 cor #F7C948
+matriz mC2 centro 980 470 tamanho 400 330 letra 50
+fila -1 0 0
+fila 0 -1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+equacao hmxz "\sigma_v(xz)" centro 1540 290 tamanho 50 cor #58C4DD
+matriz mxz centro 1540 470 tamanho 400 330 letra 50
+fila 1 0 0
+fila 0 -1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+equacao hmyz "\sigma_v'(yz)" centro 2100 290 tamanho 50 cor #B488F0
+matriz myz centro 2100 470 tamanho 400 330 letra 50
+fila -1 0 0
+fila 0 1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+texto t1 "Caráter χ: a soma da diagonal da matriz (o traço). Um único número resume o que a operação faz com x, y e z." em 160 680 tamanho 38 cor #E4EAEF largura 2100 simples
+caracteres tc centro 820 1010 tamanho 900 420 letra 46 vazia
+grupo "C_{2v}"
+classe E "E" cor #E6E9EE
+classe C2 "C_2" cor #F7C948
+classe sxz "\sigma_v(xz)" cor #58C4DD
+classe syz "\sigma_v'(yz)" cor #B488F0
+gama Gxyz "\Gamma_{xyz}" 3 -1 1 1 cor #FFD166
+irrep Gx "\Gamma_x" 1 -1 1 -1 cor #F07A5E oculta
+irrep Gy "\Gamma_y" 1 -1 -1 1 cor #86D06C oculta
+irrep Gz "\Gamma_z" 1 1 1 1 cor #6FA8F5 oculta
+texto t2 "As matrizes que representam as operações formam Γ. Seus traços dão os caracteres de Γ." em 1420 820 tamanho 36 cor #A9BAC6 largura 860 simples
+equacao t3 "\Gamma_{xyz} = \textcolor{#F07A5E}{\Gamma_x} + \textcolor{#86D06C}{\Gamma_y} + \textcolor{#6FA8F5}{\Gamma_z}" centro 1850 1030 tamanho 54 cor #E4EAEF
+texto t4 "$\Gamma_{xyz}$ é redutível: se separa em três representações de dimensão 1 que não se dividem mais. Essas são irredutíveis." em 1420 1120 tamanho 36 cor #F7C948 largura 860 simples
+aparece kick, titulo em 0.6s
+junto aparece mE, hmE em 0.6s
+junto aparece mC2, hmC2 em 0.6s
+junto aparece mxz, hmxz em 0.6s
+junto aparece myz, hmyz em 0.6s
+junto aparece tc em 0.6s
+passo "Traço de E"
+traco mE
+revela tc celula Gxyz E de mE
+aparece t1
+passo "Traço de C2"
+traco mC2
+revela tc celula Gxyz C2 de mC2
+passo "Traço de sxz"
+traco mxz
+revela tc celula Gxyz sxz de mxz
+passo "Traço de syz"
+traco myz
+revela tc celula Gxyz syz de myz
+passo "Uma representação"
+aparece t2
+passo "Três pedaços"
+exibe tc Gx, Gy, Gz
+revela tc fila Gx
+junto revela tc fila Gy
+junto revela tc fila Gz
+passo "Redutível e irredutível"
+escreve t3 em 1.2s
+aparece t4
+
+cena "Os orbitais p do oxigênio escrevem a tabela" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  30/48  ·  REPRESENTAÇÕES IRREDUTÍVEIS" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Os orbitais p do oxigênio escrevem a tabela" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d agua centro 560 790 tamanho 1020 1040
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+orbital pz p 0 0 1 em O "p_z" tamanho 0.5
+orbital px p 1 0 0 em O "p_x" tamanho 0.5
+orbital py p 0 1 0 em O "p_y" tamanho 0.5
+giro Rz 0 0 1 raio 0.55 altura 0.15 "R_z" cor #FFD166
+vista -40 18
+semrotulos
+texto t0 "Aplique cada operação e olhe o orbital: se ele volta igual, o caráter é +1; se as cores (as fases) trocam, é −1." em 1160 290 tamanho 38 cor #E4EAEF largura 1150 simples
+caracteres tc centro 1720 720 tamanho 1000 420 letra 48 vazia
+grupo "C_{2v}"
+classe E "E" cor #E6E9EE
+classe C2 "C_2" cor #F7C948
+classe sxz "\sigma_v(xz)" cor #58C4DD
+classe syz "\sigma_v'(yz)" cor #B488F0
+irrep A1 "A_1" 1 1 1 1 "z"
+irrep B1 "B_1" 1 -1 1 -1 "x,\ R_y"
+irrep B2 "B_2" 1 -1 -1 1 "y,\ R_x"
+irrep A2 "A_2" 1 1 -1 -1 "R_z"
+funcoes "\text{lineares}"
+texto t1 "$p_z$ não muda com nenhuma operação: totalmente simétrico, A₁. Tem a simetria de z." em 1160 1000 tamanho 36 cor #A9BAC6 largura 1150 simples
+texto t2 "$p_x$ troca de fase com C₂ e com σᵥ′(yz): B₁, a simetria de x." em 1160 1000 tamanho 36 cor #A9BAC6 largura 1150 simples
+texto t3 "$p_y$ troca de fase com C₂ e com σᵥ(xz): B₂, a simetria de y." em 1160 1000 tamanho 36 cor #A9BAC6 largura 1150 simples
+texto t4 "O giro $R_z$ muda de sentido nos dois espelhos: A₂." em 1160 1000 tamanho 36 cor #A9BAC6 largura 1150 simples
+texto t5 "Quatro linhas, uma para cada representação irredutível do C₂ᵥ. As funções x, y, z e as rotações R entram na coluna das funções lineares." em 1160 1110 tamanho 36 cor #F7C948 largura 1150 simples
+aparece kick, titulo em 0.6s
+junto aparece agua, tc em 0.9s
+junto aparece t0
+passo "pz"
+exibe agua pz
+realca tc fila A1
+restaura agua em 0.4s
+aplica agua E em 1.3s
+revela tc celula A1 E em 0.4s
+restaura agua em 0.4s
+exibe agua C2 em 0.3s
+aplica agua C2 em 1.3s
+revela tc celula A1 C2 em 0.4s
+esconde agua C2 em 0.3s
+restaura agua em 0.4s
+exibe agua sxz em 0.3s
+aplica agua sxz em 1.3s
+revela tc celula A1 sxz em 0.4s
+esconde agua sxz em 0.3s
+restaura agua em 0.4s
+exibe agua syz em 0.3s
+aplica agua syz em 1.3s
+revela tc celula A1 syz em 0.4s
+esconde agua syz em 0.3s
+restaura agua em 0.4s
+aparece t1
+passo "px"
+some t1 em 0.3s
+esconde agua pz em 0.3s
+exibe agua px
+realca tc fila B1
+restaura agua em 0.4s
+aplica agua E em 1.3s
+revela tc celula B1 E em 0.4s
+restaura agua em 0.4s
+exibe agua C2 em 0.3s
+aplica agua C2 em 1.3s
+revela tc celula B1 C2 em 0.4s
+esconde agua C2 em 0.3s
+restaura agua em 0.4s
+exibe agua sxz em 0.3s
+aplica agua sxz em 1.3s
+revela tc celula B1 sxz em 0.4s
+esconde agua sxz em 0.3s
+restaura agua em 0.4s
+exibe agua syz em 0.3s
+aplica agua syz em 1.3s
+revela tc celula B1 syz em 0.4s
+esconde agua syz em 0.3s
+restaura agua em 0.4s
+aparece t2
+passo "py"
+some t2 em 0.3s
+esconde agua px em 0.3s
+exibe agua py
+realca tc fila B2
+restaura agua em 0.4s
+aplica agua E em 1.3s
+revela tc celula B2 E em 0.4s
+restaura agua em 0.4s
+exibe agua C2 em 0.3s
+aplica agua C2 em 1.3s
+revela tc celula B2 C2 em 0.4s
+esconde agua C2 em 0.3s
+restaura agua em 0.4s
+exibe agua sxz em 0.3s
+aplica agua sxz em 1.3s
+revela tc celula B2 sxz em 0.4s
+esconde agua sxz em 0.3s
+restaura agua em 0.4s
+exibe agua syz em 0.3s
+aplica agua syz em 1.3s
+revela tc celula B2 syz em 0.4s
+esconde agua syz em 0.3s
+restaura agua em 0.4s
+aparece t3
+passo "O giro Rz"
+some t3 em 0.3s
+esconde agua py em 0.3s
+exibe agua Rz
+realca tc fila A2
+restaura agua em 0.4s
+aplica agua E em 1.3s
+revela tc celula A2 E em 0.4s
+restaura agua em 0.4s
+exibe agua C2 em 0.3s
+aplica agua C2 em 1.3s
+revela tc celula A2 C2 em 0.4s
+esconde agua C2 em 0.3s
+restaura agua em 0.4s
+exibe agua sxz em 0.3s
+aplica agua sxz em 1.3s
+revela tc celula A2 sxz em 0.4s
+esconde agua sxz em 0.3s
+restaura agua em 0.4s
+exibe agua syz em 0.3s
+aplica agua syz em 1.3s
+revela tc celula A2 syz em 0.4s
+esconde agua syz em 0.3s
+restaura agua em 0.4s
+aparece t4
+passo "A tabela"
+esconde agua Rz em 0.4s
+realca tc limpa
+revela tc funcoes em 0.9s
+aparece t5
+
+cena "Os orbitais d e a última coluna da tabela" fundo #0E1821
+roteiro pagina
+transicao 850 agua
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  31/48  ·  FUNÇÕES QUADRÁTICAS" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Os orbitais d e a última coluna da tabela" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d agua centro 560 790 tamanho 1020 1040
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+orbital dz2 d z2 em O "d_{z^2}" tamanho 0.62
+orbital dx2 d x2y2 em O "d_{x^2-y^2}" tamanho 0.62
+orbital dxy d xy em O "d_{xy}" tamanho 0.62
+orbital dxz d xz em O "d_{xz}" tamanho 0.62
+orbital dyz d yz em O "d_{yz}" tamanho 0.62
+vista -40 22
+semrotulos
+texto t0 "Os orbitais d têm a simetria dos produtos de coordenadas: $d_{xy}$ se transforma como xy, $d_{z^2}$ como z²." em 1160 290 tamanho 38 cor #E4EAEF largura 1150 simples
+caracteres tc centro 1720 720 tamanho 1000 420 letra 48 vazia
+grupo "C_{2v}"
+classe E "E" cor #E6E9EE
+classe C2 "C_2" cor #F7C948
+classe sxz "\sigma_v(xz)" cor #58C4DD
+classe syz "\sigma_v'(yz)" cor #B488F0
+irrep A1 "A_1" 1 1 1 1 "x^2,\ y^2,\ z^2"
+irrep A2 "A_2" 1 1 -1 -1 "xy"
+irrep B1 "B_1" 1 -1 1 -1 "xz"
+irrep B2 "B_2" 1 -1 -1 1 "yz"
+funcoes "\text{quadráticas}"
+texto t1 "$d_{z^2}$ e $d_{x^2-y^2}$: nenhuma operação troca as fases. A₁." em 1160 1000 tamanho 36 cor #A9BAC6 largura 1150 simples
+texto t2 "$d_{xy}$ fica igual com o C₂ e troca as fases nos dois espelhos: A₂, a linha de xy." em 1160 1000 tamanho 36 cor #A9BAC6 largura 1150 simples
+texto t3 "$d_{xz}$: B₁. $d_{yz}$: B₂." em 1160 1000 tamanho 36 cor #A9BAC6 largura 1150 simples
+texto t4 "Funções lineares (x, y, z) dizem quais modos são ativos no IV; as quadráticas, quais são ativos no Raman. E as duas dizem a simetria dos orbitais p e d." em 1160 1110 tamanho 36 cor #F7C948 largura 1150 simples
+aparece kick, titulo em 0.6s
+junto aparece agua, tc em 0.9s
+junto aparece t0
+junto revela tc fila A1
+junto revela tc fila A2
+junto revela tc fila B1
+junto revela tc fila B2
+passo "dz²"
+exibe agua dz2
+realca tc fila A1
+restaura agua em 0.4s
+exibe agua C2 em 0.3s
+aplica agua C2 em 1.2s
+esconde agua C2 em 0.3s
+restaura agua em 0.4s
+exibe agua sxz em 0.3s
+aplica agua sxz em 1.2s
+esconde agua sxz em 0.3s
+restaura agua em 0.4s
+exibe agua syz em 0.3s
+aplica agua syz em 1.2s
+esconde agua syz em 0.3s
+restaura agua em 0.4s
+passo "dx²−y²"
+esconde agua dz2 em 0.3s
+exibe agua dx2
+realca tc fila A1
+restaura agua em 0.4s
+exibe agua C2 em 0.3s
+aplica agua C2 em 1.2s
+esconde agua C2 em 0.3s
+restaura agua em 0.4s
+exibe agua sxz em 0.3s
+aplica agua sxz em 1.2s
+esconde agua sxz em 0.3s
+restaura agua em 0.4s
+exibe agua syz em 0.3s
+aplica agua syz em 1.2s
+esconde agua syz em 0.3s
+restaura agua em 0.4s
+revela tc funcoes A1
+aparece t1
+passo "dxy"
+some t1 em 0.3s
+esconde agua dx2 em 0.3s
+exibe agua dxy
+realca tc fila A2
+restaura agua em 0.4s
+exibe agua C2 em 0.3s
+aplica agua C2 em 1.2s
+esconde agua C2 em 0.3s
+restaura agua em 0.4s
+exibe agua sxz em 0.3s
+aplica agua sxz em 1.2s
+esconde agua sxz em 0.3s
+restaura agua em 0.4s
+exibe agua syz em 0.3s
+aplica agua syz em 1.2s
+esconde agua syz em 0.3s
+restaura agua em 0.4s
+revela tc funcoes A2
+aparece t2
+passo "dxz e dyz"
+some t2 em 0.3s
+esconde agua dxy em 0.3s
+exibe agua dxz
+realca tc fila B1
+restaura agua em 0.4s
+exibe agua C2 em 0.3s
+aplica agua C2 em 1.2s
+esconde agua C2 em 0.3s
+restaura agua em 0.4s
+exibe agua sxz em 0.3s
+aplica agua sxz em 1.2s
+esconde agua sxz em 0.3s
+restaura agua em 0.4s
+exibe agua syz em 0.3s
+aplica agua syz em 1.2s
+esconde agua syz em 0.3s
+restaura agua em 0.4s
+revela tc funcoes B1
+esconde agua dxz em 0.3s
+exibe agua dyz
+realca tc fila B2
+restaura agua em 0.4s
+exibe agua C2 em 0.3s
+aplica agua C2 em 1.2s
+esconde agua C2 em 0.3s
+restaura agua em 0.4s
+exibe agua sxz em 0.3s
+aplica agua sxz em 1.2s
+esconde agua sxz em 0.3s
+restaura agua em 0.4s
+exibe agua syz em 0.3s
+aplica agua syz em 1.2s
+esconde agua syz em 0.3s
+restaura agua em 0.4s
+revela tc funcoes B2
+aparece t3
+passo "Para que servem"
+esconde agua dyz em 0.4s
+realca tc limpa
+aparece t4
+
+cena "Anatomia de uma tabela de caracteres" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  32/48  ·  LENDO A TABELA" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Anatomia de uma tabela de caracteres" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+caracteres tc centro 1200 600 tamanho 1500 560 letra 60
+grupo "C_{2v}"
+classe E "E" cor #E6E9EE
+classe C2 "C_2" cor #F7C948
+classe sxz "\sigma_v(xz)" cor #58C4DD
+classe syz "\sigma_v'(yz)" cor #B488F0
+irrep A1 "A_1" 1 1 1 1 "z" "x^2,\ y^2,\ z^2"
+irrep A2 "A_2" 1 1 -1 -1 "R_z" "xy"
+irrep B1 "B_1" 1 -1 1 -1 "x,\ R_y" "xz"
+irrep B2 "B_2" 1 -1 -1 1 "y,\ R_x" "yz"
+texto n1 "o grupo pontual" em 160 320 tamanho 34 cor #7890A0 simples
+texto n2 "as classes de operações (colunas)" em 900 290 tamanho 34 cor #7890A0 simples
+texto n3 "representações irredutíveis (linhas)" em 120 940 tamanho 34 cor #7890A0 simples
+texto n4 "funções lineares e rotações · quadráticas" em 1560 940 tamanho 34 cor #7890A0 simples
+equacao ho "h = 4" em 2050 300 tamanho 46 cor #F7C948
+equacao o1 "\sum_i d_i^{\,2} = 1^2+1^2+1^2+1^2 = 4 = h" centro 640 1080 tamanho 50 cor #F7C948
+equacao o2 "A_1\cdot B_1:\ 1 - 1 + 1 - 1 = 0" centro 1760 1080 tamanho 50 cor #F7C948
+texto t1 "A ordem h é o número de operações. A soma dos quadrados das dimensões das irredutíveis é h (a dimensão é o caráter em E). Duas linhas diferentes são ortogonais: o produto termo a termo, somado, dá zero." em 160 1160 tamanho 34 cor #A9BAC6 largura 2080 simples
+aparece kick, titulo em 0.6s
+junto aparece tc em 0.8s
+passo "Grupo e classes"
+aparece n1, n2
+realca tc coluna C2 mais sxz mais syz mais E
+aparece ho
+passo "Linhas"
+realca tc fila A1 mais A2 mais B1 mais B2
+aparece n3
+passo "Funções"
+realca tc limpa
+aparece n4
+passo "Duas regras"
+realca tc coluna E
+escreve o1 em 1.1s
+realca tc fila A1 mais B1
+escreve o2 em 1.1s
+aparece t1
+
+cena "O nome de cada linha conta a sua simetria" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  33/48  ·  NOTAÇÃO DE MULLIKEN" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "O nome de cada linha conta a sua simetria" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+caracteres t2 centro 620 500 tamanho 840 380 letra 46
+grupo "C_{2v}"
+classe E "E" cor #E6E9EE
+classe C2 "C_2" cor #F7C948
+classe sxz "\sigma_v(xz)" cor #58C4DD
+classe syz "\sigma_v'(yz)" cor #B488F0
+irrep A1 "A_1" 1 1 1 1
+irrep A2 "A_2" 1 1 -1 -1
+irrep B1 "B_1" 1 -1 1 -1
+irrep B2 "B_2" 1 -1 -1 1
+caracteres t3 centro 1700 470 tamanho 680 320 letra 46
+grupo "C_{3v}"
+classe E "E" cor #E6E9EE
+classe C3 "2C_3" cor #F7C948
+classe sv "3\sigma_v" cor #58C4DD
+irrep A1 "A_1" 1 1 1
+irrep A2 "A_2" 1 1 -1
+irrep E "E" 2 -1 0
+texto m1 "A: dimensão 1, simétrica no eixo principal (χ(Cₙ) = +1).   B: dimensão 1, antissimétrica (χ(Cₙ) = −1)." em 160 760 tamanho 38 cor #E4EAEF largura 2080 simples
+texto m2 "E: dimensão 2 (o caráter em E é 2).   T: dimensão 3. Não confunda: E como nome de linha não é a identidade E das colunas." em 160 872.72 tamanho 38 cor #E4EAEF largura 2080 simples
+texto m3 "Índice 1 ou 2: simétrica ou antissimétrica em relação a um C₂ ⟂ ao eixo principal; se não houver C₂ ⟂, em relação a um σᵥ." em 160 985.44 tamanho 38 cor #E4EAEF largura 2080 simples
+texto m4 "g (gerade) e u (ungerade): simétrica ou antissimétrica na inversão i. Linha e duas linhas (′ e ″): simétrica ou antissimétrica no σₕ." em 160 1098.16 tamanho 38 cor #F7C948 largura 2080 simples
+aparece kick, titulo em 0.6s
+junto aparece t2, t3 em 0.8s
+passo "A e B"
+realca t2 coluna C2 mais A1 mais A2
+aparece m1
+passo "B tem −1 no C₂"
+realca t2 coluna C2 mais B1 mais B2
+passo "E e T"
+realca t2 limpa
+realca t3 fila E mais E
+aparece m2
+passo "Índices 1 e 2"
+realca t3 limpa
+realca t2 coluna sxz mais A1 mais A2
+aparece m3
+passo "g, u, ′ e ″"
+realca t2 limpa
+aparece m4
+
+cena "BF₃ e o grupo D₃ₕ" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  34/48  ·  MULLIKEN: ′ E ″" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "BF₃ e o grupo D₃ₕ" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d bf3 centro 400 680 tamanho 720 760
+atomo B B 0 0 0
+atomo F1 F 1.313 0 0 "1"
+atomo F2 F -0.6565 1.1371 0 "2"
+atomo F3 F -0.6565 -1.1371 0 "3"
+ligacao B F1
+ligacao B F2
+ligacao B F3
+elemento C3 eixo 0 0 1 ordem 3 "C_3" cor #F7C948
+elemento sh plano 0 0 1 "\sigma_h" cor #4DD6B6
+elemento S3 impropria 0 0 1 ordem 3 "S_3" cor #83C167
+elemento C21 eixo 1 0 0 ordem 2 "C_2" cor #F49A5C comprimento 1.85
+elemento sv1 plano 0 1 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento C22 eixo -0.5 0.866 0 ordem 2 "C_2" cor #F49A5C comprimento 1.85
+elemento sv2 plano -0.866 -0.5 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento C23 eixo -0.5 -0.866 0 ordem 2 "C_2" cor #F49A5C comprimento 1.85
+elemento sv3 plano 0.866 -0.5 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+orbital pz p 0 0 1 em B "p_z" tamanho 0.85
+orbital px p 1 0 0 em B "p_x" tamanho 0.85
+vista -18 26
+semrotulos
+caracteres tc centro 1500 560 tamanho 1560 560 letra 40
+grupo "D_{3h}"
+classe E "E" cor #E6E9EE
+classe C3 "2C_3" cor #F7C948
+classe C2 "3C_2" cor #F49A5C
+classe sh "\sigma_h" cor #4DD6B6
+classe S3 "2S_3" cor #83C167
+classe sv "3\sigma_v" cor #58C4DD
+irrep A1p "A_1'" 1 1 1 1 1 1 "" "x^2+y^2,\ z^2"
+irrep A2p "A_2'" 1 1 -1 1 1 -1 "R_z" ""
+irrep Ep "E'" 2 -1 0 2 -1 0 "(x,\ y)" "(x^2-y^2,\ xy)"
+irrep A1pp "A_1''" 1 1 1 -1 -1 -1 "" ""
+irrep A2pp "A_2''" 1 1 -1 -1 -1 1 "z" ""
+irrep Epp "E''" 2 -1 0 -2 1 0 "(R_x,\ R_y)" "(xz,\ yz)"
+texto t1 "O $p_z$ do boro troca de fase no σₕ: χ(σₕ) = −1. Ele pertence a uma linha com ″: A₂″, a linha de z." em 160 1110 tamanho 36 cor #A9BAC6 largura 1000 simples
+texto t2 "O $p_x$ fica no plano: o σₕ não o muda. Junto com o $p_y$, forma o par E′, a linha de (x, y)." em 1260 1110 tamanho 36 cor #A9BAC6 largura 1000 simples
+texto t3 "Com σₕ no grupo, as linhas se dividem em ′ (simétricas no σₕ) e ″ (antissimétricas)." em 160 1250 tamanho 36 cor #F7C948 largura 2080 simples
+aparece kick, titulo em 0.6s
+junto aparece bf3, tc em 0.9s
+passo "pz no σh"
+exibe bf3 pz, sh
+realca tc coluna sh
+aplica bf3 sh em 1.8s
+realca tc fila A2pp mais sh
+aparece t1
+passo "px no σh"
+restaura bf3 em 0.6s
+esconde bf3 pz
+exibe bf3 px
+aplica bf3 sh em 1.8s
+realca tc fila Ep mais sh
+aparece t2
+passo "Linha e duas linhas"
+realca tc coluna sh
+aparece t3
+
+cena "trans-N₂F₂ e o grupo C₂ₕ" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  35/48  ·  MULLIKEN: g E u" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "trans-N₂F₂ e o grupo C₂ₕ" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d nf centro 420 690 tamanho 760 760
+atomo N1 N -0.607 0 0 "1"
+atomo N2 N 0.607 0 0 "2"
+atomo F1 F -0.9801 -1.3452 0 "1"
+atomo F2 F 0.9801 1.3452 0 "2"
+ligacao N1 N2 ordem 2
+ligacao N1 F1
+ligacao N2 F2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento i centro "i" cor #FC6255
+elemento sh plano 0 0 1 "\sigma_h" cor #4DD6B6
+orbital pz p 0 0 1 em 0 0 0 "p_z" tamanho 1.0
+orbital dxy d xy em 0 0 0 "d_{xy}" tamanho 1.1
+vista -14 40
+caracteres tc centro 1600 560 tamanho 1300 460 letra 46
+grupo "C_{2h}"
+classe E "E" cor #E6E9EE
+classe C2 "C_2" cor #F7C948
+classe i "i" cor #FC6255
+classe sh "\sigma_h" cor #4DD6B6
+irrep Ag "A_g" 1 1 1 1 "R_z" "x^2,\ y^2,\ z^2,\ xy"
+irrep Bg "B_g" 1 -1 1 -1 "R_x,\ R_y" "xz,\ yz"
+irrep Au "A_u" 1 1 -1 -1 "z" ""
+irrep Bu "B_u" 1 -1 -1 1 "x,\ y" ""
+texto t1 "Uma função centrada no centro de inversão: $p_z$ troca de fase na inversão (χ(i) = −1). É u, de ungerade: $A_u$, a linha de z." em 160 1080 tamanho 36 cor #A9BAC6 largura 1000 simples
+texto t2 "$d_{xy}$ não muda na inversão (χ(i) = +1): é g, de gerade: $A_g$." em 1260 1080 tamanho 36 cor #A9BAC6 largura 1000 simples
+texto t3 "Em orbitais centrados em i, a inversão troca o sinal de p e conserva o de d. Em centros trocados pela inversão, as combinações têm paridade g ou u." em 160 1230 tamanho 36 cor #F7C948 largura 2080 simples
+aparece kick, titulo em 0.6s
+junto aparece nf, tc em 0.9s
+passo "pz na inversão"
+exibe nf pz, i
+realca tc coluna i
+aplica nf i em 2s
+realca tc fila Au mais i
+aparece t1
+passo "dxy na inversão"
+restaura nf em 0.6s
+esconde nf pz
+exibe nf dxy
+aplica nf i em 2s
+realca tc fila Ag mais i
+aparece t2
+passo "p é u, d é g"
+realca tc coluna i
+aparece t3
+
+cena "Os três espelhos da amônia formam uma classe" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  36/48  ·  CLASSES" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Os três espelhos da amônia formam uma classe" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d nh3 centro 470 740 tamanho 820 860
+atomo N N 0 0 0.2861
+atomo H1 H 0.9373 0 -0.0954 "1"
+atomo H2 H -0.4687 0.8118 -0.0954 "2"
+atomo H3 H -0.4687 -0.8118 -0.0954 "3"
+ligacao N H1
+ligacao N H2
+ligacao N H3
+elemento C3 eixo 0 0 1 ordem 3 "C_3" cor #F7C948
+elemento sv1 plano 0 1 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento sv2 plano -0.866 -0.5 0 "\sigma_v'" cor #58C4DD vertical 0 0 1
+elemento sv3 plano 0.866 -0.5 0 "\sigma_v''" cor #58C4DD vertical 0 0 1
+projecao centro 1190 700 tamanho 460 "\text{de cima}"
+vista 30 22
+texto t1 "Este espelho σᵥ contém o H₁." em 1520 290 tamanho 40 cor #E4EAEF largura 820 simples
+texto t2 "Gire 120°: o H₁ vai para o lugar do H₂, e o espelho que o acompanha passa a ser σᵥ′. Um C₃ leva um espelho no outro: os três são equivalentes." em 1520 360.8 tamanho 38 cor #E4EAEF largura 820 simples
+texto t3 "Operações equivalentes por outra operação do grupo formam uma classe. Na tabela, uma coluna por classe; o número na frente é quantas operações ela tem." em 1520 614.6 tamanho 38 cor #F7C948 largura 820 simples
+equacao cl "C_{3v} = \{E,\ \textcolor{#F7C948}{C_3,\ C_3^2},\ \textcolor{#58C4DD}{\sigma_v,\ \sigma_v',\ \sigma_v''}\}" centro 1930 902.9 tamanho 46 cor #E4EAEF
+caracteres tc centro 1930 1110 tamanho 800 300 letra 44 vazia
+grupo "C_{3v}"
+classe E "E" cor #E6E9EE
+classe C3 "2C_3" cor #F7C948
+classe sv "3\sigma_v" cor #58C4DD
+irrep A1 "A_1" 1 1 1
+irrep A2 "A_2" 1 1 -1
+irrep E "E" 2 -1 0
+equacao ho "h = 6" em 1540 1180 tamanho 46 cor #F7C948
+aparece kick, titulo em 0.6s
+junto aparece nh3 em 1s
+passo "O espelho do H₁"
+exibe nh3 sv1
+observa nh3 H1
+aparece t1
+passo "Gire 120°"
+exibe nh3 C3
+aplica nh3 C3 em 2s
+esconde nh3 sv1
+exibe nh3 sv2
+aparece t2
+passo "Uma classe"
+exibe nh3 sv1, sv3
+observa nh3 limpa
+aparece t3
+escreve cl em 1.2s
+aparece tc em 0.6s
+realca tc coluna sv
+aparece ho
+
+cena "Um bloco que não se quebra" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  37/48  ·  A REPRESENTAÇÃO E" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Um bloco que não se quebra" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d nh3 centro 440 780 tamanho 780 900
+atomo N N 0 0 0.2861
+atomo H1 H 0.9373 0 -0.0954 "1"
+atomo H2 H -0.4687 0.8118 -0.0954 "2"
+atomo H3 H -0.4687 -0.8118 -0.0954 "3"
+ligacao N H1
+ligacao N H2
+ligacao N H3
+elemento C3 eixo 0 0 1 ordem 3 "C_3" cor #F7C948
+elemento sv1 plano 0 1 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento sv2 plano -0.866 -0.5 0 "\sigma_v'" cor #58C4DD vertical 0 0 1
+elemento sv3 plano 0.866 -0.5 0 "\sigma_v''" cor #58C4DD vertical 0 0 1
+giro Rz 0 0 1 raio 0.6 altura 0.62 "R_z" cor #FFD166
+vista -90 20
+semrotulos
+equacao l1 "\textcolor{#F7C948}{C_3}" centro 1180 300 tamanho 56 cor #E4EAEF
+matriz M centro 1180 520 tamanho 600 420 letra 58
+fila -0.5 -0.866025403784 0
+fila 0.866025403784 -0.5 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+equacao l2 "\textcolor{#58C4DD}{\sigma_v}" centro 1880 300 tamanho 56 cor #E4EAEF
+matriz N centro 1880 520 tamanho 520 420 letra 58
+fila 1 0 0
+fila 0 -1 0
+fila 0 0 1
+cores #F07A5E #86D06C #6FA8F5
+caracteres tc centro 1530 990 tamanho 1500 380 letra 46 vazia
+grupo "C_{3v}"
+classe E "E" cor #E6E9EE
+classe C3 "2C_3" cor #F7C948
+classe sv "3\sigma_v" cor #58C4DD
+gama Gxyz "\Gamma_{xyz}" 3 0 1 cor #FFD166
+irrep E "E" 2 -1 0 "(x,\ y),\ (R_x,\ R_y)" "(x^2-y^2,\ xy),\ (xz,\ yz)" oculta
+irrep A1 "A_1" 1 1 1 "z" "x^2+y^2,\ z^2" oculta
+irrep A2 "A_2" 1 1 -1 "R_z" "" oculta
+texto t1 "O bloco 2 × 2 não se separa em duas partes válidas para todas as operações. Os vetores x e y formam a base da representação irredutível E." em 140 1220 tamanho 36 cor #A9BAC6 largura 2150 simples
+aparece kick, titulo em 0.6s
+junto aparece nh3, l1, M, l2, N, tc em 0.8s
+junto blocos M 1 1 2 2, 3 3 3 3
+junto blocos N 1 1 2 2, 3 3 3 3
+passo "Traços inteiros"
+traco M
+revela tc celula Gxyz C3 de M
+traco N
+revela tc celula Gxyz sv de N
+revela tc celula Gxyz E em 0.5s
+passo "O bloco de (x, y)"
+exibe tc E
+revela tc fila E
+aparece t1
+passo "O bloco de z"
+exibe tc A1
+revela tc fila A1
+passo "O giro Rz"
+exibe nh3 Rz, sv2
+aplica nh3 sv2 em 1.6s
+exibe tc A2
+revela tc fila A2
+revela tc funcoes
+passo "Soma"
+realca tc fila Gxyz
+traco M limpa
+traco N limpa
+
+cena "Os três orbitais 1s dos hidrogênios" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  38/48  ·  UMA REPRESENTAÇÃO REDUTÍVEL" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Os três orbitais 1s dos hidrogênios" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d nh3 centro 480 700 tamanho 800 820
+atomo N N 0 0 0.2861
+atomo H1 H 0.9373 0 -0.0954 "1"
+atomo H2 H -0.4687 0.8118 -0.0954 "2"
+atomo H3 H -0.4687 -0.8118 -0.0954 "3"
+ligacao N H1
+ligacao N H2
+ligacao N H3
+elemento C3 eixo 0 0 1 ordem 3 "C_3" cor #F7C948
+elemento sv1 plano 0 1 0 "\sigma_v" cor #58C4DD vertical 0 0 1
+elemento sv2 plano -0.866 -0.5 0 "\sigma_v'" cor #58C4DD vertical 0 0 1
+elemento sv3 plano 0.866 -0.5 0 "\sigma_v''" cor #58C4DD vertical 0 0 1
+esfera s1 em H1 tamanho 0.4 cor #F59E5B
+esfera s2 em H2 tamanho 0.4 cor #F59E5B
+esfera s3 em H3 tamanho 0.4 cor #F59E5B
+projecao centro 1180 620 tamanho 420 "\text{de cima}"
+vista -90 20
+texto t0 "Base: os três orbitais 1s dos H. A operação leva cada orbital a outro; só os que ficam no lugar contam no caráter (com +1)." em 1500 290 tamanho 36 cor #E4EAEF largura 840 simples
+texto t1 "E: nada se move. χ = 3." em 1500 470 tamanho 38 cor #A9BAC6 largura 840 simples
+texto t2 "C₃: todos os H trocam de lugar. χ = 0." em 1500 540 tamanho 38 cor #A9BAC6 largura 840 simples
+texto t3 "σᵥ: só o H que está no espelho fica. χ = 1." em 1500 610 tamanho 38 cor #A9BAC6 largura 840 simples
+caracteres tc centro 1620 1050 tamanho 1200 420 letra 46 vazia
+grupo "C_{3v}"
+classe E "E" cor #E6E9EE
+classe C3 "2C_3" cor #F7C948
+classe sv "3\sigma_v" cor #58C4DD
+irrep A1 "A_1" 1 1 1 "z" "x^2+y^2,\ z^2"
+irrep A2 "A_2" 1 1 -1 "R_z" ""
+irrep E "E" 2 -1 0 "(x,\ y),\ (R_x,\ R_y)" "(x^2-y^2,\ xy),\ (xz,\ yz)"
+gama GH "\Gamma_{1s}" 3 0 1 cor #FFD166
+aparece kick, titulo em 0.6s
+junto aparece nh3, tc em 0.9s
+junto aparece t0
+junto revela tc fila A1
+junto revela tc fila A2
+junto revela tc fila E
+passo "E"
+exibe nh3 s1, s2, s3
+aplica nh3 E em 0.9s
+fixos nh3
+revela tc celula GH E
+aparece t1
+passo "C₃"
+fixos nh3 limpa em 0.3s
+exibe nh3 C3
+aplica nh3 C3 em 1.8s
+fixos nh3
+revela tc celula GH C3
+aparece t2
+passo "σᵥ"
+fixos nh3 limpa em 0.3s
+restaura nh3 em 0.5s
+esconde nh3 C3
+exibe nh3 sv2
+aplica nh3 sv2 em 1.6s
+fixos nh3
+revela tc celula GH sv
+aparece t3
+
+cena "Quanto de cada representação irredutível?" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  39/48  ·  REDUÇÃO" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Quanto de cada representação irredutível?" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+caracteres tc centro 640 552 tamanho 1000 504 letra 54
+grupo "C_{3v}"
+classe E "E" cor #E6E9EE
+classe C3 "2C_3" cor #F7C948
+classe sv "3\sigma_v" cor #58C4DD
+irrep A1 "A_1" 1 1 1
+irrep A2 "A_2" 1 1 -1
+irrep E "E" 2 -1 0
+gama GH "\Gamma_{1s}" 3 0 1 cor #FFD166
+equacao f "n_i = \frac{1}{h}\sum\,g_C\,\chi_\Gamma(C)\,\chi_i(C)" centro 1720 430 tamanho 70 cor #E4EAEF
+texto fl "Some sobre as classes C. $g_C$ é o número de operações na classe, h é a ordem do grupo e os caracteres são reais neste exemplo." em 1250 560 tamanho 34 cor #A9BAC6 largura 960 simples
+equacao res "\Gamma_{1s} = A_1 + E" centro 2030 1040 tamanho 80 cor #FFD166
+texto cf "Confira: 1 + 2 = 3 orbitais, o caráter de Γ em E." em 1700 1150 tamanho 34 cor #A9BAC6 largura 640 simples
+aparece kick, titulo em 0.6s
+junto aparece tc em 0.7s
+junto escreve f em 1.2s
+junto aparece fl
+passo "A₁"
+reduz tc A1 em 160 900 largura 1560 letra 56
+passo "A₂"
+reduz tc A2 em 160 1030 largura 1560 letra 56
+passo "E"
+reduz tc E em 160 1160 largura 1560 letra 56
+passo "O resultado"
+escreve res em 1.2s
+aparece cf
+
+cena "Combinações de orbitais com simetria" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  40/48  ·  PARA QUE SERVE" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Combinações de orbitais com simetria" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d sa centro 420 620 tamanho 740 740
+atomo N N 0 0 0.2861
+atomo H1 H 0.9373 0 -0.0954 "1"
+atomo H2 H -0.4687 0.8118 -0.0954 "2"
+atomo H3 H -0.4687 -0.8118 -0.0954 "3"
+ligacao N H1
+ligacao N H2
+ligacao N H3
+esfera s1 em H1 tamanho 0.5 cor #F59E5B
+esfera s2 em H2 tamanho 0.5 cor #F59E5B
+esfera s3 em H3 tamanho 0.5 cor #F59E5B
+visiveis s1, s2, s3
+vista -90 62
+semrotulos
+equacao lsa "A_1:\ \phi_1+\phi_2+\phi_3" centro 420 1010 tamanho 52 cor #E4EAEF
+molecula3d sb centro 1200 620 tamanho 740 740
+atomo N N 0 0 0.2861
+atomo H1 H 0.9373 0 -0.0954 "1"
+atomo H2 H -0.4687 0.8118 -0.0954 "2"
+atomo H3 H -0.4687 -0.8118 -0.0954 "3"
+ligacao N H1
+ligacao N H2
+ligacao N H3
+esfera s1 em H1 tamanho 0.62 cor #F59E5B
+esfera s2 em H2 tamanho 0.42 cor #5B8DEF
+esfera s3 em H3 tamanho 0.42 cor #5B8DEF
+visiveis s1, s2, s3
+vista -90 62
+semrotulos
+equacao lsb "E:\ 2\phi_1-\phi_2-\phi_3" centro 1200 1010 tamanho 52 cor #E4EAEF
+molecula3d sc centro 1980 620 tamanho 740 740
+atomo N N 0 0 0.2861
+atomo H1 H 0.9373 0 -0.0954 "1"
+atomo H2 H -0.4687 0.8118 -0.0954 "2"
+atomo H3 H -0.4687 -0.8118 -0.0954 "3"
+ligacao N H1
+ligacao N H2
+ligacao N H3
+esfera s1 em H1 tamanho 0.05 cor #F59E5B
+esfera s2 em H2 tamanho 0.52 cor #F59E5B
+esfera s3 em H3 tamanho 0.52 cor #5B8DEF
+visiveis s1, s2, s3
+vista -90 62
+semrotulos
+equacao lsc "E:\ \phi_2-\phi_3" centro 1980 1010 tamanho 52 cor #E4EAEF
+texto t1 "A redução diz quantas combinações de cada simetria existem: uma A₁ e um par E. As cores são as fases." em 160 1110 tamanho 40 cor #E4EAEF largura 2100 simples
+texto t2 "O orbital $2p_z$ do N (A₁) só pode combinar com a A₁; o par ($2p_x$, $2p_y$), com o par E. É assim que nasce o diagrama de orbitais moleculares da amônia." em 160 1210 tamanho 38 cor #F7C948 largura 2100 simples
+aparece kick, titulo em 0.6s
+junto aparece sa, lsa em 0.8s
+passo "O par E"
+aparece sb, lsb, sc, lsc em 0.8s
+aparece t1
+passo "E daí?"
+aparece t2
+
+cena "A molécula e a sua imagem no espelho" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  41/48  ·  QUIRALIDADE" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "A molécula e a sua imagem no espelho" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d a centro 420 560 tamanho 560 600
+atomo C C 0 0 0
+atomo H H 0 0 1.09
+atomo F F 1.2728 0 -0.45
+atomo Cl Cl -0.8344 1.4452 -0.59
+atomo Br Br -0.9145 -1.584 -0.6467
+ligacao C H
+ligacao C F
+ligacao C Cl
+ligacao C Br
+elemento ch eixo 0 0 1 ordem 3 "" cor #8E9BA8
+projecao centro 1040 560 tamanho 380 "\text{ao longo de C–H}" semeixos
+vista -30 18
+semrotulos
+molecula3d m centro 1460 560 tamanho 560 600
+atomo C C 0 0 0
+atomo H H 0 0 1.09
+atomo F F -1.2728 0 -0.45
+atomo Cl Cl 0.8344 1.4452 -0.59
+atomo Br Br 0.9145 -1.584 -0.6467
+ligacao C H
+ligacao C F
+ligacao C Cl
+ligacao C Br
+elemento ch eixo 0 0 1 ordem 3 "" cor #8E9BA8
+projecao centro 2000 560 tamanho 380 "\text{ao longo de C–H}" semeixos
+vista -30 18
+semrotulos
+linha esp de 1225 300 ate 1225 860 cor #58C4DD espessura 4 tracejada
+texto le "espelho" centro 1225 890 tamanho 30 cor #58C4DD simples
+texto t1 "Olhando ao longo da ligação C–H, F → Cl → Br giram no sentido anti-horário numa molécula e no horário na outra." em 160 930 tamanho 36 cor #E4EAEF largura 2080 simples
+texto t2 "Gire a imagem quanto quiser: o sentido não muda. Nenhuma rotação leva uma na outra. São enantiômeros: a molécula é quiral." em 160 1031.84 tamanho 36 cor #A9BAC6 largura 2080 simples
+texto t3 "Regra: uma molécula é quiral quando não tem nenhuma operação imprópria (σ, i ou Sₙ). Só E e eixos Cₙ." em 160 1133.68 tamanho 38 cor #F7C948 largura 2080 negrito simples
+texto t4 "Em condições iguais, enantiômeros desviam a luz polarizada em sentidos opostos. Um ambiente quiral pode interagir de forma diferente com cada um." em 160 1240.4 tamanho 34 cor #A9BAC6 largura 2080 simples
+aparece kick, titulo em 0.6s
+junto aparece a em 1s
+passo "A imagem no espelho"
+escreve esp em 0.6s
+aparece le
+aparece m em 1s
+aparece t1
+passo "Tente sobrepor"
+exibe m ch
+aplica m ch em 2s
+aplica m ch em 2s
+aparece t2
+passo "A regra"
+aparece t3
+passo "Por que importa"
+aparece t4
+
+cena "Um eixo C₂ não impede a quiralidade" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  42/48  ·  QUIRALIDADE" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Um eixo C₂ não impede a quiralidade" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d h centro 380 600 tamanho 560 560
+atomo O1 O 0.7375 0 0 "1"
+atomo O2 O -0.7375 0 0 "2"
+atomo H1 H 0.817 0.7825 0.5328 "1"
+atomo H2 H -0.817 -0.7825 0.5328 "2"
+ligacao O1 O2
+ligacao O1 H1
+ligacao O2 H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+projecao centro 380 1060 tamanho 300 semeixos
+vista -30 22
+molecula3d hm centro 1000 600 tamanho 560 560
+atomo O1 O -0.7375 0 0 "1"
+atomo O2 O 0.7375 0 0 "2"
+atomo H1 H -0.817 0.7825 0.5328 "1"
+atomo H2 H 0.817 -0.7825 0.5328 "2"
+ligacao O1 O2
+ligacao O1 H1
+ligacao O2 H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+projecao centro 1000 1060 tamanho 300 semeixos
+vista -30 22
+molecula3d w centro 1850 580 tamanho 560 540
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+vista -34 16
+texto l1 "H₂O₂ e a sua imagem: C₂, quiral" centro 690 280 tamanho 36 cor #E4EAEF negrito simples
+texto l2 "H₂O: C₂ᵥ, aquiral" centro 1800 280 tamanho 36 cor #E4EAEF negrito simples
+texto t1 "A H₂O₂ torcida tem só E e um C₂: grupo C₂. É quiral; as duas formas se convertem girando a ligação O–O." em 1560 900 tamanho 34 cor #A9BAC6 largura 760 simples
+texto t2 "A água tem dois planos σᵥ: a imagem no espelho é a própria molécula. Aquiral." em 1560 1036.44 tamanho 34 cor #A9BAC6 largura 760 simples
+texto t3 "Grupos quirais: C₁, Cₙ, Dₙ, T, O, I. Qualquer σ, i ou Sₙ torna a molécula aquiral." em 1560 1172.88 tamanho 34 cor #F7C948 largura 760 simples
+aparece kick, titulo em 0.6s
+junto aparece h, hm, l1 em 1s
+passo "O C₂ da H₂O₂"
+exibe h C2
+junto exibe hm C2
+aplica h C2 em 2s
+junto aplica hm C2 em 2s
+aparece t1
+passo "A água"
+aparece w, l2 em 0.8s
+exibe w sxz
+aplica w syz em 1.8s
+aparece t2
+passo "Quais grupos são quirais"
+aparece t3
+
+cena "Graus de liberdade: 3N" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  43/48  ·  VIBRAÇÕES" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Graus de liberdade: 3N" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d agua centro 520 760 tamanho 900 900
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+vetor xO 0.78 0 0 de O cor #F07A5E espessura 0.032
+vetor yO 0 0.78 0 de O cor #86D06C espessura 0.032
+vetor zO 0 0 0.78 de O cor #6FA8F5 espessura 0.032
+vetor xH1 0.78 0 0 de H1 cor #F07A5E espessura 0.032
+vetor yH1 0 0.78 0 de H1 cor #86D06C espessura 0.032
+vetor zH1 0 0 0.78 de H1 cor #6FA8F5 espessura 0.032
+vetor xH2 0.78 0 0 de H2 cor #F07A5E espessura 0.032
+vetor yH2 0 0.78 0 de H2 cor #86D06C espessura 0.032
+vetor zH2 0 0 0.78 de H2 cor #6FA8F5 espessura 0.032
+modo tx "T_x" O 0.3 0 0, H1 0.3 0 0, H2 0.3 0 0 cor #FFD166
+modo rz "R_z" H1 0 0.36 0, H2 0 -0.36 0 cor #FFD166
+modo sim "sim" O 0 0 0.0245, H1 0.2531 0 -0.1959, H2 -0.2531 0 -0.1959 cor #FFD166
+modo dob "dob" O 0 0 0.0316, H1 -0.1959 0 -0.2531, H2 0.1959 0 -0.2531 cor #FFD166
+modo ass "ass" O -0.0316 0 0, H1 0.2531 0 -0.1959, H2 0.2531 0 0.1959 cor #FFD166
+vista -40 18
+semrotulos
+texto t1 "Cada átomo pode se mover em três direções: x, y e z. Com N átomos, são 3N graus de liberdade. Na água, 3 × 3 = 9 setas." em 1200 290 tamanho 40 cor #E4EAEF largura 1120 simples
+texto t2 "Três deles movem a molécula inteira sem deformá-la: as translações." em 1200 458.4 tamanho 38 cor #A9BAC6 largura 1120 simples
+texto t3 "Outros três a giram: as rotações. Numa molécula linear, só dois (não há giro em torno do próprio eixo)." em 1200 573.12 tamanho 38 cor #A9BAC6 largura 1120 simples
+texto t4 "O que sobra são as vibrações: 3N − 6 numa molécula não linear, 3N − 5 numa linear." em 1200 734.2 tamanho 40 cor #E4EAEF largura 1120 simples
+equacao e1 "3N - 6 = 9 - 6 = 3\ \text{modos de vibração}" centro 1760 894.3 tamanho 54 cor #F7C948
+texto t5 "A simetria diz de que tipo são esses três modos e quais aparecem no IV e no Raman, sem calcular nenhuma frequência." em 1200 956.8 tamanho 38 cor #F7C948 largura 1120 simples
+aparece kick, titulo em 0.6s
+junto aparece agua em 1s
+junto aparece t1
+passo "Nove setas"
+exibe agua xO, yO, zO, xH1, yH1, zH1, xH2, yH2, zH2 em 1s
+passo "Translação"
+esconde agua xO, yO, zO, xH1, yH1, zH1, xH2, yH2, zH2 em 0.5s
+exibe agua modo:tx
+vibra agua tx amplitude 1.4
+aparece t2
+passo "Rotação"
+vibra agua para
+esconde agua modo:tx
+exibe agua modo:rz
+vibra agua rz amplitude 1.2
+aparece t3
+passo "Vibração"
+vibra agua para
+esconde agua modo:rz
+exibe agua modo:sim
+vibra agua sim amplitude 1
+aparece t4
+escreve e1 em 1s
+passo "O que a simetria diz"
+vibra agua para
+esconde agua modo:sim
+aparece t5
+
+cena "Γ₃N: as nove setas sob cada operação" fundo #0E1821
+roteiro pagina
+transicao 850 agua
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  44/48  ·  A REPRESENTAÇÃO 3N" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Γ₃N: as nove setas sob cada operação" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d agua centro 400 620 tamanho 680 700
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+elemento sxz plano 0 1 0 "\sigma_v(xz)" cor #58C4DD vertical 0 0 1
+elemento syz plano 1 0 0 "\sigma_v'(yz)" cor #B488F0 vertical 0 0 1
+vetor xO 0.78 0 0 de O cor #F07A5E espessura 0.032
+vetor yO 0 0.78 0 de O cor #86D06C espessura 0.032
+vetor zO 0 0 0.78 de O cor #6FA8F5 espessura 0.032
+vetor xH1 0.78 0 0 de H1 cor #F07A5E espessura 0.032
+vetor yH1 0 0.78 0 de H1 cor #86D06C espessura 0.032
+vetor zH1 0 0 0.78 de H1 cor #6FA8F5 espessura 0.032
+vetor xH2 0.78 0 0 de H2 cor #F07A5E espessura 0.032
+vetor yH2 0 0.78 0 de H2 cor #86D06C espessura 0.032
+vetor zH2 0 0 0.78 de H2 cor #6FA8F5 espessura 0.032
+vista -40 18
+matriz M9 centro 1250 640 tamanho 760 700 letra 30 vazia
+fila 0 0 0 0 0 0 0 0 0
+fila 0 0 0 0 0 0 0 0 0
+fila 0 0 0 0 0 0 0 0 0
+fila 0 0 0 0 0 0 0 0 0
+fila 0 0 0 0 0 0 0 0 0
+fila 0 0 0 0 0 0 0 0 0
+fila 0 0 0 0 0 0 0 0 0
+fila 0 0 0 0 0 0 0 0 0
+fila 0 0 0 0 0 0 0 0 0
+cores #F07A5E #86D06C #6FA8F5 #F07A5E #86D06C #6FA8F5 #F07A5E #86D06C #6FA8F5
+equacao lm "\Gamma_{3N}(E):" centro 1250 250 tamanho 46 cor #E6E9EE
+equacao lm2 "\Gamma_{3N}(C_2):" centro 1250 250 tamanho 46 cor #F7C948
+caracteres tc centro 1980 1080 tamanho 700 220 letra 40 vazia
+grupo "C_{2v}"
+classe E "E" cor #E6E9EE
+classe C2 "C_2" cor #F7C948
+classe sxz "\sigma_v(xz)" cor #58C4DD
+classe syz "\sigma_v'(yz)" cor #B488F0
+gama G3 "\Gamma_{3N}" 9 -1 3 1 cor #FFD166
+texto t1 "Ordem das linhas: x, y, z do O, depois de H₁, depois de H₂. Em E, cada seta fica: a matriz é a identidade 9 × 9. Caráter 9." em 1700 280 tamanho 32 cor #E4EAEF largura 640 simples
+texto t2 "No C₂, as setas dos H vão para o outro H: os blocos dos H saem da diagonal e não contam. Só o O, que fica no lugar, contribui: −1 −1 + 1 = −1." em 1700 450.16 tamanho 32 cor #E4EAEF largura 640 simples
+texto t3 "Atalho: só os átomos que não saem do lugar contribuem, cada um com o traço da matriz 3 × 3 da operação." em 1700 659.36 tamanho 32 cor #F7C948 largura 640 simples
+equacao e3 "\chi = (\text{átomos fixos}) \times (3,\ -1,\ 1,\ 1)" centro 2020 856.52 tamanho 36 cor #E4EAEF
+texto t4 "σᵥ(xz): os três átomos ficam: 3 × 1 = 3.   σᵥ′(yz): só o O fica: 1 × 1 = 1." em 1700 897.52 tamanho 32 cor #A9BAC6 largura 640 simples
+aparece kick, titulo em 0.6s
+junto aparece agua em 0.8s
+junto exibe agua xO, yO, zO, xH1, yH1, zH1, xH2, yH2, zH2
+passo "E"
+aparece M9, lm em 0.6s
+preenche M9 tudo com 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 em 1s
+aplica agua E em 0.9s
+fixos agua
+traco M9
+aparece tc em 0.5s
+revela tc celula G3 E de M9
+aparece t1
+passo "C₂"
+fixos agua limpa em 0.3s
+traco M9 limpa
+some lm em 0.3s
+aparece lm2 em 0.3s
+exibe agua C2
+aplica agua C2 em 2s
+fixos agua
+preenche M9 tudo com -1 0 0 0 0 0 0 0 0 0 -1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 -1 0 0 0 0 0 0 0 0 0 -1 0 0 0 0 0 0 0 0 0 1 0 0 0 -1 0 0 0 0 0 0 0 0 0 -1 0 0 0 0 0 0 0 0 0 1 0 0 0 em 1s
+blocos M9 1 1 3 3, 4 7 6 9, 7 4 9 6
+traco M9
+revela tc celula G3 C2 de M9
+aparece t2
+passo "O atalho"
+aparece t3
+escreve e3 em 1s
+passo "Os dois espelhos"
+fixos agua limpa em 0.3s
+restaura agua em 0.6s
+esconde agua C2
+exibe agua sxz
+aplica agua sxz em 1.6s
+fixos agua
+revela tc celula G3 sxz
+fixos agua limpa em 0.3s
+restaura agua em 0.6s
+esconde agua sxz
+exibe agua syz
+aplica agua syz em 1.6s
+fixos agua
+revela tc celula G3 syz
+aparece t4
+
+cena "Nove graus de liberdade, quatro tipos" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  45/48  ·  REDUÇÃO DE Γ₃N" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Nove graus de liberdade, quatro tipos" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+caracteres tc centro 760 480 tamanho 1260 470 letra 48
+grupo "C_{2v}"
+classe E "E" cor #E6E9EE
+classe C2 "C_2" cor #F7C948
+classe sxz "\sigma_v(xz)" cor #58C4DD
+classe syz "\sigma_v'(yz)" cor #B488F0
+irrep A1 "A_1" 1 1 1 1 "z" "x^2,\ y^2,\ z^2"
+irrep A2 "A_2" 1 1 -1 -1 "R_z" "xy"
+irrep B1 "B_1" 1 -1 1 -1 "x,\ R_y" "xz"
+irrep B2 "B_2" 1 -1 -1 1 "y,\ R_x" "yz"
+gama G3 "\Gamma_{3N}" 9 -1 3 1 cor #FFD166
+equacao f "n_i = \frac{1}{4}\sum\,g_C\,\chi_\Gamma(C)\,\chi_i(C)" centro 1900 420 tamanho 60 cor #E4EAEF
+equacao res "\Gamma_{3N} = 3A_1 + A_2 + 3B_1 + 2B_2" centro 1200 1270 tamanho 64 cor #FFD166
+aparece kick, titulo em 0.6s
+junto aparece tc em 0.7s
+junto escreve f em 1s
+passo "A₁"
+reduz tc A1 em 160 820 largura 2080 letra 46
+passo "A₂"
+reduz tc A2 em 160 925 largura 2080 letra 46
+passo "B₁"
+reduz tc B1 em 160 1030 largura 2080 letra 46
+passo "B₂"
+reduz tc B2 em 160 1135 largura 2080 letra 46
+passo "Resultado"
+escreve res em 1.2s
+
+cena "Tire as translações e as rotações" fundo #0E1821
+roteiro pagina
+transicao 800 res
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  46/48  ·  MODOS DE VIBRAÇÃO" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Tire as translações e as rotações" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+caracteres tc centro 760 470 tamanho 1260 440 letra 50
+grupo "C_{2v}"
+classe E "E" cor #E6E9EE
+classe C2 "C_2" cor #F7C948
+classe sxz "\sigma_v(xz)" cor #58C4DD
+classe syz "\sigma_v'(yz)" cor #B488F0
+irrep A1 "A_1" 1 1 1 1 "z" "x^2,\ y^2,\ z^2"
+irrep A2 "A_2" 1 1 -1 -1 "R_z" "xy"
+irrep B1 "B_1" 1 -1 1 -1 "x,\ R_y" "xz"
+irrep B2 "B_2" 1 -1 -1 1 "y,\ R_x" "yz"
+texto t1 "Na tabela, as translações têm a simetria de x, y, z; as rotações, a de Rₓ, Rᵧ, R_z." em 1500 300 tamanho 36 cor #E4EAEF largura 820 simples
+equacao tr "\Gamma_{\text{trans}} = \textcolor{#F07A5E}{B_1} + \textcolor{#86D06C}{B_2} + \textcolor{#6FA8F5}{A_1}" centro 1900 520 tamanho 48 cor #E4EAEF
+equacao ro "\Gamma_{\text{rot}} = A_2 + B_1 + B_2" centro 1900 640 tamanho 48 cor #E4EAEF
+equacao res "\Gamma_{3N} = 3A_1 + A_2 + 3B_1 + 2B_2" centro 1200 830 tamanho 56 cor #FFD166
+equacao l2 "\Gamma_{\text{vib}} = \Gamma_{3N} - \Gamma_{\text{trans}} - \Gamma_{\text{rot}}" centro 1200 950 tamanho 56 cor #E4EAEF
+equacao l3 "\Gamma_{\text{vib}} = 2A_1 + B_1" centro 1200 1080 tamanho 72 cor #F7C948
+texto t2 "Três modos, como dizia 3N − 6: dois simétricos no C₂ (A₁) e um antissimétrico (B₁)." em 160 1180 tamanho 38 cor #A9BAC6 largura 2080 simples
+aparece kick, titulo em 0.6s
+junto aparece tc, res em 0.7s
+passo "Translações"
+aparece t1
+realca tc fila B1 mais B2 mais A1
+escreve tr em 1s
+passo "Rotações"
+realca tc fila A2 mais B1 mais B2
+escreve ro em 1s
+passo "Subtraia"
+realca tc limpa
+escreve l2 em 1s
+passo "Sobram três"
+escreve l3 em 1.2s
+aparece t2
+
+cena "Simetria, IV e Raman" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  47/48  ·  H₂O(g) · MODOS FUNDAMENTAIS" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Simetria, IV e Raman" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+molecula3d wsim centro 420 540 tamanho 680 600
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+modo sim "\nu_1" O 0 0 0.0245, H1 0.2531 0 -0.1959, H2 -0.2531 0 -0.1959 cor #FFD166
+modo dob "\nu_2" O 0 0 0.0316, H1 -0.1959 0 -0.2531, H2 0.1959 0 -0.2531 cor #FFD166
+modo ass "\nu_3" O -0.0316 0 0, H1 0.2531 0 -0.1959, H2 0.2531 0 0.1959 cor #FFD166
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+vista -30 10
+semrotulos
+texto nsim "estiramento simétrico" centro 420 860 tamanho 38 cor #E4EAEF negrito simples
+equacao gsim "A_1" centro 420 935 tamanho 58 cor #F7C948
+texto fsim "3657 cm⁻¹" centro 420 1000 tamanho 32 cor #A9BAC6 simples
+molecula3d wdob centro 1200 540 tamanho 680 600
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+modo sim "\nu_1" O 0 0 0.0245, H1 0.2531 0 -0.1959, H2 -0.2531 0 -0.1959 cor #FFD166
+modo dob "\nu_2" O 0 0 0.0316, H1 -0.1959 0 -0.2531, H2 0.1959 0 -0.2531 cor #FFD166
+modo ass "\nu_3" O -0.0316 0 0, H1 0.2531 0 -0.1959, H2 0.2531 0 0.1959 cor #FFD166
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+vista -30 10
+semrotulos
+texto ndob "deformação angular" centro 1200 860 tamanho 38 cor #E4EAEF negrito simples
+equacao gdob "A_1" centro 1200 935 tamanho 58 cor #F7C948
+texto fdob "1595 cm⁻¹" centro 1200 1000 tamanho 32 cor #A9BAC6 simples
+molecula3d wass centro 1980 540 tamanho 680 600
+atomo O O 0 0 0.22
+atomo H1 H 0.757 0 -0.3659 "1"
+atomo H2 H -0.757 0 -0.3659 "2"
+ligacao O H1
+ligacao O H2
+modo sim "\nu_1" O 0 0 0.0245, H1 0.2531 0 -0.1959, H2 -0.2531 0 -0.1959 cor #FFD166
+modo dob "\nu_2" O 0 0 0.0316, H1 -0.1959 0 -0.2531, H2 0.1959 0 -0.2531 cor #FFD166
+modo ass "\nu_3" O -0.0316 0 0, H1 0.2531 0 -0.1959, H2 0.2531 0 0.1959 cor #FFD166
+elemento C2 eixo 0 0 1 ordem 2 "C_2" cor #F7C948
+vista -30 10
+semrotulos
+texto nass "estiramento assimétrico" centro 1980 860 tamanho 38 cor #E4EAEF negrito simples
+equacao gass "B_1" centro 1980 935 tamanho 58 cor #F7C948
+texto fass "3756 cm⁻¹" centro 1980 1000 tamanho 32 cor #A9BAC6 simples
+texto t1 "Em H₂O no plano xz, C₂ inverte as setas do modo assimétrico. O modo é par em xz e ímpar em yz. Essa combinação identifica B₁." em 160 1050 tamanho 34 cor #A9BAC6 largura 2080 simples
+texto t2 "IV exige simetria de x, y ou z. Raman exige simetria de uma função quadrática. A₁ e B₁ satisfazem os dois critérios." em 160 1110 tamanho 34 cor #F7C948 largura 2080 simples
+texto t3 "Em uma molécula centrosimétrica, um modo ativo no IV é ímpar e um modo ativo no Raman é par. Nenhum modo fundamental pode aparecer nos dois." em 160 1225 tamanho 32 cor #A9BAC6 largura 2080 simples
+aparece kick, titulo em 0.6s
+junto aparece wsim, nsim em 0.8s
+junto aparece wdob, ndob em 0.8s
+junto aparece wass, nass em 0.8s
+junto exibe wsim modo:sim em 0.6s
+junto exibe wdob modo:dob em 0.6s
+junto exibe wass modo:ass em 0.6s
+passo "Vibrando"
+vibra wsim sim amplitude 1
+vibra wdob dob amplitude 1
+vibra wass ass amplitude 1
+junto escreve gsim em 0.6s
+junto escreve gdob em 0.6s
+junto escreve gass em 0.6s
+junto aparece fsim
+junto aparece fdob
+junto aparece fass
+passo "C₂ no modo B₁"
+vibra wass para
+exibe wass C2
+aplica wass C2 em 2s
+aparece t1
+passo "IV e Raman"
+aparece t2
+passo "Exclusão mútua"
+aparece t3
+
+cena "Da geometria aos espectros" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "SIMETRIA MOLECULAR  ·  48/48  ·  RESUMO" em 140 64 tamanho 30 cor #9EB3C0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Da geometria aos espectros" em 138 104 tamanho 64 negrito cor #F3EFE6 simples
+caixa k0 centro 210 600 tamanho 300 400 cor #F7C948 espessura 4
+texto a0 "Elementos" centro 210 460 tamanho 38 cor #F7C948 negrito simples
+equacao e0 "C_n,\ \sigma,\ i,\ S_n" centro 210 590 tamanho 40 cor #E4EAEF
+texto s0 "eixos, planos e centro" centro 210 720 tamanho 30 cor #A9BAC6 largura 260 simples
+caixa k1 centro 540 600 tamanho 300 400 cor #58C4DD espessura 4
+texto a1 "Operações" centro 540 460 tamanho 38 cor #58C4DD negrito simples
+equacao e1 "C_3^2,\ S_4,\ E" centro 540 590 tamanho 40 cor #E4EAEF
+texto s1 "os movimentos que eles permitem" centro 540 720 tamanho 30 cor #A9BAC6 largura 260 simples
+seta g1 de 365 600 ate 385 600 cor #7890A0 espessura 4
+caixa k2 centro 870 600 tamanho 300 400 cor #83C167 espessura 4
+texto a2 "Grupo" centro 870 460 tamanho 38 cor #83C167 negrito simples
+equacao e2 "C_{2v},\ D_{3h},\ T_d" centro 870 590 tamanho 40 cor #E4EAEF
+texto s2 "o conjunto fechado, pelo fluxograma" centro 870 720 tamanho 30 cor #A9BAC6 largura 260 simples
+seta g2 de 695 600 ate 715 600 cor #7890A0 espessura 4
+caixa k3 centro 1200 600 tamanho 300 400 cor #F07A5E espessura 4
+texto a3 "Matrizes" centro 1200 460 tamanho 38 cor #F07A5E negrito simples
+equacao e3 "D(C_2)" centro 1200 590 tamanho 40 cor #E4EAEF
+texto s3 "para onde vão x, y, z" centro 1200 720 tamanho 30 cor #A9BAC6 largura 260 simples
+seta g3 de 1025 600 ate 1045 600 cor #7890A0 espessura 4
+caixa k4 centro 1530 600 tamanho 300 400 cor #FFD166 espessura 4
+texto a4 "Caracteres" centro 1530 460 tamanho 38 cor #FFD166 negrito simples
+equacao e4 "\chi = \mathrm{tr}\,D" centro 1530 590 tamanho 40 cor #E4EAEF
+texto s4 "um número por operação" centro 1530 720 tamanho 30 cor #A9BAC6 largura 260 simples
+seta g4 de 1355 600 ate 1375 600 cor #7890A0 espessura 4
+caixa k5 centro 1860 600 tamanho 300 400 cor #B488F0 espessura 4
+texto a5 "Tabela" centro 1860 460 tamanho 38 cor #B488F0 negrito simples
+equacao e5 "A_1,\ E',\ A_u" centro 1860 590 tamanho 40 cor #E4EAEF
+texto s5 "irredutíveis com nome de Mulliken" centro 1860 720 tamanho 30 cor #A9BAC6 largura 260 simples
+seta g5 de 1685 600 ate 1705 600 cor #7890A0 espessura 4
+caixa k6 centro 2190 600 tamanho 300 400 cor #FC6255 espessura 4
+texto a6 "Redução" centro 2190 460 tamanho 38 cor #FC6255 negrito simples
+equacao e6 "\Gamma = 2A_1 + B_1" centro 2190 590 tamanho 40 cor #E4EAEF
+texto s6 "redutível = soma de irredutíveis" centro 2190 720 tamanho 30 cor #A9BAC6 largura 260 simples
+seta g6 de 2015 600 ate 2035 600 cor #7890A0 espessura 4
+texto fim "Cada coluna da tabela agrupa uma classe de operações. Cada número é o traço da matriz que representa uma operação daquela classe." em 210 960 tamanho 46 cor #E4EAEF largura 2000 simples
+texto fim2 "Com isso se constroem os orbitais moleculares, se reconhecem moléculas quirais e se preveem as bandas de IV e Raman." em 210 1160 tamanho 38 cor #A9BAC6 largura 2000 simples
+aparece kick, titulo em 0.6s
+cresce k0 em 0.45s
+junto aparece a0, e0, s0 em 0.5s
+passo "Operações"
+escreve g1 em 0.35s
+cresce k1 em 0.45s
+junto aparece a1, e1, s1 em 0.5s
+passo "Grupo"
+escreve g2 em 0.35s
+cresce k2 em 0.45s
+junto aparece a2, e2, s2 em 0.5s
+passo "Matrizes"
+escreve g3 em 0.35s
+cresce k3 em 0.45s
+junto aparece a3, e3, s3 em 0.5s
+passo "Caracteres"
+escreve g4 em 0.35s
+cresce k4 em 0.45s
+junto aparece a4, e4, s4 em 0.5s
+passo "Tabela"
+escreve g5 em 0.35s
+cresce k5 em 0.45s
+junto aparece a5, e5, s5 em 0.5s
+passo "Redução"
+escreve g6 em 0.35s
+cresce k6 em 0.45s
+junto aparece a6, e6, s6 em 0.5s
+passo "Uma última ideia"
+escreve fim em 1.8s
+aparece fim2 em 0.8s

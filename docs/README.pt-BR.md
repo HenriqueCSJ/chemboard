@@ -4,7 +4,7 @@
 
 Use a caneta de Lewis para construir uma estrutura diante da turma, abra um modelo molecular em 3D para discutir geometria ou avance por uma aula preparada, um painel de cada vez.
 
-**[Abrir ChemBoard ↗](https://henriquecsj.github.io/chemboard/)** · [Aulas de exemplo](#aulas-de-exemplo) · [English README](../README.md)
+**[Abrir ChemBoard ↗](https://henriquecsj.github.io/chemboard/)** · [Aulas de exemplo](#aulas-de-exemplo) · [IC677](#aulas-de-ic677) · [English README](../README.md)
 
 <picture>
   <source media="(prefers-reduced-motion: reduce)" srcset="media/reaction-playback-poster.webp">
@@ -50,7 +50,7 @@ Na lousa, clique com o botão direito sobre um elemento para destacá-lo ou sepa
 
 ## Da estrutura ao modelo
 
-- **Geometria molecular.** Pressione **K** para abrir **Modelos e gerador de Lewis** e inserir **CH₄**. Com a molécula selecionada, pressione **D** para abrir o modelo 3D. Gire a molécula e compare as representações ou meça ângulos.
+- **Geometria molecular.** Pressione **K** para abrir **Modelos e gerador de Lewis** e inserir **CH₄**. Com a molécula selecionada, pressione **D** para abrir o modelo 3D. Gire a molécula e compare as representações ou meça ângulos. Clique em **Inserir modelo 3D** para levar um modelo manipulável à lousa. Arraste-o com a ferramenta Mão durante a aula ou use seu nome para aplicar operações de simetria em um roteiro. [Exemplos de roteiro 3D](scenes.md#spatial-drawings-and-matrices)
 - **Orbitais.** Pressione **W** para abrir **Orbitais atômicos**. Varie os números quânticos, compare a superfície, a nuvem, o corte 2D e o gráfico radial, e use os controles de eixos e nós.
 
 ![Estrutura de Lewis do metano ao lado do modelo tetraédrico em 3D.](images/methane-3d.png)
@@ -86,13 +86,26 @@ Abra **Menu → Aulas prontas** e escolha uma aula. As páginas entram depois da
 
 Para importar um JSON, salve o arquivo e escolha **Menu → Abrir quadro**. Se já houver conteúdo, você pode adicionar as páginas ou substituir o quadro.
 
+### Aulas de IC677
+
+Abra **Menu → Aulas prontas** para inserir uma cópia editável. Ao apresentar a aula completa de simetria, use **Menu → Capítulos da aula…** para saltar para um tema. Avance e volte pelos passos com **PgDn** e **PgUp**. Use a ferramenta Mão para girar as estruturas 3D e as redes.
+
+| Aula | O que explorar | Arquivos |
+| --- | --- | --- |
+| **Simetria molecular** · 48 cenas e 225 passos | Identifique elementos e grupos pontuais, depois passe por matrizes e tabelas de caracteres até chegar a espectroscopia e modos vibracionais. Cinco passagens mantêm modelos, matrizes ou equações na transição entre cenas. | [Quadro JSON](https://henriquecsj.github.io/chemboard/examples/ic677-simetria-molecular.json) · [Roteiro](../examples/ic677-simetria-molecular.chemboard) |
+| **Estado sólido** · 15 cenas e 71 passos | Construa células unitárias a partir de padrões que se repetem, compare as redes de Bravais e explore empacotamento, interstícios e estruturas cristalinas. | [Quadro JSON](https://henriquecsj.github.io/chemboard/examples/ic677-estado-solido.json) · [Roteiro](../examples/ic677-estado-solido.chemboard) |
+| **Água e matrizes de simetria** · 5 cenas | Acompanhe as operações da molécula e suas representações matriciais. | [Roteiro](../examples/ic677-simetria-agua.chemboard) |
+| **Células cúbicas** · 4 cenas | Compare células cúbicas primitivas, de corpo centrado e de faces centradas. | [Roteiro](../examples/ic677-celulas-cubicas.chemboard) |
+
+Abra um quadro JSON em **Menu → Abrir quadro…**. Para ler ou editar um arquivo `.chemboard`, use **Menu → Roteiro de animação… → Abrir arquivo…**.
+
 ## Prepare e apresente sua aula
 
 - Use **+** ao lado do contador para criar páginas. Enquadre um painel, clique com o botão direito em uma área vazia e escolha **Guardar esta vista como parada**.
 - Use **→ / ←** para percorrer as paradas e os passos. A barra de apresentação permite recomeçar, pausar e alterar a velocidade. Pressione **Esc** para voltar ao quadro completo.
 - Pressione **F** para tela cheia ou **U** para ocultar a interface. Use **X** para o laser ou **O** para o holofote.
 - Clique com o botão direito e escolha **Travar** para proteger um objeto. Use **Destravar** quando quiser editá-lo de novo.
-- Use **Salvar quadro (.json)** para guardar uma cópia editável ou **Exportar imagem (PNG)** para usar a página em outro material.
+- Use **Salvar quadro (.json)** para guardar as páginas, os passos e as animações em um arquivo. Marque **Incluir roteiros editáveis** para levar também o texto dos roteiros. **Exportar imagem (PNG)** captura a página atual.
 
 Para mover uma fórmula ou forma durante a aula, selecione a posição inicial e depois a final. Clique com o botão direito em um dos objetos e escolha **Mover entre passos…**. Em duas fórmulas, clique no termo de origem e no correspondente de destino nas prévias. Na apresentação, **→** ou **PgDn** aciona o movimento no passo escolhido.
 
@@ -131,6 +144,6 @@ Acrescente `roteiro pagina` logo após `cena` para usar os efeitos do roteiro de
 
 ## Uso local e licença
 
-Abra [`index.html`](../index.html) em um navegador de computador. A caneta e as aulas embutidas funcionam a partir do HTML local. A busca online de moléculas, as mídias remotas e as fontes web usam a internet. Os visualizadores 3D precisam de WebGL. O navegador salva o quadro no endereço usado para abri-lo. Exporte JSON para fazer backup ou trocar de computador.
+Abra [`index.html`](../index.html) em um navegador de computador. A caneta e as aulas embutidas funcionam a partir do HTML local. A busca online de moléculas, as mídias remotas e as fontes web usam a internet. O renderizador das aulas espaciais usa WebGL quando disponível e tem uma alternativa em Canvas. O navegador salva o quadro no endereço usado para abri-lo. Exporte JSON para fazer backup ou trocar de computador.
 
 [Apache 2.0](../LICENSE). O Three.js incorporado usa a licença MIT, incluída em `index.html`. [Relatar um problema](https://github.com/HenriqueCSJ/chemboard/issues/new)

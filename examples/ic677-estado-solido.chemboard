@@ -1,0 +1,821 @@
+// IC677 · Química Inorgânica I · Universidade Federal Rural do Rio de Janeiro
+// Professor Henrique C. S. Junior
+// ChemBoard · Estado sólido: redes, células unitárias, sistemas cristalinos e as 14 redes de Bravais.
+
+cena "Um cristal é um padrão que se repete" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  1/15  ·  REDE E MOTIVO" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Um cristal é um padrão que se repete" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede cr centro 760 760 tamanho 1300 1060
+celula 1 0.86 78
+repete 5 4
+atomo A 0 0 cor #FC6255 raio 0.12 grupo mol
+atomo B 0.27 0.07 cor #58C4DD raio 0.085 grupo mol
+atomo C 0.06 0.3 cor #58C4DD raio 0.085 grupo mol
+ligacao A B
+ligacao A C
+atomo P 0 0 cor #F7C948 raio 0.055 grupo pts oculto
+inteiro
+cores centro #7FD3C3
+semcelula
+texto t1 "Um cristal é feito de uma mesma unidade, o motivo, repetida sem fim nas três direções." em 1500 300 tamanho 46 cor #E4EAEF largura 800 simples
+texto t2 "Marque o mesmo ponto em cada motivo: aqui, o átomo vermelho." em 1500 560 tamanho 42 cor #A9BAC6 largura 800 simples
+texto t3 "Tire os átomos. O que sobra é a rede: pontos que têm, todos, a mesma vizinhança." em 1500 760 tamanho 42 cor #A9BAC6 largura 800 simples
+equacao eq "\textcolor{#F3EFE6}{\text{cristal}} = \textcolor{#F7C948}{\text{rede}} + \textcolor{#FC6255}{\text{motivo}}" centro 1900 1100 tamanho 76 cor #E4EAEF
+texto t4 "A rede diz onde; o motivo diz o quê." em 1500 1190 tamanho 40 cor #F7C948 largura 800 simples
+aparece kick, titulo em 0.6s
+junto aparece cr em 1.2s
+junto escreve t1 em 1.6s
+passo "Um ponto em cada motivo"
+exibe cr pts em 0.8s
+aparece t2
+passo "Tire o motivo"
+esconde cr mol em 1.2s
+aparece t3
+exibe cr celula em 0.8s
+passo "Cristal = rede + motivo"
+escreve eq em 1.4s
+exibe cr mol em 1s
+aparece t4
+
+cena "Deslizar sem que ninguém perceba" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  2/15  ·  SIMETRIA DE TRANSLAÇÃO" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Deslizar sem que ninguém perceba" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede r centro 700 760 tamanho 1200 1020
+celula 1 0.85 76
+repete 6 4
+raio 0.08
+cores pontos #E8EDF1
+cores centro #7FD3C3
+texto t1 "Desloque a rede inteira pelo vetor a. Os círculos tracejados marcam onde os pontos estavam." em 1400 300 tamanho 44 cor #E4EAEF largura 900 simples
+texto t2 "Cada ponto cai sobre um ponto antigo: o resultado é indistinguível." em 1400 500 tamanho 42 cor #A9BAC6 largura 900 simples
+texto t3 "O mesmo vale para b e para qualquer combinação inteira dos dois:" em 1400 650 tamanho 42 cor #A9BAC6 largura 900 simples
+equacao eq "\mathbf{T} = n_1\,\textcolor{#F07A5E}{\mathbf{a}} + n_2\,\textcolor{#86D06C}{\mathbf{b}},\quad n_1,\ n_2\ \text{inteiros}" centro 1850 790 tamanho 62 cor #E4EAEF
+texto t4 "Meio vetor a: os pontos caem no vazio. Isso não é uma simetria da rede." em 1400 900 tamanho 42 cor #FC6255 largura 900 simples
+texto t5 "Rede: o conjunto de todos os pontos alcançados a partir de um deles pelas translações T." em 1400 1080 tamanho 44 cor #F7C948 largura 900 negrito simples
+aparece kick, titulo em 0.6s
+junto aparece r em 1s
+junto exibe r vetores em 0.8s
+junto aparece t1
+passo "Desloque por a"
+fantasma r
+translada r 1 0 em 2s
+aparece t2
+passo "Por b"
+translada r 0 1 em 1.8s
+passo "Por a + b"
+translada r 1 1 em 1.8s
+aparece t3
+escreve eq em 1.2s
+passo "Meio vetor"
+translada r 0.5 0 em 1.4s
+aparece t4
+passo "Volte"
+translada r -0.5 0 em 1s
+fantasma r limpa em 0.6s
+aparece t5
+
+cena "Qual pedaço repetir?" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  3/15  ·  CÉLULA UNITÁRIA" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Qual pedaço repetir?" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede r centro 700 760 tamanho 1200 1020
+celula 1 0.85 76
+repete 6 4
+raio 0.08
+cores pontos #E8EDF1
+cores centro #7FD3C3
+primitiva p1 0 1 0 1 0 0 0 1 0 cor #F7C948
+primitiva p2 2 0 0 1 0 0 1 1 0 cor #58C4DD
+primitiva p3 5 2 0 1 0 0 -1 1 0 cor #83C167
+primitiva p4 1 2 0 1 1 0 1 -1 0 cor #FC6255
+semcelula
+texto t1 "Uma célula unitária é um paralelogramo que, repetido pelas translações da rede, cobre o plano sem buracos nem sobreposição." em 1400 290 tamanho 42 cor #E4EAEF largura 900 simples
+texto t2 "Estas três têm a mesma área e só um ponto cada: cada vértice é dividido entre 4 células." em 1400 520 tamanho 42 cor #A9BAC6 largura 900 simples
+equacao e2 "4 \times \tfrac{1}{4} = 1 \ \text{ponto}" centro 1850 700 tamanho 60 cor #F7C948
+texto t3 "São células primitivas. A escolha não é única." em 1400 780 tamanho 42 cor #A9BAC6 largura 900 simples
+texto t4 "Esta tem um ponto no meio: área dupla, dois pontos. Não é primitiva." em 1400 900 tamanho 42 cor #FC6255 largura 900 simples
+equacao e4 "4 \times \tfrac{1}{4} + 1 = 2" centro 1850 1060 tamanho 60 cor #FC6255
+texto t5 "Convenção: a célula que mostra a simetria da rede, com os vetores mais curtos possíveis." em 1400 1160 tamanho 40 cor #F7C948 largura 900 simples
+aparece kick, titulo em 0.6s
+junto aparece r em 1s
+junto aparece t1
+passo "Uma célula"
+exibe r p1 em 0.8s
+passo "Outras"
+exibe r p2 em 0.6s
+exibe r p3 em 0.6s
+aparece t2
+escreve e2 em 1s
+aparece t3
+passo "Uma célula maior"
+exibe r p4 em 0.8s
+aparece t4
+escreve e4 em 1s
+passo "Qual escolher"
+aparece t5
+
+cena "No plano, só cinco redes" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  4/15  ·  AS CINCO REDES PLANAS" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "No plano, só cinco redes" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede r centro 640 720 tamanho 1120 930
+celula 1 0.8 75
+repete 5 4
+raio 0.075
+cores pontos #E8EDF1
+cores centro #7FD3C3
+primitiva pr 2 1 0 0.5 0.5 0 0.5 -0.5 0 cor #F7C948 espessura 1.4
+caracteres tb centro 1760 540 tamanho 1000 460 letra 48 vazia
+grupo "\text{rede}"
+classe ab "a,\ b" cor #F07A5E
+classe gam "\gamma" cor #4FD1C5
+linha obl "\text{oblíqua}" "a \neq b" "\gamma \neq 90°"
+linha ret "\text{retangular}" "a \neq b" "90°"
+linha cre "\text{retangular centrada}" "a \neq b" "90°"
+linha qua "\text{quadrada}" "a = b" "90°"
+linha hex "\text{hexagonal}" "a = b" "120°"
+texto n1 "Deforme a célula: mude a, b e o ângulo γ. Cada forma especial ganha simetria nova." em 1270 880 tamanho 40 cor #E4EAEF largura 1000 simples
+texto n2 "A retangular centrada tem célula primitiva (o losango), mas o losango esconde os espelhos. Por isso ela é uma rede à parte, com célula convencional de 2 pontos." em 1270 1000 tamanho 38 cor #A9BAC6 largura 1000 simples
+texto n3 "Qualquer outra escolha cai em uma destas cinco: são as redes de Bravais do plano." em 1270 1200 tamanho 40 cor #F7C948 largura 1000 simples
+aparece kick, titulo em 0.6s
+junto aparece r em 1s
+junto exibe r vetores, angulos em 0.6s
+junto aparece tb em 0.6s
+junto revela tb fila obl
+junto realca tb fila obl
+junto aparece n1
+passo "Retangular"
+celula r 1 0.7 90 em 1.6s
+revela tb fila ret
+realca tb fila ret
+passo "Retangular centrada"
+centra r C em 1.4s
+revela tb fila cre
+realca tb fila cre
+passo "Uma célula primitiva"
+exibe r pr em 0.8s
+aparece n2
+passo "Quadrada"
+esconde r pr em 0.5s
+centra r P em 0.9s
+celula r 1 1 90 em 1.4s
+revela tb fila qua
+realca tb fila qua
+passo "Hexagonal"
+celula r 1 1 120 em 1.8s
+revela tb fila hex
+realca tb fila hex
+passo "Cinco e só"
+realca tb limpa
+aparece n3
+
+cena "Seis números descrevem a célula" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  5/15  ·  A CÉLULA EM 3D" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Seis números descrevem a célula" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede c centro 700 780 tamanho 1150 1050
+celula 1 1.15 0.9 78 72 102
+raio 0.07
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -34 20
+equacao e1 "\textcolor{#F07A5E}{a},\ \textcolor{#86D06C}{b},\ \textcolor{#6FA8F5}{c}" centro 1800 360 tamanho 72 cor #E4EAEF
+texto t1 "os comprimentos das três arestas" centro 1800 450 tamanho 38 cor #A9BAC6 simples
+equacao e2 "\alpha:\ \textcolor{#86D06C}{\mathbf{b}}\text{ e }\textcolor{#6FA8F5}{\mathbf{c}}\qquad \beta:\ \textcolor{#F07A5E}{\mathbf{a}}\text{ e }\textcolor{#6FA8F5}{\mathbf{c}}\qquad \gamma:\ \textcolor{#F07A5E}{\mathbf{a}}\text{ e }\textcolor{#86D06C}{\mathbf{b}}" centro 1800 600 tamanho 52 cor #E4EAEF
+texto t2 "cada ângulo fica entre os dois vetores que não têm o seu nome" centro 1800 690 tamanho 36 cor #A9BAC6 simples
+texto t3 "Repetida nas três direções, a célula preenche o espaço: toda a informação do cristal está nela." em 1300 880 tamanho 42 cor #E4EAEF largura 1000 simples
+texto t4 "É a célula mais geral possível: nenhuma aresta igual, nenhum ângulo especial. A rede triclínica." em 1300 1080 tamanho 40 cor #F7C948 largura 1000 simples
+aparece kick, titulo em 0.6s
+junto aparece c em 1s
+junto orbita c 50 em 6s
+passo "Arestas"
+exibe c vetores em 0.8s
+escreve e1 em 0.9s
+aparece t1
+passo "Ângulos"
+exibe c angulos em 0.8s
+escreve e2 em 1.4s
+aparece t2
+passo "Repita"
+replica c 2 2 2 em 1.8s
+aparece t3
+passo "Volte a uma célula"
+replica c 1 1 1 em 1.2s
+aparece t4
+
+cena "Sete formas de célula" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  6/15  ·  SISTEMAS CRISTALINOS" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Sete formas de célula" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede c centro 560 760 tamanho 900 960
+celula 1 1.15 0.9 78 72 102
+raio 0.07
+cores pontos #E8EDF1
+cores centro #7FD3C3
+visiveis celula, vetores, angulos
+vista -34 20
+caracteres tb centro 1660 700 tamanho 1380 720 letra 42 vazia
+grupo "\text{sistema}"
+classe abc "a,\ b,\ c" cor #F07A5E
+classe ang "\alpha,\ \beta,\ \gamma" cor #4FD1C5
+linha tri "\text{triclínico}" "a \neq b \neq c" "\text{nenhum } 90°"
+linha mon "\text{monoclínico}" "a \neq b \neq c" "\alpha = \gamma = 90°,\ \beta \neq 90°"
+linha ort "\text{ortorrômbico}" "a \neq b \neq c" "\alpha = \beta = \gamma = 90°"
+linha tet "\text{tetragonal}" "a = b \neq c" "\alpha = \beta = \gamma = 90°"
+linha cub "\text{cúbico}" "a = b = c" "\alpha = \beta = \gamma = 90°"
+linha rom "\text{trigonal (romboédrico)}" "a = b = c" "\alpha = \beta = \gamma \neq 90°"
+linha hex "\text{hexagonal}" "a = b \neq c" "\alpha = \beta = 90°,\ \gamma = 120°"
+texto n1 "Os parâmetros são consequência: quem define o sistema é a simetria da rede (os eixos e planos que ela tem)." em 1100 1150 tamanho 38 cor #F7C948 largura 1250 simples
+aparece kick, titulo em 0.6s
+junto aparece c, tb em 1s
+junto revela tb fila tri
+junto realca tb fila tri
+passo "Monoclínico"
+celula c 1 1.15 0.9 90 108 90 em 1.8s
+junto revela tb fila mon
+junto realca tb fila mon
+passo "Ortorrômbico"
+celula c 1 1.15 0.9 90 90 90 em 1.8s
+junto revela tb fila ort
+junto realca tb fila ort
+passo "Tetragonal"
+celula c 1 1 1.35 90 90 90 em 1.8s
+junto revela tb fila tet
+junto realca tb fila tet
+passo "Cúbico"
+celula c 1 1 1 90 90 90 em 1.8s
+junto revela tb fila cub
+junto realca tb fila cub
+passo "Trigonal"
+celula c 1 1 1 72 72 72 em 1.8s
+junto revela tb fila rom
+junto realca tb fila rom
+passo "Hexagonal"
+celula c 1 1 1.4 90 90 120 em 1.8s
+junto revela tb fila hex
+junto realca tb fila hex
+passo "Quem manda é a simetria"
+realca tb limpa
+aparece n1
+orbita c 360 em 14s
+
+cena "Pontos a mais na célula: P, C, I e F" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  7/15  ·  CENTRAGEM" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Pontos a mais na célula: P, C, I e F" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede c centro 640 760 tamanho 1000 1000
+celula 1 1.2 0.85 90 90 90
+raio 0.085
+cores pontos #E8EDF1
+cores centro #7FD3C3
+visiveis celula, vetores
+vista -34 20
+equacao lP "\mathrm{P}" centro 1300 350 tamanho 100 cor #F7C948
+texto dP "primitiva: pontos só nos vértices" em 1400 300 tamanho 38 cor #E4EAEF largura 900 simples
+equacao nP "8 \times \tfrac{1}{8} = 1" centro 1820 430 tamanho 46 cor #A9BAC6
+equacao lC "\mathrm{C}" centro 1300 580 tamanho 100 cor #4FD1C5
+texto dC "de base centrada: mais um ponto no centro de um par de faces" em 1400 530 tamanho 38 cor #E4EAEF largura 900 simples
+equacao nC "8 \times \tfrac{1}{8} + 2 \times \tfrac{1}{2} = 2" centro 1820 660 tamanho 46 cor #A9BAC6
+equacao lI "\mathrm{I}" centro 1300 810 tamanho 100 cor #58C4DD
+texto dI "de corpo centrado (do alemão innenzentriert): mais um ponto no centro" em 1400 760 tamanho 38 cor #E4EAEF largura 900 simples
+equacao nI "8 \times \tfrac{1}{8} + 1 = 2" centro 1820 890 tamanho 46 cor #A9BAC6
+equacao lF "\mathrm{F}" centro 1300 1040 tamanho 100 cor #B488F0
+texto dF "de faces centradas: mais um ponto no centro de cada face" em 1400 990 tamanho 38 cor #E4EAEF largura 900 simples
+equacao nF "8 \times \tfrac{1}{8} + 6 \times \tfrac{1}{2} = 4" centro 1820 1120 tamanho 46 cor #A9BAC6
+aparece kick, titulo em 0.6s
+junto aparece c em 1s
+junto aparece lP, dP em 0.6s
+junto escreve nP em 0.8s
+passo "C"
+centra c C em 1.3s
+aparece lC, dC em 0.6s
+escreve nC em 0.8s
+passo "I"
+centra c I em 1.3s
+aparece lI, dI em 0.6s
+escreve nI em 0.8s
+passo "F"
+centra c F em 1.3s
+aparece lF, dF em 0.6s
+escreve nF em 0.8s
+passo "Gire"
+orbita c 120 em 5s
+
+cena "Sete sistemas × quatro centragens ≠ 28" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  8/15  ·  POR QUE SÓ 14" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Sete sistemas × quatro centragens ≠ 28" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede t centro 600 760 tamanho 1000 1000
+celula 1 1 1.3 90 90 90
+centragem C
+repete 2 2 1
+raio 0.08
+cores pontos #E8EDF1
+cores centro #7FD3C3
+primitiva pq 0.5 0.5 0 0.5 0.5 0 0.5 -0.5 0 0 0 1 cor #F7C948 espessura 1.6
+vista -90 89
+texto t1 "Uma rede tetragonal C, vista de cima: pontos nos vértices e no centro das bases." em 1250 300 tamanho 42 cor #E4EAEF largura 1000 simples
+texto t2 "Escolha a célula girada 45°: menor, ainda com base quadrada e sem ponto no meio. É a mesma rede, agora tetragonal P." em 1250 470 tamanho 42 cor #A9BAC6 largura 1000 simples
+equacao e "\text{tetragonal C} = \text{tetragonal P}\quad (a' = a/\sqrt{2})" centro 1750 700 tamanho 54 cor #F7C948
+texto t3 "Outras combinações quebram a simetria: centrar um só par de faces de um cubo destrói os eixos C₃ das diagonais. Não existe cúbica C." em 1250 800 tamanho 40 cor #A9BAC6 largura 1000 simples
+texto t4 "Eliminando as repetidas e as impossíveis, sobram 14 redes: as redes de Bravais (1850)." em 1250 1060 tamanho 44 cor #F7C948 largura 1000 negrito simples
+aparece kick, titulo em 0.6s
+junto aparece t em 1s
+junto aparece t1
+passo "Outra célula"
+exibe t pq em 0.9s
+aparece t2
+escreve e em 1.2s
+passo "Em 3D"
+vista t -34 22 em 2s
+aparece t3
+passo "Catorze"
+aparece t4
+
+cena "As 14 redes de Bravais" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  9/15  ·  AS 14 REDES DE BRAVAIS" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "As 14 redes de Bravais" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+equacao rP "\mathrm{P}" centro 70 360 tamanho 64 cor #F7C948
+equacao rC "\mathrm{C}" centro 70 610 tamanho 64 cor #F7C948
+equacao rI "\mathrm{I}" centro 70 860 tamanho 64 cor #F7C948
+equacao rF "\mathrm{F}" centro 70 1110 tamanho 64 cor #F7C948
+texto h0 "triclínico" centro 230 225 tamanho 34 cor #F3EFE6 negrito simples
+rede b0P centro 230 360 tamanho 300 240
+celula 1 1.15 0.9 78 72 102
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+texto h1 "monoclínico" centro 555 225 tamanho 34 cor #F3EFE6 negrito simples
+rede b1P centro 555 360 tamanho 300 240
+celula 1 1.15 0.9 90 108 90
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+rede b1C centro 555 610 tamanho 300 240
+celula 1 1.15 0.9 90 108 90
+centragem C
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+texto h2 "ortorrômbico" centro 880 225 tamanho 34 cor #F3EFE6 negrito simples
+rede b2P centro 880 360 tamanho 300 240
+celula 1 1.2 0.85 90 90 90
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+rede b2C centro 880 610 tamanho 300 240
+celula 1 1.2 0.85 90 90 90
+centragem C
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+rede b2I centro 880 860 tamanho 300 240
+celula 1 1.2 0.85 90 90 90
+centragem I
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+rede b2F centro 880 1110 tamanho 300 240
+celula 1 1.2 0.85 90 90 90
+centragem F
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+texto h3 "tetragonal" centro 1205 225 tamanho 34 cor #F3EFE6 negrito simples
+rede b3P centro 1205 360 tamanho 300 240
+celula 1 1 1.35 90 90 90
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+rede b3I centro 1205 860 tamanho 300 240
+celula 1 1 1.35 90 90 90
+centragem I
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+texto h4 "cúbico" centro 1530 225 tamanho 34 cor #F3EFE6 negrito simples
+rede b4P centro 1530 360 tamanho 300 240
+celula 1 1 1 90 90 90
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+rede b4I centro 1530 860 tamanho 300 240
+celula 1 1 1 90 90 90
+centragem I
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+rede b4F centro 1530 1110 tamanho 300 240
+celula 1 1 1 90 90 90
+centragem F
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+texto h5 "trigonal" centro 1855 225 tamanho 34 cor #F3EFE6 negrito simples
+rede b5R centro 1855 360 tamanho 300 240
+celula 1 1 1 72 72 72
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -32 18
+equacao lR "\mathrm{R}" centro 1965 270 tamanho 44 cor #F7C948
+texto h6 "hexagonal" centro 2180 225 tamanho 34 cor #F3EFE6 negrito simples
+rede b6P centro 2180 360 tamanho 300 240
+celula 1 1 1.4 90 90 120
+raio 0.09
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -60 24
+texto fim "14" em 2230 1180 tamanho 90 cor #F7C948 negrito simples
+aparece kick, titulo em 0.6s
+junto aparece rP, rC, rI, rF em 0.6s
+aparece h0, b0P em 0.7s
+passo "monoclínico"
+aparece h1, b1P, b1C em 0.7s
+passo "ortorrômbico"
+aparece h2, b2P, b2C, b2I, b2F em 0.7s
+passo "tetragonal"
+aparece h3, b3P, b3I em 0.7s
+passo "cúbico"
+aparece h4, b4P, b4I, b4F em 0.7s
+passo "trigonal"
+aparece h5, b5R, lR em 0.7s
+passo "hexagonal"
+aparece h6, b6P em 0.7s
+passo "Catorze"
+cresce fim em 0.8s
+
+cena "Quanto de cada átomo cabe na célula?" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  10/15  ·  ÁTOMOS POR CÉLULA" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Quanto de cada átomo cabe na célula?" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede kP centro 420 640 tamanho 720 720
+celula 1 1 1 90 90 90
+raio 0.12
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -34 20
+equacao lP "\mathrm{P}" centro 420 300 tamanho 70 cor #F7C948
+rede kI centro 1200 640 tamanho 720 720
+celula 1 1 1 90 90 90
+centragem I
+raio 0.12
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -34 20
+equacao lI "\mathrm{I}" centro 1200 300 tamanho 70 cor #F7C948
+rede kF centro 1980 640 tamanho 720 720
+celula 1 1 1 90 90 90
+centragem F
+raio 0.12
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -34 20
+equacao lF "\mathrm{F}" centro 1980 300 tamanho 70 cor #F7C948
+equacao nP "8 \times \tfrac{1}{8} = \textcolor{#F7C948}{1}" centro 420 1060 tamanho 56 cor #E4EAEF
+equacao nI "8 \times \tfrac{1}{8} + 1 = \textcolor{#F7C948}{2}" centro 1200 1060 tamanho 56 cor #E4EAEF
+equacao nF "8 \times \tfrac{1}{8} + 6 \times \tfrac{1}{2} = \textcolor{#F7C948}{4}" centro 1980 1060 tamanho 56 cor #E4EAEF
+texto t1 "Corte tudo o que está fora da célula: um vértice é dividido entre 8 células, uma face entre 2; o centro é só dela." em 200 1170 tamanho 40 cor #E4EAEF largura 2000 simples
+aparece kick, titulo em 0.6s
+junto aparece kP, kI, kF, lP, lI, lF em 1s
+passo "Átomos que se tocam"
+raio kP toca em 1.2s
+junto raio kI toca em 1.2s
+junto raio kF toca em 1.2s
+passo "Corte na célula"
+corta kP em 1s
+junto corta kI em 1s
+junto corta kF em 1s
+aparece t1
+passo "Some"
+escreve nP em 0.8s
+escreve nI em 0.8s
+escreve nF em 0.9s
+passo "Gire"
+orbita kP 90 em 4s
+junto orbita kI 90 em 4s
+junto orbita kF 90 em 4s
+
+cena "Quanto espaço os átomos ocupam?" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  11/15  ·  EMPACOTAMENTO" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Quanto espaço os átomos ocupam?" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede kP centro 420 640 tamanho 720 680
+celula 1 1 1 90 90 90
+raio 0.1
+cores pontos #E8EDF1
+cores centro #7FD3C3
+segmento s 0 0 0 1 0 0 cor #F7C948 espessura 2.2
+vista -34 20
+equacao lP "\mathrm{P}" centro 420 300 tamanho 70 cor #F7C948
+rede kI centro 1200 640 tamanho 720 680
+celula 1 1 1 90 90 90
+centragem I
+raio 0.1
+cores pontos #E8EDF1
+cores centro #7FD3C3
+segmento s 0 0 0 1 1 1 cor #F7C948 espessura 2.2
+vista -34 20
+equacao lI "\mathrm{I}" centro 1200 300 tamanho 70 cor #F7C948
+rede kF centro 1980 640 tamanho 720 680
+celula 1 1 1 90 90 90
+centragem F
+raio 0.1
+cores pontos #E8EDF1
+cores centro #7FD3C3
+segmento s 0 0 0 1 1 0 cor #F7C948 espessura 2.2
+vista -34 20
+equacao lF "\mathrm{F}" centro 1980 300 tamanho 70 cor #F7C948
+equacao cP "\text{aresta: } a = 2r" centro 420 1010 tamanho 50 cor #F7C948
+equacao cI "\text{diagonal do cubo: } \sqrt{3}\,a = 4r" centro 1200 1010 tamanho 50 cor #F7C948
+equacao cF "\text{diagonal da face: } \sqrt{2}\,a = 4r" centro 1980 1010 tamanho 50 cor #F7C948
+equacao pP "\phi = \tfrac{\pi}{6} \approx \textcolor{#F7C948}{52\%}" centro 420 1140 tamanho 54 cor #E4EAEF
+equacao pI "\phi = \tfrac{\sqrt{3}\,\pi}{8} \approx \textcolor{#F7C948}{68\%}" centro 1200 1140 tamanho 54 cor #E4EAEF
+equacao pF "\phi = \tfrac{\pi}{3\sqrt{2}} \approx \textcolor{#F7C948}{74\%}" centro 1980 1140 tamanho 54 cor #E4EAEF
+equacao f "\phi = \frac{N \cdot \tfrac{4}{3}\pi r^3}{a^3}" centro 1200 1255 tamanho 50 cor #E4EAEF
+texto t1 "Os átomos crescem até se tocar." em 140 1240 tamanho 40 cor #A9BAC6 largura 900 simples
+texto t2 "Encolha de novo e marque a linha em que eles se tocam." em 140 1240 tamanho 40 cor #A9BAC6 largura 900 simples
+aparece kick, titulo em 0.6s
+junto aparece kP, kI, kF, lP, lI, lF em 1s
+passo "Até se tocar"
+raio kP toca em 1.4s
+junto raio kI toca em 1.4s
+junto raio kF toca em 1.4s
+aparece t1
+passo "Onde se tocam"
+some t1 em 0.3s
+raio kP 0.1 em 0.8s
+junto raio kI 0.1 em 0.8s
+junto raio kF 0.1 em 0.8s
+exibe kP s em 0.5s
+junto exibe kI s em 0.5s
+junto exibe kF s em 0.5s
+aparece t2
+escreve cP em 0.8s
+escreve cI em 0.8s
+escreve cF em 0.8s
+passo "A fração ocupada"
+raio kP toca em 0.9s
+junto raio kI toca em 0.9s
+junto raio kF toca em 0.9s
+some t2 em 0.3s
+escreve f em 1s
+escreve pP em 0.8s
+escreve pI em 0.8s
+escreve pF em 0.8s
+
+cena "Camadas ABAB e ABCABC" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  12/15  ·  EMPACOTAMENTO COMPACTO" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Camadas ABAB e ABCABC" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede hx centro 560 680 tamanho 960 820
+celula 1 1 1.633 90 90 120
+repete 3 3 1
+atomo A 0 0 0 cor #FC6255 raio 0.5 grupo A
+atomo B 0.6667 0.3333 0.5 cor #83C167 raio 0.5 grupo B oculto
+cores centro #7FD3C3
+semcelula
+vista -20 26
+rede fc centro 1720 680 tamanho 960 820
+celula 1 1 1 90 90 90
+centragem F
+repete 2 2 2
+raio 0.18
+cores pontos #E8EDF1
+cores centro #7FD3C3
+vista -34 20
+texto lh "hexagonal compacto (hc)" centro 560 260 tamanho 44 cor #FC6255 negrito simples
+texto lf "cúbico de faces centradas (cfc)" centro 1720 260 tamanho 44 cor #58C4DD negrito simples
+texto t1 "Camada compacta: cada esfera toca 6 vizinhas; a segunda (B) se encaixa nos buracos da primeira." em 140 1110 tamanho 38 cor #E4EAEF largura 1000 simples
+texto t2 "Se a terceira repete a primeira: ABAB… é o hexagonal compacto." em 140 1240 tamanho 38 cor #FC6255 largura 1000 simples
+texto t3 "Pinte a cfc por planos (111) e olhe pela diagonal do cubo: três camadas diferentes, ABCABC…" em 1300 1110 tamanho 38 cor #E4EAEF largura 1000 simples
+texto t4 "Os dois têm 74% de ocupação e número de coordenação 12." em 1300 1240 tamanho 38 cor #F7C948 largura 1000 simples
+aparece kick, titulo em 0.6s
+junto aparece hx, lh em 1s
+junto aparece t1
+passo "Segunda camada"
+exibe hx B em 1s
+passo "Terceira = primeira"
+aparece t2
+orbita hx 60 em 4s
+passo "A cfc"
+aparece fc, lf em 0.8s
+passo "Planos (111)"
+raio fc toca em 1.2s
+camada fc 1 1 1 periodo 3 cores #FC6255 #83C167 #58C4DD em 1s
+aparece t3
+passo "Pela diagonal"
+vista fc 45 35.26 em 2.2s
+aparece t4
+
+cena "Os vazios entre as esferas" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  13/15  ·  BURACOS" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Os vazios entre as esferas" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede fc centro 700 760 tamanho 1150 1100
+celula 1 1 1 90 90 90
+centragem F
+atomo X 0 0 0 cor #E8EDF1 raio 0.12 grupo cfc
+atomo O 0.5 0 0 cor #F49A5C raio 0.06 grupo oct oculto
+atomo T1 0.25 0.25 0.25 cor #4FD1C5 raio 0.05 grupo tet oculto
+atomo T2 0.75 0.75 0.75 cor #4FD1C5 raio 0.05 grupo tet oculto
+cores centro #7FD3C3
+poliedro po octaedro centro 0.5 0.5 0.5 0.5 cor #F49A5C
+poliedro pt tetraedro centro 0.25 0.25 0.25 0.25 cor #4FD1C5
+vista -30 18
+texto t1 "No centro da célula cfc há um vazio cercado por 6 átomos, nos vértices de um octaedro." em 1400 300 tamanho 42 cor #E4EAEF largura 900 simples
+texto t2 "Os centros das arestas são do mesmo tipo:" em 1400 470 tamanho 40 cor #A9BAC6 largura 900 simples
+equacao e1 "1 + 12 \times \tfrac{1}{4} = \textcolor{#F49A5C}{4}\ \text{octaédricos}" centro 1850 590 tamanho 54 cor #E4EAEF
+texto t3 "Entre um vértice e três faces vizinhas, um vazio menor, cercado por 4 átomos: tetraédrico. Há 8, todos dentro da célula." em 1400 700 tamanho 40 cor #E4EAEF largura 900 simples
+equacao e2 "8\ \text{tetraédricos}" centro 1850 900 tamanho 54 cor #4FD1C5
+texto t4 "Com 4 átomos por célula: um buraco octaédrico e dois tetraédricos por átomo. É onde moram os íons menores das estruturas iônicas." em 1400 1000 tamanho 40 cor #F7C948 largura 900 simples
+aparece kick, titulo em 0.6s
+junto aparece fc em 1s
+junto orbita fc 40 em 6s
+passo "Octaédrico"
+exibe fc po em 0.8s
+aparece t1
+passo "Todos os octaédricos"
+exibe fc oct em 0.8s
+aparece t2
+escreve e1 em 1s
+passo "Tetraédrico"
+exibe fc pt em 0.8s
+aparece t3
+passo "Todos os tetraédricos"
+exibe fc tet em 0.8s
+escreve e2 em 0.9s
+aparece t4
+passo "Gire"
+orbita fc 180 em 8s
+
+cena "Uma rede, um motivo: NaCl, CsCl e ZnS" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  14/15  ·  ESTRUTURAS IÔNICAS" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Uma rede, um motivo: NaCl, CsCl e ZnS" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+rede nacl centro 420 640 tamanho 740 740
+celula 1 1 1 90 90 90
+centragem F
+atomo Na 0 0 0 cor #B58CF5 raio 0.09 grupo Na
+atomo Cl 0.5 0 0 cor #7ED957 raio 0.13 grupo Cl
+cores centro #7FD3C3
+vizinhos v 0.5 0.5 0.5 distancia 0.5 grupo Na cor #F7C948
+vista -30 18
+rede cscl centro 1200 640 tamanho 740 740
+celula 1 1 1 90 90 90
+atomo Cs 0 0 0 cor #5B8DEF raio 0.15 grupo Cs
+atomo Cl 0.5 0.5 0.5 cor #7ED957 raio 0.15 grupo Cl
+cores centro #7FD3C3
+vizinhos v 0.5 0.5 0.5 distancia 0.867 grupo Cs cor #F7C948
+vista -30 18
+rede zns centro 1980 640 tamanho 740 740
+celula 1 1 1 90 90 90
+centragem F
+atomo S 0 0 0 cor #F2CE48 raio 0.12 grupo S
+atomo Zn 0.25 0.25 0.25 cor #9FB3C8 raio 0.09 grupo Zn
+cores centro #7FD3C3
+vizinhos v 0.25 0.25 0.25 distancia 0.434 grupo S cor #F7C948
+vista -30 18
+texto h1 "NaCl" centro 420 260 tamanho 54 cor #B58CF5 negrito simples
+texto h2 "CsCl" centro 1200 260 tamanho 54 cor #5B8DEF negrito simples
+texto h3 "ZnS (blenda)" centro 1980 260 tamanho 54 cor #F2CE48 negrito simples
+texto d1 "rede cfc; motivo Na (0, 0, 0) + Cl (½, 0, 0). Os Cl⁻ ocupam todos os buracos octaédricos." em 90 1030 tamanho 34 cor #A9BAC6 largura 660 simples
+texto d2 "rede cúbica P; motivo Cs (0, 0, 0) + Cl (½, ½, ½). Não é cúbica I: o centro e o vértice são íons diferentes." em 870 1030 tamanho 34 cor #A9BAC6 largura 660 simples
+texto d3 "rede cfc; motivo S (0, 0, 0) + Zn (¼, ¼, ¼). Os Zn²⁺ ocupam metade dos buracos tetraédricos." em 1650 1030 tamanho 34 cor #A9BAC6 largura 660 simples
+equacao c1 "\text{NC} = 6" centro 420 1220 tamanho 54 cor #F7C948
+equacao c2 "\text{NC} = 8" centro 1200 1220 tamanho 54 cor #F7C948
+equacao c3 "\text{NC} = 4" centro 1980 1220 tamanho 54 cor #F7C948
+aparece kick, titulo em 0.6s
+junto aparece nacl, h1 em 1s
+junto aparece d1
+passo "Seis vizinhos"
+exibe nacl v em 0.8s
+escreve c1 em 0.8s
+passo "CsCl"
+aparece cscl, h2 em 0.9s
+aparece d2
+exibe cscl v em 0.8s
+escreve c2 em 0.8s
+passo "Blenda de zinco"
+aparece zns, h3 em 0.9s
+aparece d3
+exibe zns v em 0.8s
+escreve c3 em 0.8s
+passo "Gire"
+orbita nacl 50 em 5s
+junto orbita cscl 50 em 5s
+junto orbita zns 50 em 5s
+
+cena "Da repetição à estrutura" fundo #0E1821
+roteiro pagina
+quadro 2400 1350
+texto kick "ESTADO SÓLIDO  ·  15/15  ·  RESUMO" em 140 64 tamanho 30 cor #7890A0 negrito simples
+texto credIC677 "IC677 · UFRRJ · Prof. Henrique C. S. Junior" centro 1860 78 tamanho 30 cor #A9BAC6 simples
+texto titulo "Da repetição à estrutura" em 138 104 tamanho 68 negrito cor #F3EFE6 simples
+caixa k0 centro 210 640 tamanho 300 400 cor #F7C948 espessura 4
+texto a0 "Rede + motivo" centro 210 500 tamanho 38 cor #F7C948 negrito simples
+equacao e0 "\text{cristal}" centro 210 630 tamanho 34 cor #E4EAEF
+texto s0 "onde se repete e o que se repete" centro 210 760 tamanho 30 cor #A9BAC6 largura 260 simples
+caixa k1 centro 540 640 tamanho 300 400 cor #58C4DD espessura 4
+texto a1 "Translação" centro 540 500 tamanho 38 cor #58C4DD negrito simples
+equacao e1 "\mathbf{T} = n_1\mathbf{a} + n_2\mathbf{b} + n_3\mathbf{c}" centro 540 630 tamanho 34 cor #E4EAEF
+texto s1 "a simetria que define a rede" centro 540 760 tamanho 30 cor #A9BAC6 largura 260 simples
+seta g1 de 365 640 ate 385 640 cor #7890A0 espessura 4
+caixa k2 centro 870 640 tamanho 300 400 cor #F07A5E espessura 4
+texto a2 "Célula" centro 870 500 tamanho 38 cor #F07A5E negrito simples
+equacao e2 "a,\ b,\ c,\ \alpha,\ \beta,\ \gamma" centro 870 630 tamanho 34 cor #E4EAEF
+texto s2 "o pedaço que se repete" centro 870 760 tamanho 30 cor #A9BAC6 largura 260 simples
+seta g2 de 695 640 ate 715 640 cor #7890A0 espessura 4
+caixa k3 centro 1200 640 tamanho 300 400 cor #83C167 espessura 4
+texto a3 "7 sistemas" centro 1200 500 tamanho 38 cor #83C167 negrito simples
+equacao e3 "\text{cúbico … triclínico}" centro 1200 630 tamanho 34 cor #E4EAEF
+texto s3 "a forma da célula, ditada pela simetria" centro 1200 760 tamanho 30 cor #A9BAC6 largura 260 simples
+seta g3 de 1025 640 ate 1045 640 cor #7890A0 espessura 4
+caixa k4 centro 1530 640 tamanho 300 400 cor #B488F0 espessura 4
+texto a4 "14 redes" centro 1530 500 tamanho 38 cor #B488F0 negrito simples
+equacao e4 "\text{P, C, I, F, R}" centro 1530 630 tamanho 34 cor #E4EAEF
+texto s4 "sistemas com centragens" centro 1530 760 tamanho 30 cor #A9BAC6 largura 260 simples
+seta g4 de 1355 640 ate 1375 640 cor #7890A0 espessura 4
+caixa k5 centro 1860 640 tamanho 300 400 cor #4FD1C5 espessura 4
+texto a5 "Contagem" centro 1860 500 tamanho 38 cor #4FD1C5 negrito simples
+equacao e5 "8 \times \tfrac{1}{8} + 6 \times \tfrac{1}{2}" centro 1860 630 tamanho 34 cor #E4EAEF
+texto s5 "vértice, aresta, face, centro" centro 1860 760 tamanho 30 cor #A9BAC6 largura 260 simples
+seta g5 de 1685 640 ate 1705 640 cor #7890A0 espessura 4
+caixa k6 centro 2190 640 tamanho 300 400 cor #FC6255 espessura 4
+texto a6 "Estruturas" centro 2190 500 tamanho 38 cor #FC6255 negrito simples
+equacao e6 "\text{NaCl, CsCl, ZnS}" centro 2190 630 tamanho 34 cor #E4EAEF
+texto s6 "íons em buracos de uma rede" centro 2190 760 tamanho 30 cor #A9BAC6 largura 260 simples
+seta g6 de 2015 640 ate 2035 640 cor #7890A0 espessura 4
+texto fim "Toda estrutura cristalina, por mais complicada, é uma das 14 redes de Bravais com um motivo pendurado em cada ponto." em 210 1010 tamanho 50 cor #E4EAEF largura 2000 simples
+aparece kick, titulo em 0.6s
+cresce k0 em 0.45s
+junto aparece a0, e0, s0 em 0.5s
+passo "Translação"
+escreve g1 em 0.35s
+cresce k1 em 0.45s
+junto aparece a1, e1, s1 em 0.5s
+passo "Célula"
+escreve g2 em 0.35s
+cresce k2 em 0.45s
+junto aparece a2, e2, s2 em 0.5s
+passo "7 sistemas"
+escreve g3 em 0.35s
+cresce k3 em 0.45s
+junto aparece a3, e3, s3 em 0.5s
+passo "14 redes"
+escreve g4 em 0.35s
+cresce k4 em 0.45s
+junto aparece a4, e4, s4 em 0.5s
+passo "Contagem"
+escreve g5 em 0.35s
+cresce k5 em 0.45s
+junto aparece a5, e5, s5 em 0.5s
+passo "Estruturas"
+escreve g6 em 0.35s
+cresce k6 em 0.45s
+junto aparece a6, e6, s6 em 0.5s
+passo "Uma última ideia"
+escreve fim em 1.8s

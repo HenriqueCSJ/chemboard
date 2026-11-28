@@ -120,6 +120,8 @@ Images, videos, orbital drawings, interacting orbitals and particle simulations 
 
 A scripted page opens at the start of its scene. **→** or **PgDn** plays the next step. **←** or **PgUp** restores the previous step, or reverses an authored scene handoff. **Esc** returns to editing. **F** enters full screen and **U** hides the controls. Outside the presentation, objects that leave the scene are drawn faint so that successive versions of an equation do not pile up. A selected object is drawn in full.
 
+**Save board (.json)** includes the compiled pages and presentation cues. Leave **Include editable scripts** checked to keep the page and lecture scripts in the same JSON. After reopening it, use **Page script…** or **Animation script…** to edit the embedded source. Clear the checkbox to share the presentation with its cues and animations while omitting the source text. **Save script** in the animation editor still exports a separate `.chemboard` file.
+
 Pen and Highlighter marks belong to the current presentation cue for the session. You can undo or clear those marks without changing the saved page.
 
 A chart slider stays live during the presentation. Drag it or press **▶** at any step, and the curves and the numbers that follow the chart respond. On a chart that the script created, and on any parameter that the script varies or that a number follows, what you do by hand belongs to the scene. It lasts until the script varies that parameter again (the sweep starts from where you left it) or until you go back to an earlier step. The chart keeps its saved value, so the slide starts the same way next time. On other charts the slider saves the value, as it does on any page. A chart that the script has moved, scaled or rotated answers where it is drawn.
@@ -133,6 +135,8 @@ An image of a scripted page (**Export image (PNG)**, **Copy page image** and the
 ## Combine page scripts and scene transitions
 
 Open **Menu → Animation script…** for a multi-page lesson. Put `roteiro pagina` after a scene header to write the rest of that scene using the commands on this page. Give a carried object the same name at the previous scene's final step and the next scene's opening. Here one click morphs the circle and counts to 100. The next click moves the resulting rectangle across the boundary.
+
+Multi-page lesson scripts can have up to 400,000 characters. A board export with editable scripts stores each distinct full lesson script once, even when many pages share it.
 
 ```text
 cena "Shape and measure" fundo #f3efe4
@@ -199,7 +203,7 @@ vary curve.N to 32 in 1.6s
 
 ## Spatial drawings and matrices
 
-Open the **IC677** lessons under **Ready-made lectures** for the complete [water and matrices](../examples/ic677-simetria-agua.chemboard) and [cubic cells](../examples/ic677-celulas-cubicas.chemboard) scripts. Shared objects carry across scenes and **PgUp** restores the previous state. Drag the model with the Hand tool to orbit it. **Shift + drag** pans the board through the model. Changing the camera leaves the operation in the same Cartesian basis.
+Open the **IC677** lessons under **Ready-made lectures**. The short [water and matrices](../examples/ic677-simetria-agua.chemboard) and [cubic cells](../examples/ic677-celulas-cubicas.chemboard) scripts are useful starting points. The full [molecular symmetry](../examples/ic677-simetria-molecular.chemboard) script uses `molecula3d` for labelled molecular models and `caracteres` for character tables. The full [solid-state](../examples/ic677-estado-solido.chemboard) script uses `rede` for adjustable crystal lattices. Open these files from **Animation script… → Open file…** to explore the definitions and cues. Shared objects carry across scenes and **PgUp** restores the previous state. Drag the model with the Hand tool to orbit it. **Shift + drag** pans the board through the model. Changing the camera leaves the operation in the same Cartesian basis.
 
 To use a molecule from the toolbox, select the structure and open **View in 3D**. **Insert live 3D model** puts it on the current page. The model keeps the viewer's geometry and has a script name such as **mol3d**. Open **Page script…** to see the model name and atom IDs, or right-click the model to rename it. You can use it directly in a cue.
 
@@ -253,3 +257,11 @@ replica cubo 2 2 2 em 1.7s
 ```
 
 `camada cubo z 0.5` emphasizes the section at z = 0.5 in first-cell coordinates. `observa cubo 0 0 0.5` highlights its face site even when you add adjacent cells. Both accept `limpa` to clear the emphasis. The WebGL renderer is initialized when a spatial object is first displayed. A Canvas projection supports the same cues when WebGL is unavailable.
+
+### Symmetry elements, lattices and character tables
+
+The full IC677 scripts use three additional objects. Each object can reveal its annotations independently as the scene advances.
+
+- **Molecules.** Use `molecula3d` with `atomo ID ELEMENT X Y Z` in Å, `ligacao A B`, and `elemento C3 eixo 0 0 1 ordem 3 "C_3"`. Use `exibe nh3 base, eixos, C3` to show the moving basis and the fixed laboratory axes. `aplica nh3 C3 matriz M` turns the model and fills the matrix. A named symmetry element can also be a plane, an inversion center, or an improper axis. `projecao` defines a linked view along an axis, while `modo` and `vibra` define and animate a displacement pattern.
+- **Lattices.** Use `rede` with `celula a b c alpha beta gamma`, `centragem F` and a motif of `atomo ID fx fy fz` entries in fractional coordinates. Cues can change the cell, replicate it, reveal a slice or highlight neighbors and voids.
+- **Character tables.** Use `caracteres` with `grupo`, `classe`, `irrep` and `gama` definitions. A cue such as `traco M` highlights a matrix trace. `revela tc celula G C3 de M` transfers it to the character table. `reduz tc E` shows the terms of an irreducible-representation reduction.
