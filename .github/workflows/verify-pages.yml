@@ -1,0 +1,29 @@
+name: Verify GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chemboard-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-public-site:
+    if: github.repository == 'HenriqueCSJ/chemboard' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Compare the public site with main
+        run: python3 scripts/verify_pages.py --wait 600

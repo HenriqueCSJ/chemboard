@@ -173,6 +173,8 @@ Include the browser and version, the board or lecture page, and the exact action
 
 The app entry point is [`index.html`](index.html). The [example boards](examples/) can be used to check import, lecture navigation, and scripted playback. GitHub Pages deploys the root of `main` directly, with no build step.
 
+The Pages check runs after each push to `main` and daily. It compares the public homepage, lesson downloads and media with the current branch, allowing time for deployment to propagate. [Pages verification runs](https://github.com/HenriqueCSJ/chemboard/actions/workflows/verify-pages.yml)
+
 ## License
 
 [Apache 2.0](LICENSE). The [bundled Three.js](https://github.com/mrdoob/three.js) is MIT-licensed, with its notice included in `index.html`.
