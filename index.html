@@ -22853,7 +22853,7 @@ function compileMotionScript(objects, source){
     if (closed.has(a.s) && closed.has(b.s)) return true;
     return a.s === b.s && paths.has(a.s) && a.h1 === b.h1 && a.h2 === b.h2 && (a.t1 || '') === (b.t1 || '') && (a.t2 || '') === (b.t2 || '') && !!a.pts === !!b.pts && (!a.pts || a.pts.length === b.pts.length);
   };
-  const timelineKeys = ['stIn','stOut','stPlay','stDim','stMorph','stTrace','mf'];
+  const timelineKeys = ['stIn','stOut','stPlay','stDim','stMorph','stTrace','mf','fxLife'];
   const clean = object => {
     const o = copy(object); for (const key of timelineKeys) delete o[key];
     delete o.motionHidden; delete o._presentContour; delete o._draw; return o;
@@ -22946,6 +22946,8 @@ function withScenePage(pg, run){
   finally { Object.assign(S,keep); }
 }
 const SCENE_SCRIPT_MAX_LENGTH = 400000;
+const SCENE_HEADER = /^(?:cena|scene)(?:\s|$)/iu;
+const SCENE_TRANSITION = /^(?:transiç[aã]o|transicao|transition)(?:\s|$)/iu;
 /* Compile declarative pages into the same native objects and cues as the board. */
 function compileSceneScript(source){
   const fail = (line, message) => {
@@ -23017,34 +23019,45 @@ function compileSceneScript(source){
     const line = index + 1, text = lines[index].trim();
     if (!text || (text.startsWith('//') || text.startsWith('#'))) continue;
     // Page scripts have their own quoted-string rules, including literal TeX.
-    if (scene?.pageSyntax && !/^(?:cena|transiç[aã]o|transicao)(?:\s|$)/iu.test(text)){
+    if (scene?.pageSyntax && !SCENE_HEADER.test(text) && !SCENE_TRANSITION.test(text) &&
+        !/^(?:roteiro\s+pagina|page\s+script)$/iu.test(text)){
       scene.motion[index - scene.line] = lines[index];
       continue;
     }
     const tokens = lex(text, line);
     const command = valueAt(tokens, 0, line, 'o comando').toLocaleLowerCase('pt-BR');
-    if (command === 'cena'){
-      if (tokens.length !== 2 && tokens.length !== 4) fail(line, 'use: cena "Nome" [fundo #rrggbb].');
+    if (command === 'cena' || command === 'scene'){
+      const usage = LANG === 'en'
+        ? 'Use scene "Title" [background #rrggbb], or use from or using followed by an earlier scene title in quotes.'
+        : 'Use cena "Nome" [fundo #rrggbb], ou use de ou usando antes do título de uma cena anterior entre aspas.';
+      if (tokens.length !== 2 && tokens.length !== 4) fail(line, usage);
       const name = valueAt(tokens, 1, line, 'o nome da cena', true);
       if (!name.trim() || name.length > 240) fail(line, 'a cena precisa de um nome de 1 a 240 caracteres.');
-      let background = '#101c30';
+      let background = '#101c30', reuse, layoutFrom;
       if (tokens.length === 4){
-        if (valueAt(tokens, 2, line, 'fundo').toLocaleLowerCase('pt-BR') !== 'fundo') fail(line, 'use: cena "Nome" [fundo #rrggbb].');
-        background = color(tokens, 3, line);
+        const option = valueAt(tokens, 2, line, 'fundo/de').toLowerCase();
+        if (option === 'fundo' || option === 'background') background = color(tokens, 3, line);
+        else if (['de', 'from', 'usando', 'using'].includes(option)){
+          const title = valueAt(tokens, 3, line, 'a cena anterior', true);
+          const matches = scenes.filter(candidate => candidate.name === title);
+          if (matches.length !== 1) fail(line, LANG === 'en'
+            ? `Reuse needs one earlier scene titled “${title}” (found ${matches.length}).`
+            : `A reutilização precisa de uma cena anterior chamada “${title}” (encontradas: ${matches.length}).`);
+          const earlier = matches[0].reuse || matches[0];
+          if (option === 'de' || option === 'from') reuse = earlier;
+          else layoutFrom = earlier;
+          background = earlier.background;
+        } else fail(line, usage);
       }
       if (scenes.length >= 128) fail(line, 'o roteiro aceita no máximo 128 cenas.');
-      scene = {name, background, line, declarations:[], names:new Set(), motion:[], cues:['Início'], hasStep:false};
+      const declarations = layoutFrom?.declarations.slice() || [];
+      scene = {name, background, line, reuse, layoutFrom, declarations,
+        names:new Set(declarations.map(d => d.name)), motion:[], cues:['Início'],
+        hasStep:false, pageSyntax:layoutFrom?.pageSyntax};
       scenes.push(scene); continue;
     }
     if (!scene) fail(line, 'comece com cena "Nome" antes dos objetos e passos.');
-    if (command === 'roteiro'){
-      if (tokens.length !== 2 || valueAt(tokens, 1, line, 'o tipo de roteiro') !== 'pagina' ||
-          scene.declarations.length || scene.motion.some(Boolean) || scene.hasStep)
-        fail(line, 'use roteiro pagina antes dos objetos e passos da cena.');
-      scene.pageSyntax = true;
-      continue;
-    }
-    if (command === 'transicao' || command === 'transição'){
+    if (SCENE_TRANSITION.test(text)){
       if (scenes.length < 2) fail(line, 'a primeira cena não tem uma cena anterior.');
       if (scene.hasStep || scene.transition) fail(line, 'use uma transição por cena, antes do primeiro passo.');
       const ms = num(tokens, 1, line, 'a duração em ms', true, 6000);
@@ -23053,6 +23066,17 @@ function compileSceneScript(source){
       if (names.some(name => !validName(name)) || new Set(names).size !== names.length)
         fail(line, 'use nomes de objetos válidos e sem repetições na transição.');
       scene.transition = {ms, names, line};
+      continue;
+    }
+    if (scene.reuse) fail(line, LANG === 'en'
+      ? 'A reused scene takes its objects and cues from the earlier scene. Only an incoming transition can be added here.'
+      : 'Uma cena reutilizada recebe os objetos e passos da cena anterior. Aqui só é possível adicionar a transição de entrada.');
+    if (command === 'roteiro' || command === 'page'){
+      const kind = command === 'roteiro' ? 'pagina' : 'script';
+      if (tokens.length !== 2 || valueAt(tokens, 1, line, 'o tipo de roteiro').toLowerCase() !== kind ||
+          scene.declarations.length || scene.motion.some(Boolean) || scene.hasStep)
+        fail(line, LANG === 'en' ? 'Place page script before the objects and cues.' : 'Use roteiro pagina antes dos objetos e passos da cena.');
+      scene.pageSyntax = true;
       continue;
     }
     if (command === 'passo'){
@@ -23127,16 +23151,17 @@ function compileSceneScript(source){
     scene.declarations.push({name, object, line, hidden:options.has('oculto'), center:options.has('centro')});
   }
   if (!scenes.length) fail(1, 'inclua ao menos uma cena com nome.');
-  const pages = [];
+  const pages = [], layouts = new Map();
   let previousClosing;
   for (let sceneIndex = 0; sceneIndex < scenes.length; sceneIndex++){
     const spec = scenes[sceneIndex];
+    const body = spec.reuse || spec;
     const pg = newPage(spec.name);
     pg.stops = [[0, 0, LEC_W, LEC_H]];
     pg.presentationBg = spec.background;
     // The host draws presentationBg for scene pages in edit/export as well.
     const actors = [];
-    for (const declaration of spec.declarations){
+    for (const declaration of body.declarations){
       const object = {id:uid(),motionName:declaration.name,...declaration.object};
       if (declaration.hidden) object.motionHidden = true;
       if (declaration.center){
@@ -23149,38 +23174,46 @@ function compileSceneScript(source){
       }
       actors.push(object);
     }
-    const motionSource = spec.motion.join('\n');
+    let motionSource = body.motion.join('\n');
     let compiled;
-    if (spec.pageSyntax){
+    if (body.pageSyntax){
+      const inherited = layouts.get(body.layoutFrom) || [];
+      const scriptLines = inherited.concat(Array.from(body.motion, (text, i) =>
+        ({text:text || '', line:body.line + i + 1})));
+      motionSource = scriptLines.map(entry => entry.text).join('\n');
       try {
-        withScenePage(pg, () => scRun(pg, scParse(motionSource)));
+        const program = scParse(motionSource);
+        if (!layouts.has(body)) layouts.set(body, program.filter(st => st.c === 'frame' || st.c === 'obj')
+          .flatMap(st => [st.ln, ...(st.continuation || [])].map(line => scriptLines[line - 1])));
+        withScenePage(pg, () => scRun(pg, program));
         pg.script = motionSource;
         const timeline = buildTimeline(pg);
         compiled = {objects:pg.objects, opening:sceneNamedPoses(pg, timeline, 0),
           closing:sceneNamedPoses(pg, timeline, timeline.n - 1)};
       } catch (error){
         if (!Number.isSafeInteger(error.line)) throw error;
-        fail(spec.line + error.line, error.message);
+        fail(scriptLines[error.line - 1]?.line ?? body.line, error.message);
       }
-    } else if (spec.hasStep){
+      if (spec.reuse) pg.name = spec.name;
+    } else if (body.hasStep){
       try { compiled = compileMotionScript(actors, motionSource); }
       catch (error){
         if (!Number.isSafeInteger(error.line)) throw error;
-        fail(spec.line + error.line, error.message.replace(/^Linha \d+: /, ''));
+        fail(body.line + error.line, error.message.replace(/^Linha \d+: /, ''));
       }
     }
     else {
       // Even a static scene uses native per-page step navigation at position 0.
       // Validate any unexpected action/alias with the existing motion compiler.
-      const actionLine = spec.motion.findIndex(text => !!text);
-      if (actionLine >= 0) fail(spec.line + actionLine + 1, 'inclua passo "legenda" antes das ações.');
+      const actionLine = body.motion.findIndex(text => !!text);
+      if (actionLine >= 0) fail(body.line + actionLine + 1, 'inclua passo "legenda" antes das ações.');
       const objects = actors.filter(o => !o.motionHidden).map(o => ({...deep(o),stIn:[0,0]}));
       const visible = new Map(objects.map(o => [o.motionName, o]));
       compiled = {objects, opening:visible, closing:visible};
     }
     pg.objects = compiled.objects;
-    pg.motionLesson = {kind:'scene',source,actors,cues:spec.cues.slice(),
-      sceneIndex,sceneLine:spec.line, ...(spec.pageSyntax ? {pageSyntax:true} : {})};
+    pg.motionLesson = {kind:'scene',source,actors,cues:body.cues.slice(),
+      sceneIndex,sceneLine:spec.line, ...(body.pageSyntax ? {pageSyntax:true} : {})};
     if (spec.transition){
       const {ms, names, line} = spec.transition;
       const pairs = names.map(name => {
@@ -23210,11 +23243,17 @@ function openMotionScript(){
       ordered.slice(0, 12).forEach((o, i) => { o.motionName = o.t === 'shape' ? 'forma' + (i + 1) : 'equacao' + (i + 1); });
       source = '# Cada passo espera → ou PgDn\npasso Deslocamento\n  mover ' + ordered[0].motionName + ' 160 0 1200\n';
     } else {
-      source = 'cena "Energia do fóton" fundo #101c30\n'
+      source = t('cena "Energia do fóton" fundo #101c30\n'
         + 'texto titulo 140 140 88 #f5f7fc "Energia do fóton" negrito\n'
         + 'formula energia 140 420 110 #f5f7fc "E=h\\\\nu" oculto\n'
         + 'linha marca 140 650 950 650 8 #ff847d oculto\n\n'
-        + 'passo "Apresentar a relação"\n  mostrar energia\n  traçar marca 950\n';
+        + 'passo "Apresentar a relação"\n  mostrar energia\n  traçar marca 950\n'
+        + '\ncena "Revisão" de "Energia do fóton"\n',
+        'scene "Photon energy" background #101c30\npage script\n'
+        + 'text title "Photon energy" at 140 140 size 88 color #f5f7fc bold\n'
+        + 'equation energy "E=h\\nu" center 1200 560 size 160 color #f5f7fc\n'
+        + 'step "Reveal the equation"\nwrite energy\n'
+        + '\nscene "Recap" from "Photon energy"\n');
     }
   }
   const script = h('textarea', {class: 'tinput', spellcheck: 'false', autocapitalize: 'off', maxlength: SCENE_SCRIPT_MAX_LENGTH,
@@ -23247,7 +23286,7 @@ function openMotionScript(){
     feedback.textContent = '';
     let pages;
     try {
-      if (!actors.length || /^cena(?:\s|$)/iu.test(first || '')){
+      if (!actors.length || SCENE_HEADER.test(first || '')){
         await ensureFonts();
         ({pages} = compileSceneScript(source));
       } else {
@@ -23278,8 +23317,8 @@ function openMotionScript(){
     setTool('hand'); stepRestart();
   }}, t('Compilar em novas páginas', 'Compile into new pages'));
   modal(t('Roteiro de animação', 'Animation script'), h('div', {class: 'motion-script-editor'},
-    h('p', {class: 'mtext'}, t('Use cena para criar uma página e passo para avançar com → ou PgDn. Compile o roteiro para ensaiar no quadro.',
-      'Use cena to create a page and passo to advance with → or PgDn. Compile the script to rehearse on the board.')),
+    h('p', {class: 'mtext'}, t('Use cena para criar uma página e roteiro pagina para escrever os objetos e passos. Use de para repetir uma cena ou usando para escrever novos passos sobre os mesmos objetos.',
+      'Use scene to create a page and page script to start a page script. Use from to replay an earlier scene or using to keep its layout and author new cues.')),
     actors.some(o => o.motionName) ? actorList : null, script,
     h('div', {class: 'script-actions'}, input,
       h('button', {class: 'btn ghost', onclick: () => input.click()}, t('Abrir arquivo…', 'Open file…')),
@@ -23355,7 +23394,7 @@ function animSetPaused(on){ ACLK.paused = on; S.dirty = true; updateStepBar(true
 
 /* ---------- linha do tempo da página ---------- */
 const AN_ARROWS = new Set(['curve', 'fish']);
-const anHasTags = o => Array.isArray(o.stIn) || Array.isArray(o.stOut) || Array.isArray(o.stPlay) || Array.isArray(o.stDim) || Array.isArray(o.fxDo);
+const anHasTags = o => Array.isArray(o.stIn) || Array.isArray(o.stOut) || Array.isArray(o.stPlay) || Array.isArray(o.stDim) || Array.isArray(o.fxDo) || Array.isArray(o.fxLife);
 const isMechArrow = o => o.t === 'shape' && AN_ARROWS.has(o.s);
 /* setas de mecanismo no passo a passo: primeiro só as moléculas; no passo delas as setas são desenhadas, uma depois da
    outra, e só então os elétrons as percorrem. Uma seta com "Aparecer no passo N" anterior já está na cena (foi desenhada
@@ -23393,6 +23432,9 @@ function buildTimeline(pg){
     if (Array.isArray(o.stDim)){ has = true; kmax[sOf(o.stDim)] = Math.max(kmax[sOf(o.stDim)], o.stDim[1] | 0); }
     if (Array.isArray(o.stPlay)){ has = true; kmax[sOf(o.stPlay)] = Math.max(kmax[sOf(o.stPlay)], (o.stPlay[1] | 0) + anStages(o) - 1); }
     if (Array.isArray(o.fxDo)) for (const f of o.fxDo) if (Array.isArray(f.at)){ has = true; kmax[sOf(f.at)] = Math.max(kmax[sOf(f.at)], f.at[1] | 0); }
+    if (Array.isArray(o.fxLife)) for (const f of o.fxLife) if (Array.isArray(f?.at)){
+      has = true; kmax[sOf(f.at)] = Math.max(kmax[sOf(f.at)], f.at[1] | 0);
+    }
   }
   if (Array.isArray(pg.scriptCues)) for (const cue of pg.scriptCues){
     if (!Array.isArray(cue?.at)) continue;
@@ -23416,6 +23458,10 @@ function stepTimeline(pg = page()){
   return _tlCache.T;
 }
 function anVisAt(o, T, p){
+  if (Array.isArray(o.fxLife)){
+    const event = o.fxLife.findLast(f => Array.isArray(f?.at) && T.P(f.at) <= p);
+    if (event) return event.enter === true;
+  }
   if (Array.isArray(o.stIn) && T.P(o.stIn) > p) return false;
   if (Array.isArray(o.stOut) && T.P(o.stOut) <= p) return false;
   return true;
@@ -24080,7 +24126,7 @@ function animDisplay(){
           }
           const di = v1 && !v0 ? drawIn.indexOf(o) : -1;
           if (di >= 0){ draw = mechDrawProg(di, drawIn.length, drawDur > 0 ? clamp(el / drawDur, 0, 1) : 1, false); if (draw <= 0) continue; }
-          else if (v0 !== v1){ if (pf === p - 1 && fxClaim(it, v1)) fxe = v1 ? 'in' : 'out'; else a *= v1 ? lateK : 1 - fadeK; }
+          else if (v0 !== v1){ if (pf === p - 1 && fxClaim(it, v1, T, p)) fxe = v1 ? 'in' : 'out'; else a *= v1 ? lateK : 1 - fadeK; }
           else if (!v1) continue;
         } else if (!v1) continue;
         // reagentes esmaecidos depois de uma transformação
@@ -27329,7 +27375,9 @@ function apiPresentation(){
     positions: T.pos.map(([stop, step], index) => ({index, stop, step})),
     object_steps: pg.objects.filter(anHasTags).map(o => ({id: o.id,
       ...(o.stIn ? {appear: o.stIn.slice()} : {}), ...(o.stOut ? {disappear: o.stOut.slice()} : {}),
-      ...(o.stPlay ? {animate: o.stPlay.slice()} : {}), ...(o.stDim ? {dim: o.stDim.slice()} : {})}))};
+      ...(o.stPlay ? {animate: o.stPlay.slice()} : {}), ...(o.stDim ? {dim: o.stDim.slice()} : {}),
+      ...(Array.isArray(o.fxLife) ? {later_visibility: o.fxLife.filter(f => Array.isArray(f?.at))
+        .map(f => ({at: f.at.slice(), visible: f.enter === true}))} : {})}))};
 }
 function defineAnimTools(){
   defTool('list_lectures', 'List the bundled ready-made lectures with their related activities and pages already inserted in this board. Read-only.', {}, () => {
@@ -27872,10 +27920,19 @@ const fxCss = c => `rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[
 const fxMixC = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k), lerp(a[2], b[2], k), lerp(a[3], b[3], k)];
 
 /* ---------- a página tem cenas? ---------- */
-const fxTagged = o => !!(o.fxIn || o.fxOut || o.fxDo);
+const fxTagged = o => !!(o.fxIn || o.fxOut || o.fxDo || o.fxLife);
+const fxGone = o => Array.isArray(o.fxLife) && o.fxLife.length
+  ? o.fxLife.at(-1)?.enter === false : !!(o.fxOut && Array.isArray(o.stOut));
+function fxVisibilityEffect(o, enter, T, p){
+  if (Array.isArray(o.fxLife)){
+    const event = o.fxLife.findLast(f => Array.isArray(f?.at) && T.P(f.at) === p);
+    if (event) return event.enter === enter ? event.effect : null;
+  }
+  return enter ? o.fxIn : o.fxOut;
+}
 function fxActive(pg){
   const key = pg.id + '|' + (S.rev || 0) + '|' + pg.objects.length;
-  if (FX.hasKey !== key){ FX.hasKey = key; FX.has = pg.objects.some(fxTagged); FX.hasOut = FX.has && pg.objects.some(o => o.fxOut && Array.isArray(o.stOut)); }
+  if (FX.hasKey !== key){ FX.hasKey = key; FX.has = pg.objects.some(fxTagged); FX.hasOut = FX.has && pg.objects.some(fxGone); }
   return FX.has;
 }
 /* Fora da apresentação tudo fica visível, como sempre. Só o que sai de cena por uma instrução de cena (some, apaga,
@@ -27885,10 +27942,10 @@ const FX_GHOST = 0.16;
 function fxGhosts(pg){
   fxHandTidy(null);
   if (!fxActive(pg) || !FX.hasOut) return null;
-  const list = pg.objects.map(o => o.fxOut && Array.isArray(o.stOut) && !S.sel.has(o.id) && !(o.t === 'bond' && S.sel.has(o.a)) ? {...o, _alpha: FX_GHOST} : o);
+  const list = pg.objects.map(o => fxGone(o) && !S.sel.has(o.id) && !(o.t === 'bond' && S.sel.has(o.a)) ? {...o, _alpha: FX_GHOST} : o);
   return {list, index: S.index, post: []};
 }
-function fxClearTags(o){ delete o.fxIn; delete o.fxOut; delete o.fxDo; }
+function fxClearTags(o){ delete o.fxIn; delete o.fxOut; delete o.fxDo; delete o.fxLife; }
 
 /* ---------- tempos ---------- */
 // quantas "pinceladas" o objeto deve ter (só para escolher a duração sem desenhar)
@@ -27931,8 +27988,8 @@ function fxTransDur(pg, T, a, b){
   for (const o of pg.objects){
     if (!fxTagged(o)) continue;
     const v0 = anVisAt(o, T, a), v1 = anVisAt(o, T, b);
-    if (o.fxIn && !v0 && v1) end(o, o.fxIn);
-    if (o.fxOut && v0 && !v1) end(o, o.fxOut);
+    const visibility = v0 !== v1 && fxVisibilityEffect(o, v1, T, b);
+    if (visibility) end(o, visibility);
     if (o.fxDo) for (const f of o.fxDo) if (Array.isArray(f.at) && T.P(f.at) === b) end(o, f);
   }
   FX.cache.clear(); FX.morph.clear();
@@ -27947,7 +28004,7 @@ function fxIntro(pg, T, j){
 }
 // a imagem da página (exportar, copiar, ver pelo agente) mostra o slide como ele termina: sem o que já saiu de cena
 function fxStill(list){
-  return fxActive(page()) && FX.hasOut ? list.filter(o => !(o.fxOut && Array.isArray(o.stOut))) : list;
+  return fxActive(page()) && FX.hasOut ? list.filter(o => !fxGone(o)) : list;
 }
 // páginas com roteiro são slides: ao chegar nelas (pelo contador ou pela lista de páginas) mostra-se o começo da cena,
 // em vez de todos os objetos de todos os passos uns sobre os outros. Esc ou editar mostra tudo, como sempre.
@@ -28798,12 +28855,13 @@ function fxPlan(o, T, p, fwd, ts){
   let pl = null;
   const P = () => pl || (pl = {});
   const e = o._fxe;
-  if (e === 'in' && o.fxIn){
-    const f = o.fxIn, [t, d] = fxTime(o, f), u = (ts - t) / d;
+  const f = e && fxVisibilityEffect(o, e === 'in', T, p);
+  if (e === 'in' && f){
+    const [t, d] = fxTime(o, f), u = (ts - t) / d;
     if (u < 0) P().hide = true;
     else if (u < 1){ if (f.k === 'tf') P().morph = {from: f.from, u}; else P().enter = {k: f.k, u, dir: f.dir}; }
-  } else if (e === 'out' && o.fxOut){
-    const f = o.fxOut, [t, d] = fxTime(o, f), u = (ts - t) / d;
+  } else if (e === 'out' && f){
+    const [t, d] = fxTime(o, f), u = (ts - t) / d;
     if (f.k === 'tf'){ if (u >= 0) P().hide = true; }             // a transformação desenha as partes deste objeto
     else if (u >= 1) P().hide = true;
     else if (u >= 0) P().exit = {k: f.k, u, dir: f.dir};
@@ -29008,8 +29066,8 @@ function sceneFx(DL, pg, T, p, pf, el, runs, snapshot = false){
   return {list: strokes.concat(out, tail), index, post};
 }
 // o passo a passo pergunta: este objeto, que entra (v1) ou sai neste passo, tem efeito de cena?
-function fxClaim(o, v1){
-  const f = v1 ? o.fxIn : o.fxOut;
+function fxClaim(o, v1, T, p){
+  const f = fxVisibilityEffect(o, v1, T, p);
   return !!(f && FX_TYPES.has(o.t) && (v1 ? FX_IN : FX_OUT).has(f.k));
 }
 // ver um efeito agora, fora do passo a passo (prévia)
@@ -30536,13 +30594,15 @@ function scTiming(C, o){
 function scParse(text){
   const prog = [];
   let lastObj = null;
+  const continuation = ln => (lastObj.continuation || (lastObj.continuation = [])).push(ln);
   String(text || '').split(/\r?\n/).forEach((raw, idx) => {
     const ln = idx + 1, line = raw.trim();
     if (!line) return;
     if (/^-{3,}$/.test(line)){ prog.push({c: 'step', ln}); return; }
     if (line[0] === '|'){
       if (!lastObj || lastObj.kind !== 'table') throw scErr(ln, tt('linha de tabela sem uma tabela antes'));
-      lastObj.rows.push(line.replace(/^\|/, '').replace(/\|\s*$/, '').split('|').map(s => s.trim())); return;
+      lastObj.rows.push(line.replace(/^\|/, '').replace(/\|\s*$/, '').split('|').map(s => s.trim()));
+      continuation(ln); return;
     }
     const toks = scTokens(line, ln);
     if (!toks.length) return;
@@ -30552,8 +30612,8 @@ function scParse(text){
     const head = C.next();
     if (!head || head.t !== 'w') throw scErr(ln, tt('a linha deve começar com uma instrução'));
     // linhas do gráfico (título, eixos, funções, parâmetros, séries)
-    if (lastObj && lastObj.kind === 'chart' && SC_SUB[head.v] && !together){ scChartLine(lastObj, SC_SUB[head.v], C, ln); return; }
-    if (lastObj && !together && spObjectLine(lastObj,head.v,C,ln)) return;
+    if (lastObj && lastObj.kind === 'chart' && SC_SUB[head.v] && !together){ scChartLine(lastObj, SC_SUB[head.v], C, ln); continuation(ln); return; }
+    if (lastObj && !together && spObjectLine(lastObj,head.v,C,ln)){ continuation(ln); return; }
     const cmd = SC_CMD[head.v];
     if (!cmd) throw scErr(ln, `${tt('instrução desconhecida')}: “${head.raw}”`);
     if (cmd === 'page'){ prog.push({c: 'page', ln, name: C.str('esperava o nome da página entre aspas')}); return; }
@@ -30891,7 +30951,7 @@ function scMake(X, ob){
 }
 // Only fields actually changed by a script are owned by it. A manually changed
 // field wins over the last scripted value, and unmentioned manual tags survive.
-const SC_OWN_FIELDS = ['stIn', 'stOut', 'stPlay', 'stDim', 'mf', 'fxIn', 'fxOut', 'fxDo'];
+const SC_OWN_FIELDS = ['stIn', 'stOut', 'stPlay', 'stDim', 'mf', 'fxIn', 'fxOut', 'fxDo', 'fxLife'];
 const SC_PAGE_FIELDS = ['name', 'stops', 'fxStops', 'fxCam'];
 const scSame = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 function scFields(o, fields){
@@ -31030,6 +31090,27 @@ function scRunTransaction(pg, prog){
   const at = () => [X.s, X.k];
   const use = name => X.used.get(name) || (X.used.set(name, {}), X.used.get(name));
   const visible = (name, ln) => { const u = use(name); if (u.out) throw scErr(ln, `“${name}” ${tt('já saiu de cena')}`); };
+  const canEnter = (name, ln) => {
+    const u = use(name);
+    if (u.out && morphSameStep(u.out, at())) throw scErr(ln, LANG === 'en'
+      ? `“${name}” left on this cue. Add a step before bringing it back.`
+      : `“${name}” saiu neste passo. Adicione outro passo antes de trazê-lo de volta.`);
+    if (u.in && !u.out) throw scErr(ln, LANG === 'en'
+      ? `“${name}” is already visible.` : `“${name}” já está visível.`);
+    return u;
+  };
+  // Keep the native first entrance and exit. Only subsequent visibility changes need a track.
+  const visibility = (objects, enter, effect, reenter = false) => {
+    const cue = at();
+    for (const o of objects){
+      if (reenter || o.fxLife) (o.fxLife || (o.fxLife = [])).push({at:cue, enter, effect});
+      else {
+        o[enter ? 'stIn' : 'stOut'] = cue;
+        o[enter ? 'fxIn' : 'fxOut'] = effect;
+      }
+    }
+    return objects.reduce((d, o) => Math.max(d, fxDur(o, effect)), 0);
+  };
   // imagens, vídeos, orbitais e simulações não são regravados: entram e saem esmaecendo, e o resto não vale para eles
   const plain = new Set();
   const fxOk = (name, L, ln) => {
@@ -31074,13 +31155,11 @@ function scRunTransaction(pg, prog){
     else if (k === 'draw' || k === 'fadein' || k === 'grow'){
       noPart();
       st.tg.forEach((t, i) => {
-        const L = group(t.name, ln), u = use(t.name);
-        if (u.in || u.out) throw scErr(ln, `“${t.name}” ${tt('já entrou em cena antes; um objeto só entra uma vez')}`);
+        const L = group(t.name, ln), u = canEnter(t.name, ln);
         const fk = k === 'draw' ? 'draw' : k === 'fadein' ? 'fade' : 'grow';
         if (fk !== 'fade') fxOk(t.name, L, ln);
-        let d = 0;
-        for (const x of L){ x.stIn = at(); x.fxIn = {k: fk, ...tm(i, o.d), ...(o.dir ? {dir: o.dir} : {})}; d = Math.max(d, fxDur(x, x.fxIn)); }
-        u.in = at(); span(i, d);
+        span(i, visibility(L, true, {k:fk, ...tm(i, o.d), ...(o.dir ? {dir:o.dir} : {})}, !!u.out));
+        u.in = at(); delete u.out;
       });
     } else if (k === 'fadeout' || k === 'erase' || k === 'shrink'){
       noPart();
@@ -31089,24 +31168,24 @@ function scRunTransaction(pg, prog){
         visible(t.name, ln);
         const fk = k === 'fadeout' ? 'fade' : k;
         if (fk !== 'fade') fxOk(t.name, L, ln);
-        let d = 0;
-        for (const x of L){ x.stOut = at(); x.fxOut = {k: fk, ...tm(i, o.d), ...(o.dir ? {dir: o.dir} : {})}; d = Math.max(d, fxDur(x, x.fxOut)); }
-        u.out = at(); span(i, d);
+        span(i, visibility(L, false, {k:fk, ...tm(i, o.d), ...(o.dir ? {dir:o.dir} : {})}));
+        u.out = at();
       });
     } else if (k === 'tf' || k === 'tfc'){
       noPart();
       if (st.tg.length !== st.to.length && st.tg.length !== 1) throw scErr(ln, tt('transforma: um destino para cada origem (ou uma origem só)'));
       st.to.forEach((t, i) => {
-        const src = st.tg[st.tg.length === 1 ? 0 : i], A = group(src.name, ln), B = group(t.name, ln), ub = use(t.name);
+        const src = st.tg[st.tg.length === 1 ? 0 : i], A = group(src.name, ln), B = group(t.name, ln);
         if (src.name === t.name) throw scErr(ln, tt('origem e destino são o mesmo objeto'));
         visible(src.name, ln);
-        if (ub.in || ub.out) throw scErr(ln, `“${t.name}” ${tt('já entrou em cena antes; um objeto só entra uma vez')}`);
+        const ub = canEnter(t.name, ln);
         fxOk(src.name, A, ln); fxOk(t.name, B, ln);
-        let d = 0;
-        for (const x of B){ x.stIn = at(); x.fxIn = {k: 'tf', from: src.name, ...tm(i, o.d)}; d = Math.max(d, fxDur(x, x.fxIn)); }
-        ub.in = at();
-        if (k === 'tf' && (st.tg.length > 1 || i === st.to.length - 1)){ for (const x of A){ x.stOut = at(); x.fxOut = {k: 'tf', ...tm(i, o.d)}; } use(src.name).out = at(); }
-        span(i, d);
+        span(i, visibility(B, true, {k:'tf', from:src.name, ...tm(i, o.d)}, !!ub.out));
+        ub.in = at(); delete ub.out;
+        if (k === 'tf' && (st.tg.length > 1 || i === st.to.length - 1)){
+          visibility(A, false, {k:'tf', ...tm(i, o.d)});
+          use(src.name).out = at();
+        }
       });
     } else if (k === 'rx'){
       // reação: os átomos viajam dos reagentes para os produtos (o motor das transformações do módulo 30)
@@ -31115,6 +31194,9 @@ function scRunTransaction(pg, prog){
       for (const t of st.tg) visible(t.name, ln);
       for (const t of st.to){ const u = use(t.name); if (u.in || u.out) throw scErr(ln, `“${t.name}” ${tt('já entrou em cena antes; um objeto só entra uma vez')}`); }
       const sd = {R: side(st.tg), P: side(st.to)};
+      if ([...sd.R.atoms, ...sd.R.bonds, ...sd.R.other].some(o => o.fxLife)) throw scErr(ln, LANG === 'en'
+        ? 'A reaction needs a reactant that has not left and returned. Declare a separate molecule for this reaction.'
+        : 'A reação precisa de um reagente que ainda não tenha saído e voltado. Declare outra molécula para esta reação.');
       if (!sd.R.atoms.length || !sd.P.atoms.length) throw scErr(ln, tt('reage: os dois lados precisam ser moléculas'));
       const r = morphAssign(sd, at(), o.out ? 'out' : 'dim');
       if (!r.n) throw scErr(ln, tt('reage: não encontrei átomos iguais dos dois lados'));
@@ -31345,6 +31427,8 @@ some nota
 transforma e1 em e2
 passo
 contorna e2 "\\frac{E_a}{RT}" cor azul
+passo
+transforma e2 em e1
 `, en: `# A slide in a few clicks. Lines starting with # are comments.
 frame 2400 1350
 text title "Arrhenius equation" at 140 110 size 84 bold
@@ -31363,6 +31447,8 @@ disappear note
 transform e1 into e2
 step
 surround e2 "\\frac{E_a}{RT}" color blue
+step
+transform e2 into e1
 `};
 const SC_HELP = {pt: [
   ['Objetos', [
@@ -31379,7 +31465,7 @@ const SC_HELP = {pt: [
     ['escreve a, b', 'escreve o texto, traça as figuras (desenha e cria fazem o mesmo)'],
     ['aparece a de baixo · cresce a', 'entram esmaecendo ou crescendo'],
     ['some a para cima · apaga a · encolhe a', 'saem de cena'],
-    ['transforma a em b', 'as partes iguais viajam, o resto some e aparece (copia a em b mantém a)'],
+    ['transforma a em b', 'as partes iguais viajam e a sai. Em outro passo, transforma b em a traz a de volta.'],
     ['reage h2, o2 em agua', 'reação: os átomos viajam dos reagentes para os produtos (… some: os reagentes somem)'],
     ['destaca a "trecho" cor laranja', 'pulsa; sem trecho, o objeto inteiro. Também: pisca, balanca'],
     ['contorna a "trecho" fica · sublinha a', 'caixa ou linha; fica = não some; oval = contorno oval'],
@@ -31409,7 +31495,7 @@ const SC_HELP = {pt: [
     ['write a, b', 'writes text, traces figures (draw and create do the same)'],
     ['appear a from below · grow a', 'enter by fading or growing'],
     ['disappear a to above · erase a · shrink a', 'leave the scene'],
-    ['transform a into b', 'matching parts travel, the rest fades out and in (copy a into b keeps a)'],
+    ['transform a into b', 'matching parts travel and a leaves. On a later step, transform b into a brings a back.'],
     ['react h2, o2 into water', 'reaction: the atoms travel from reactants to products (… out: the reactants disappear)'],
     ['indicate a "part" color orange', 'pulses; with no part, the whole object. Also: flash, wiggle'],
     ['surround a "part" keep · underline a', 'box or line; keep = it stays; oval = oval outline'],
@@ -31530,7 +31616,7 @@ OBJECTS (name comes second; names are letters/digits, no spaces):
 SCENE ("step" waits for a click; lines before the first step play on arrival; inside a step each line starts when the previous one ends):
   write a, b            (text is written glyph by glyph, shapes/molecules/charts are traced; draw/create are synonyms)
   appear a from below | grow a | disappear a to above | erase a | shrink a
-  transform a into b    (matching glyphs travel, the rest fades; "copy a into b" keeps a)
+  transform a into b    (matching glyphs travel; "copy a into b" keeps a; "transform b into a" on a later step brings a back)
   react h2, o2 into w1, w2   (molecules only: every atom travels from the reactants to the products; reactants dim, or disappear with "out"; draw every atom on both sides)
   indicate a ["part"] [color orange] | flash a | wiggle a | surround a ["part"] [keep] [oval] | underline a ["part"] [keep]
   color a ["part"] red  (stays) | move a to X Y | move a by DX DY scale 0.8 | scale a 1.5 | rotate a 30

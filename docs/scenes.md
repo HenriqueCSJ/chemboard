@@ -23,6 +23,8 @@ disappear note
 transform e1 into e2
 step
 surround e2 "\frac{E_a}{RT}" color blue
+step
+transform e2 into e1
 ```
 
 Every instruction has an English and a Portuguese form, and the two can be mixed. Names start with a letter and contain no spaces or dots. Numbers accept a decimal comma or point (`1,5` or `1.5`), so separate list items with a comma followed by a space.
@@ -82,7 +84,7 @@ An object without a position goes below the previous one. Colors are `blue`, `re
 | `grow a` | `cresce a` | Grows from its center. |
 | `disappear a to above` | `some a para cima` | Fades out. |
 | `erase a` and `shrink a` | `apaga a` and `encolhe a` | The reverse of `write` and of `grow`. |
-| `transform a into b` | `transforma a em b` | Glyphs and strokes present on both sides travel to their new place, and the rest fades out and in. `a` leaves the scene. |
+| `transform a into b` | `transforma a em b` | Matching glyphs and strokes travel to their new place, and the rest fades out and in. `a` leaves the scene. On a later step, `transform b into a` brings the same named object back. |
 | `copy a into b` | `copia a em b` | The same transformation, keeping `a`. |
 | `react h2, o2 into w1, w2` | `reage h2, o2 em w1, w2` | For molecules. Every atom travels from the reactants to the products, bonds break and form, and the reactants stay dimmed. Add `out` (`some`) to remove them. Draw every atom on both sides, and put this line first in its step. |
 | `indicate a "part" color orange` | `destaca a "trecho" cor laranja` | Pulses and changes color for a moment. Without a part, the whole object. |
@@ -99,6 +101,8 @@ An object without a position goes below the previous one. Colors are `blue`, `re
 | `camera a, b margin 80` or `camera all` | `camera a, b margem 80` or `camera tudo` | A click that moves the view to the objects, or back to the frame. |
 
 A quoted part is a piece of the text or equation written the way it appears in the object, such as `"E_a"` or `"\frac{1}{T}"`. A number after it picks one occurrence: `indicate e "x" 2`.
+
+A declaration can serve several cues. After an object disappears or transforms into another object, bring it back on a later step with `appear`, `write`, or by making it the target of a transformation. Its name and board ID stay the same. Use a separate `step` before the return.
 
 ### Timing
 
@@ -134,13 +138,13 @@ An image of a scripted page (**Export image (PNG)**, **Copy page image** and the
 
 ## Combine page scripts and scene transitions
 
-Open **Menu → Animation script…** for a multi-page lesson. Put `roteiro pagina` after a scene header to write the rest of that scene using the commands on this page. Give a carried object the same name at the previous scene's final step and the next scene's opening. Here one click morphs the circle and counts to 100. The next click moves the resulting rectangle across the boundary.
+Open **Menu → Animation script…** for a multi-page lesson. Put `page script` or `roteiro pagina` after a scene header to use the page commands on this page. Give a carried object the same name at the previous scene's final step and the next scene's opening. Here one click morphs the circle and counts to 100. The next click moves the resulting rectangle across the boundary.
 
 Multi-page lesson scripts can have up to 400,000 characters. A board export with editable scripts stores each distinct full lesson script once, even when many pages share it.
 
 ```text
-cena "Shape and measure" fundo #f3efe4
-roteiro pagina
+scene "Shape and measure" background #f3efe4
+page script
 circle seed center 460 520 size 240 filled color red
 rect marker center 820 520 size 300 240 filled color blue
 text value "25 points" at 240 800 size 88
@@ -149,14 +153,32 @@ step "Change the shape and measure"
 transform seed into marker in 1.2s
 with count value to 100 in 1.2s
 
-cena "Another view" fundo #f5f0f0
-roteiro pagina
+scene "Another view" background #f5f0f0
+page script
 rect marker center 1800 520 size 410 240 filled color green
-transicao 1600 marker
+transition 1600 marker
 step "Hold here for discussion"
 ```
 
 Page-script effects preserve their timing within each cue. Formula poses that contain matching `\term{id}{…}` annotations preserve the identity of those terms.
+
+### Reuse a scene
+
+`scene "Replay" from "Shape and measure"` adds another occurrence with the same background, objects, and cues. It starts at the original opening and advances normally with the clicker. In Portuguese, use `cena "Revisão" de "Shape and measure"`.
+
+`scene "A different total" using "Shape and measure"` keeps the background and object declarations so you can write new cues. In Portuguese, use `cena "Outro total" usando "Shape and measure"`. Here the reused scene inherits page-script syntax.
+
+```text
+scene "Replay" from "Shape and measure"
+
+scene "A different total" using "Shape and measure"
+appear seed
+step "Count to 250 instead"
+transform seed into marker in 1.2s
+with count value to 250 in 1.2s
+```
+
+Refer to an earlier scene by its exact title. Each occurrence gets its own editable page and object IDs. To update the shared layout everywhere, change its original declaration and recompile the lesson. To carry an object from the immediately preceding scene, declare a new `transition` on the reused scene.
 
 ## Shared parameters, paths and insets
 

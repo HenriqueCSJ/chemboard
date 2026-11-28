@@ -126,6 +126,8 @@ Use **Menu → Roteiro da página…** para escrever efeitos em português ou in
 
 Abra **Menu → Roteiro de animação…** para criar uma aula do zero. Cada `cena` define uma página de 2400 × 1350 unidades, com origem no canto superior esquerdo. Declare o fundo, os textos, as fórmulas e o diagrama antes do primeiro `passo`. Cada passo espera **→** ou **PgDn**. Use **←** ou **PgUp** para voltar. As ações começam juntas, exceto quando uma usa `depois` para aguardar alguns milissegundos.
 
+Use `cena "Revisão" de "Abertura"` para repetir uma cena anterior ou `cena "Exercício" usando "Abertura"` para reutilizar seus objetos com novos passos. [Referência de reutilização](scenes.md#reuse-a-scene)
+
 ```text
 cena "Energia do fóton" fundo #101c30
 texto titulo 140 140 88 #f5f7fc "Energia do fóton" negrito

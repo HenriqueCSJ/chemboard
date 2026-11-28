@@ -138,7 +138,9 @@ Open **Menu → Page script…** to author a single page in English or Portugues
 
 ### Write a scene
 
-Open **Menu → Animation script…** on any board. A Portuguese-language script can define the entire lesson, including the background, text, editable LaTeX, and diagrams. Each `cena` creates a 2400 × 1350 page, with (0, 0) at the top left. Declare its objects first. Each `passo` waits for **→** or **Page Down**. Use **←** or **Page Up** to go back. Commands within a step run together, and `depois` delays a single animation in milliseconds.
+Open **Menu → Animation script…** on any board. A script can define the entire lesson, including backgrounds, text, editable LaTeX, and diagrams. Each `scene` or `cena` creates a page, 2400 × 1350 by default. Add `page script` after the scene header to write objects and cues in English or Portuguese. **→** or **Page Down** advances, and **←** or **Page Up** goes back.
+
+Use `scene "Recap" from "Opening"` to replay an earlier scene or `scene "Exercise" using "Opening"` to reuse its objects with new cues. [Scene scripting reference](docs/scenes.md#reuse-a-scene)
 
 ```text
 cena "Photon energy" fundo #101c30
