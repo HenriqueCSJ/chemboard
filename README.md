@@ -22,7 +22,7 @@ ChemBoard is a browser whiteboard for chemistry instructors. Draw Lewis structur
 
 ## Put a structure on the board
 
-1. [Open ChemBoard](https://henriquecsj.github.io/chemboard/), choose **English** or **Português (Brasil)**, and start with an empty board.
+1. [Open ChemBoard](https://henriquecsj.github.io/chemboard/) and choose **Start with an empty board**. English is the default. Select **Português (Brasil)** in the welcome dialog or main menu to switch.
 2. Press **L** to switch to the Lewis pen. Choose **O** in the element strip and click the board to place oxygen.
 3. Choose **H** and drag twice from oxygen to add the two O–H bonds. Click in two separate spots beside oxygen to add its lone pairs.
 
@@ -41,10 +41,10 @@ Drag a lone pair with **Select** to move it around its atom. With the **Lewis pe
 
 <picture>
   <source media="(prefers-reduced-motion: reduce)" srcset="docs/media/bond-formation-poster.png">
-  <img src="docs/media/bond-formation.gif" alt="Three ChemBoard animations show hydrogen atoms sharing an electron pair, sodium transferring an electron to chlorine, and delocalized electrons moving among sodium cations.">
+  <img src="docs/media/bond-formation.gif" alt="Two hydrogen atoms approach and share an electron pair that becomes an H–H bond line. Sodium transfers an electron to chlorine, then Na⁺ and Cl⁻ draw together. Delocalized electrons move among sodium cations in the metallic model.">
 </picture>
 
-*H₂ shows a shared electron pair. Electron transfer produces Na⁺ and Cl⁻, which attract each other. In solid sodium, valence electrons are delocalized among the cations.*
+*In H₂, one bond line represents the shared electron pair. In the ionic model, electron transfer completes chlorine’s octet, then Na⁺ and Cl⁻ attract. In solid sodium, valence electrons are delocalized among the cations.*
 
 ## Draw carbon chains and add hydrogens
 

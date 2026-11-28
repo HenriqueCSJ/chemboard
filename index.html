@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-ui="light" data-board="branco">
+<html lang="en" data-ui="light" data-board="branco">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f6f7f5">
 <title>ChemBoard</title>
-<meta name="description" content="ChemBoard, uma lousa interativa para aulas de química.">
+<meta name="description" content="ChemBoard, an interactive whiteboard for teaching chemistry.">
 <link rel="icon" href="./favicon.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4473,11 +4473,12 @@ three/build/three.module.js:
    e o HTML que cria, e guarda o original para trocar de idioma
    sem recarregar.
    ============================================================ */
+const DEFAULT_LANG = 'en';
 let LANG = (() => {
-  try { const s = JSON.parse(localStorage.getItem('lousaQ.settings') || '{}'); return s.lang === 'en' ? 'en' : 'pt'; }
-  catch (e){ return 'pt'; }
+  try { const s = JSON.parse(localStorage.getItem('lousaQ.settings') || '{}'); return s?.lang === 'pt' ? 'pt' : DEFAULT_LANG; }
+  catch (e){ return DEFAULT_LANG; }
 })();
-const LANGS = [['pt', 'Português (Brasil)', 'PT'], ['en', 'English', 'EN']];
+const LANGS = [['en', 'English', 'EN'], ['pt', 'Português (Brasil)', 'PT']];
 
 const _ttMiss = new Set();
 function _lookup(s){
@@ -5558,7 +5559,7 @@ const PALETTE_NAMES = ['Principal', 'Azul', 'Vermelho', 'Verde', 'Laranja', 'Vio
 const HL_COLORS = ['#ffe94a', '#7dff5a', '#ff5fa2', '#4fd1ff', '#ffab40', '#c18cff'];
 
 const DEFAULT_SETTINGS = {
-  theme: 'branco', grid: 'none', settingsVersion: 2, magnet: true, autoShape: false, shapeDetection: 'hold', lang: 'pt',
+  theme: 'branco', grid: 'none', settingsVersion: 2, magnet: true, autoShape: false, shapeDetection: 'hold', lang: DEFAULT_LANG,
   palettes: deep(DEFAULT_PALETTES),
   laser: '#ff2d3c', laserTrail: 400,
   lewis: {
@@ -5609,6 +5610,7 @@ function loadSettings(){
     if (!raw) return;
     const saved = JSON.parse(raw);
     S.settings = mergeDeep(deep(DEFAULT_SETTINGS), saved);
+    S.settings.lang = LANG;
     cleanAgentSettings();
     // Remove a antiga grade padrão sem alterar uma grade inicial escolhida nas preferências.
     if (saved && saved.settingsVersion == null && saved.grid === 'dots' &&
@@ -17994,7 +17996,7 @@ function renderPrefs(){
   if (T === 'geral'){
     bodyEl.append(
       sec(null,
-        row('Idioma', seg([['pt', 'Português (Brasil)'], ['en', 'English']], LANG, v => { if (v !== LANG){ setLang(v); openPrefs(); } })),
+        row('Idioma', seg(LANGS.map(([id, label]) => [id, label]), LANG, v => { if (v !== LANG){ setLang(v); openPrefs(); } })),
         row('Tamanho da interface', seg(UI_SCALES.map(([z, l]) => [z, l, '']), uiZoom(), v => { U.scale = v; applyUIScale(); prefsChanged(); }), 'Botões e menus maiores para projetor ou lousa digital'),
         row('Quadro ao abrir', sel([['last', 'O último usado'], ...THEME_ORDER.map(k => [k, THEMES[k].nome])], U.startTheme || 'last', v => { U.startTheme = v; prefsChanged(); })),
         row('Grade ao abrir', sel([['last', 'A última usada'], ['none', 'Sem grade'], ['dots', 'Pontos'], ['squares', 'Quadriculado'], ['lines', 'Pautado']], U.startGrid || 'last', v => { U.startGrid = v; prefsChanged(); })),

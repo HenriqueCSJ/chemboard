@@ -34,10 +34,10 @@ Com **Selecionar e mover**, arraste um par isolado ao redor de seu átomo. Na **
 
 <picture>
   <source media="(prefers-reduced-motion: reduce)" srcset="media/bond-formation-poster.png">
-  <img src="media/bond-formation.gif" alt="Três animações do ChemBoard mostram dois hidrogênios compartilhando um par de elétrons, o sódio transferindo um elétron ao cloro e elétrons deslocalizados em movimento entre cátions de sódio.">
+  <img src="media/bond-formation.gif" alt="Dois átomos de hidrogênio se aproximam e compartilham um par de elétrons, representado depois pelo traço H–H. O sódio transfere um elétron ao cloro e então os íons Na⁺ e Cl⁻ se atraem. No modelo metálico, elétrons deslocalizados se movem entre cátions de sódio.">
 </picture>
 
-*No H₂, dois átomos compartilham um par de elétrons. A transferência de um elétron produz Na⁺ e Cl⁻, que se atraem. No sódio sólido, os elétrons de valência ficam deslocalizados entre os cátions.*
+*No H₂, o traço representa o par de elétrons compartilhado. No modelo iônico, a transferência de elétron completa o octeto do cloro e, em seguida, os íons Na⁺ e Cl⁻ se atraem. No sódio sólido, os elétrons de valência ficam deslocalizados entre os cátions.*
 
 ## Desenhe cadeias carbônicas e adicione hidrogênios
 
